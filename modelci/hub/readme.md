@@ -26,7 +26,10 @@ Test model at production environment
 - [] Get containerized model performance (cold start, latency, throughput) on different devices on different devices (container)
 - [] Successful converted models with their performance and failed converted models with error codes
 - [] Accuracy (or some other metrics) loss of new converted models (need users to specify the path of test data)
-
+- [ ] Get original model performance (cold start, latency, throughput) on different devices (Local)
+- [ ] Get containerized model performance (cold start, latency, throughput) on different devices on different devices (container)
+- [ ] Successful converted models with their performance and failed converted models with error codes
+- [ ] Accuracy (or some other metrics) loss of new converted models (need users to specify the path of test data)
 ## Deploy
 
 Employ serving systems and docker to deploy models
