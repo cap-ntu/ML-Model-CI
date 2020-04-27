@@ -4,13 +4,14 @@ import logging
 class Logger:
 
     DEFAULT_SEVERITY_LEVELS = {
-        "StreamHandler": logging.INFO,
+        "StreamHandler": 'INFO',
     }
 
     DEFAULT_FORMATTER = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
-    def __init__(self, name=None, filename=None, severity_levels=None):
+    def __init__(self, name=None, filename=None, severity_levels=None, formatter=None, welcome=True):
         """
+
         :param name: optional name of logger
         :param filename: optional filename
         :param severity_levels: optional dictionary that describes severity levels for each handler, for example:
@@ -18,6 +19,8 @@ class Logger:
                 "StreamHandler": "INFO",
                 "FileHandler": "DEBUG",
             }
+        :param formatter: str formatter for output
+        :param welcome: bool Welcome message to logged when the logger is created. Default to `True`
         """
 
         self.logger = logging.getLogger(name)
@@ -28,7 +31,11 @@ class Logger:
         else:
             self.severity_levels = self.DEFAULT_SEVERITY_LEVELS
 
-        formatter = logging.Formatter(self.DEFAULT_FORMATTER)
+        if formatter:
+            assert isinstance(formatter, str)
+            formatter = logging.Formatter(formatter)
+        else:
+            formatter = logging.Formatter(self.DEFAULT_FORMATTER)
 
         for handler_name in self.severity_levels:
             if handler_name == "FileHandler":
@@ -39,11 +46,12 @@ class Logger:
             else:
                 handler = getattr(logging, handler_name)()
 
-            handler.setLevel(getattr(logging, logging.getLevelName(self.severity_levels[handler_name])))
+            handler.setLevel(getattr(logging, self.severity_levels[handler_name]))
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
 
-        self.logger.info("Logger %s created" % name)
+        if welcome:
+            self.logger.info("Logger %s created" % name)
 
     def info(self, message):
         self.logger.info(message)
@@ -59,20 +67,3 @@ class Logger:
 
     def critical(self, message):
         self.logger.critical(message)
-
-
-_default_handler = None
-
-
-def setup_logger(logging_level, logging_format):
-    """Setup default logging for ModelCI."""
-    logger = logging.getLogger("hysia")
-    if type(logging_level) is str:
-        logging_level = logging.getLevelName(logging_level.upper())
-    logger.setLevel(logging_level)
-    global _default_handler
-    if _default_handler is None:
-        _default_handler = logging.StreamHandler()
-        logger.addHandler(_default_handler)
-    _default_handler.setFormatter(logging.Formatter(logging_format))
-    logger.propagate = False
