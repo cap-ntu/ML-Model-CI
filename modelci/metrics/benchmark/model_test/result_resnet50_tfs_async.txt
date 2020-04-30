@@ -1,0 +1,2 @@
+all_batch_latency:  7.541606664657593 sec
+all_batch_throughput:  848.6255362524366  req/sec
