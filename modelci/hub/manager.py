@@ -146,7 +146,7 @@ def get_remote_model_weight(model: ModelBO):
         1. set force insert config.pbtxt
         2. set other options in generation of config.pbtxt (e.g. max batch size, instance group...)
     This function will keep a local cache of the used model in the path:
-        `~/.hysia/<architecture_name>/<framework>-<engine>/version`
+        `~/.modelci/<architecture_name>/<framework>-<engine>/version`
     Arguments:
         model (ModelBO): Model business object.
     Return:
@@ -164,7 +164,7 @@ def get_remote_model_weight(model: ModelBO):
             subprocess.call(['unzip', save_path, '-d', '/'])
 
             TRTConverter.generate_trt_config(
-                save_path.parent,  # ~/.hysia/<model-arch-name>/<framework>-<engine>/
+                save_path.parent,  # ~/.modelci/<model-arch-name>/<framework>-<engine>/
                 inputs=model.inputs,
                 outputs=model.outputs,
                 arch_name=model.name,
