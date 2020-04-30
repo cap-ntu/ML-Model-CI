@@ -56,7 +56,7 @@ class TestModelInspector(BaseModelInspector):
         pass
 ```
 
-After passing the TestDataWrapper instance to a TestModelInspector instance, you can call `run_model()` to start testing, the results will be recorded by the `hysia.util.Logger` class.
+After passing the TestDataWrapper instance to a TestModelInspector instance, you can call `run_model()` to start testing, the results will be recorded by logs.
 
 ```python
     testDataWrapper = TestDataWrapper(meta_data_url=meta_data_url, raw_data=fake_image_data, batch_size=16) # set batch size here.

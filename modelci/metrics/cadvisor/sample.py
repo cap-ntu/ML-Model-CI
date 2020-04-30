@@ -50,9 +50,9 @@ if __name__ == "__main__":
     # with open('example_data.json', 'w') as f:
     #     json.dump(all_data, f)
 
-    # Tests about getting Hysia format data
+    # Tests about getting required format data
     client = CAdvisor(base_link='') # link to your remote 
     tensorflow_resnet_latest = client.request_by_image('bitnami/tensorflow-serving:latest')
     out = client.get_model_info(tensorflow_resnet_latest)
-    # with open('example_hysia_data_tf_resnet.json', 'w') as f:
+    # with open('example_tf_resnet.json', 'w') as f:
     #     json.dump(out, f)    

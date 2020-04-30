@@ -207,7 +207,7 @@ class CAdvisor(object):
 
     def get_model_info(self, input_dict=None):
         """
-        This function is getting the required data from cAdvisor for Hysia project.
+        This function is getting the required data from cAdvisor for Model CI project.
 
         Parameters
         ----------

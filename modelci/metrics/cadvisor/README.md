@@ -1,4 +1,4 @@
-# CAdvisor for Hysia
+# CAdvisor for Model CI
 
 ## Quick Start 
 
@@ -29,13 +29,11 @@ client = CAdvisor(base_link='') # link to your remote
 tensorflow_resnet_latest = client.request_by_image('bitnami/tensorflow-serving:latest') # set filters
 out = client.get_model_info(tensorflow_resnet_latest) # request JSON data
 ```
-[Here](./example_data/example_hysia_data_tf_resnet.json) is an example of required JSON data.
+[Here](./example_data/example_tf_resnet.json.json) is an example of required JSON data.
 
 For detailed information about setting filters, please refer to the [client document](./CLIENT.md).
 
 ## Data Format 
-
-The discussions about the data format can be found [here](https://github.com/HuaizhengZhang/Hysia/issues/82).
 
 Here is an example of data structure:
 
