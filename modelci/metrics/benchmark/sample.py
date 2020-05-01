@@ -33,8 +33,8 @@ class TestModelInspector(BaseModelInspector):
     '''
     Tested sub-class for BaseModelInspector to implement a custom model runner.
     '''
-    def __init__(self, data_wrapper:BaseDataWrapper, threads=None, asynchronous=None, percentile=None, sla=None):
-        super().__init__(data_wrapper=data_wrapper, threads=threads, asynchronous=asynchronous, percentile=percentile, sla=sla)
+    def __init__(self, data_wrapper:BaseDataWrapper, asynchronous=None):
+        super().__init__(data_wrapper=data_wrapper, asynchronous=asynchronous)
         self.request = None
         self.stub = None
 
@@ -73,6 +73,6 @@ if __name__ == "__main__":
 
     # test functions, set batch size and other parameter here.
     testDataWrapper = TestDataWrapper(meta_data_url=meta_data_url, raw_data=fake_image_data, batch_size=32) 
-    testModelInspector = TestModelInspector(testDataWrapper)
+    testModelInspector = TestModelInspector(testDataWrapper, asynchronous=False)
     testModelInspector.run_model() 
 
