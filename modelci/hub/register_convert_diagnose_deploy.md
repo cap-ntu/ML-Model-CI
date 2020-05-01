@@ -16,7 +16,8 @@ We can register a pre-trained model using `modelci.hub.manager.register_model(..
 
     Enabled by setting `no_generate=False` (default), which converts your model (a PyTorch `nn.Module` or a
     TensorFlow `keras.Model` object) into all possible model family.
-- `no_generate`  
+- `no_generate`:
+
     Enabled by setting `no_generate=True`. This will let user only register the given model.
 
 There is a short cut of generation, we can save the model in a standard form:
