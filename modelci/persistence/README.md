@@ -1,5 +1,6 @@
 ## Model service
-![Model service block diagram](/docs/img/model-service-block-diagram.png)
+<img src="../../docs/img/model-service-block-diagram.png" alt="model service block diagram" height=500 />
+
 ### API
 
 #### 1. Connect to mongodb
@@ -130,7 +131,7 @@ dynamic_result = DynamicProfileResultBO(
 )
 model_service.append_dynamic_profiling_result('123456789012', dynamic_result)
 ```
-The ID must be a valid `ObjectID`. This API will raise a `ValueError`. if the `id` does not exist.    
+The ID must be a valid `ObjectID`. This API will raise a `ValueError` if the `id` does not exist.    
 See test `test/test_model_service.test_register_dynamic_profiling_result`.
 
 #### 10. Update dynamic profiling result
