@@ -83,17 +83,7 @@ model_service.update_model(model, force_insert=True)
 ```
 See test `test/test_model_service.test_update_model`.
 
-#### 7. Delete model
-```python
-from modelci.persistence.service import ModelService
-
-model_service = ModelService()
-model_service.delete_model_by_id('123456789012')
-```
-The ID must be a valid `ObjectID`.  
-See test `test/test_model_service.test_delete_model`  
-
-#### 8. Add static profiling result to a registered model
+#### 7. Add static profiling result to a registered model
 ```python
 from modelci.persistence.service import ModelService
 from modelci.persistence.bo import StaticProfileResultBO
@@ -114,7 +104,7 @@ The ID must be a valid `ObjectID`.
 See test `test/test_model_service.test_register_static_profiling_result`  
 Update static profiling result may use the same API.
 
-#### 9. Add profiling result to a registered model
+#### 8. Add profiling result to a registered model
 ```python
 from modelci.persistence.service import ModelService
 from modelci.persistence.bo import DynamicProfileResultBO, ProfileLatency, ProfileMemory, ProfileThroughput
@@ -134,7 +124,7 @@ model_service.append_dynamic_profiling_result('123456789012', dynamic_result)
 The ID must be a valid `ObjectID`. This API will raise a `ValueError` if the `id` does not exist.    
 See test `test/test_model_service.test_register_dynamic_profiling_result`.
 
-#### 10. Update dynamic profiling result
+#### 9. Update dynamic profiling result
 ```python
 from modelci.persistence.service import ModelService
 
@@ -147,6 +137,16 @@ model_service.update_dynamic_profiling_result('123456789012', dynamic_result)
 The ID must be a valid `ObjectID`. If a non-existent ID or a non-existent profiling result `ip`, `device_id` pair is supplied, this API will reject the update by raising a `ValueError`.  
 You may set `force_insert` to register a profiling result if the `ip` and `device_id` does not exist.  
 See test `test/test_model_service.test_update_dynamic_profiling_result`.  
+
+#### 10. Delete model
+```python
+from modelci.persistence.service import ModelService
+
+model_service = ModelService()
+model_service.delete_model_by_id('123456789012')
+```
+The ID must be a valid `ObjectID`.  
+See test `test/test_model_service.test_delete_model`  
 
 ### Test
 Run pytest by:
