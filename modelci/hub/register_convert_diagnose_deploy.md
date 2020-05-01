@@ -45,6 +45,14 @@ register_model(
 )
 ```
 
+For quick start (conversion + registration), run
+```shell script
+python init_data.py export --model {MODEL_NAME} --framework {FRAMEWORK}
+```
+
+Currently supported (tested) model name:
+- ResNet50
+
 ### 1.1 Registration using `auto_generate` mode
 
 ```python
