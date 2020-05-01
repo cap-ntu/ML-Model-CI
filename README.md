@@ -16,7 +16,20 @@
 - [ ] step by step
 
 <ol>
-<li> Install MongoDB service </li>
+
+<li> Create environment
+
+```shell script
+# create environment
+conda env create -f environment.yml
+
+# install PyTorch with specific CUDA version
+conda install pytorch cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
+```
+
+</li>
+
+<li> Install MongoDB service
 
 ```shell script
 docker --rm -d -p 27017:27017 --name modelci-mongo mongo
@@ -35,6 +48,8 @@ Successfully added user: { "user" : "modelci", "roles" : [ "readWrite" ] }
 > exit
 bye
 ```
+
+</li>
 
 </ol>
 
