@@ -1,6 +1,11 @@
 # Tutorial: register, convert, diagnose and deploy a model step by step
 
-In this tutorial, we demonstrate modelci, a toolbox providing APIs that fetch, convert diagnose and deploy pre-trained model in different form of variant.
+In this tutorial, we demonstrate modelci, a toolbox providing APIs that fetch, convert diagnose and deploy pre-trained 
+model in different form of variant.
+
+Firstly, make sure that you have started a MongoDB service and configured the MongoDB environment. See 
+[installation](/README.md#installation) and 
+[configure MongoDB environment](/modelci/persistence/README.md#1-connect-to-mongodb).
 
 ## TODO
 
