@@ -45,4 +45,3 @@ dependencies:
       - stringcase==1.2.0
       - toml==0.10.0
       - typed-ast==1.4.1
-prefix: /home/lym/anaconda3/envs/test

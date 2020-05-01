@@ -8,6 +8,7 @@ Supported model name:
 - ResNet50
 
 Supported framework name:
-- PyTorch
-- TensorFlow
+- TorchScript
+- TensorFlow Serving
 - ONNX
+- TensorRT

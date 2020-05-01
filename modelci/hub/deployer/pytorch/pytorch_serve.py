@@ -22,7 +22,7 @@ model_dir = list(filter(lambda x: os.path.isfile(x) and str(x.stem).isdigit(), m
 # set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# load the newest model version
+# load the latest version of a TorchScript model
 model = torch.jit.load(str(max(model_dir))).to(device)
 model.eval()
 

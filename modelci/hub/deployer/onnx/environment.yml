@@ -54,4 +54,3 @@ dependencies:
       - uvicorn==0.11.2
       - uvloop==0.14.0
       - websockets==8.1
-prefix: /home/lym/anaconda3/envs/onnx-serve

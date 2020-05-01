@@ -57,4 +57,3 @@ dependencies:
       - uvicorn==0.11.1
       - uvloop==0.14.0
       - websockets==8.1
-prefix: /home/lym/anaconda3/envs/torch-serve

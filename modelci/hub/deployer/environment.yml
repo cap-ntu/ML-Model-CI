@@ -1,6 +1,6 @@
 name: serving
 channels:
-  - pytorch-nightly
+  - pytorch
   - defaults
 dependencies:
   - _libgcc_mutex=0.1
@@ -48,7 +48,7 @@ dependencies:
   - protobuf=3.11.2
   - pycparser=2.19
   - python=3.7.5
-  - pytorch=1.4.0.dev20191221
+  - pytorch=1.4.0
   - readline=7.0
   - scipy=1.3.2
   - setuptools=42.0.2
@@ -95,4 +95,3 @@ dependencies:
       - uvicorn==0.11.1
       - uvloop==0.14.0
       - websockets==8.1
-prefix: /home/lym/anaconda3/envs/torch-serve
