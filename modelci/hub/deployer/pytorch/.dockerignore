@@ -1,0 +1,6 @@
+model/
+.dockerignore
+torch-serve-cpu.Dockerfile
+torch-serve-gpu.Dockerfile
+deploy_model_cpu.sh
+deploy_model_gpu.sh
