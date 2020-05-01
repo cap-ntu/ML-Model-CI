@@ -1,0 +1,36 @@
+git:
+    submodules: false
+    language: python
+    python:
+        - "3.7"
+
+before_install:
+    - "export PYTHONPATH=$PYTHONPATH:$(pwd)"
+
+install:
+    - pip install pip==9.0.3
+    - pip install requests==2.20.1
+    - pip installpytest==4.6.2
+    - pip install pytest-env==0.6.2
+    - pip install pymongo==3.9.0
+    - pip install spacy==2.2.1
+    - pip install mongoengine==0.18.2
+    
+services:
+    - mongodb
+
+before_script:
+    - mongo modelci --eval 'db.createUser({user:"modelci",pwd:"modelci@2020",roles:["readWrite"]});'
+
+script:
+    - python -m pytest tests/
+
+notifications:
+    slack: ml-model-ci:SyXxPANcJK5flgmAM7aMaNuV
+    email:
+        recipients:
+        - huaizhen001@e.ntu.edu.sg
+        - yizheng.huang@ntu.edu.sg
+        - yli056@e.ntu.edu.sg
+        on_success: always # default: change
+        on_failure: always # default: always
