@@ -18,7 +18,7 @@ We can register a pre-trained model using `modelci.hub.manager.register_model(..
     TensorFlow `keras.Model` object) into all possible model family.
 - `no_generate`:
 
-    Enabled by setting `no_generate=True`. This will let user only register the given model.
+    Enabled by setting `no_generate=True`. This will let user register the given model only.
 
 There is a short cut of generation, we can save the model in a standard form:
 (See [Tricks with Model Saved Path](#6-tricks-with-model-saved-path))  
