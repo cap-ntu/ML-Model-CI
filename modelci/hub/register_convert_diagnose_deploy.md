@@ -23,7 +23,7 @@ We can register a pre-trained model using `modelci.hub.manager.register_model(..
 There is a short cut of generation, we can save the model in a standard form:
 (See [Tricks with Model Saved Path](#6-tricks-with-model-saved-path))  
 `~/.modelci/<model name>/<framework>-<engine>/<version>.<extension>`
-In this case, we are able to only specify the path, without architecture, framework, engine and version.
+In this case, we are only able to specify the path, without architecture, framework, engine and version.
 
 ```python
 from modelci.hub.manager import register_model
