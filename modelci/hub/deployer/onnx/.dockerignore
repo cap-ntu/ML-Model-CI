@@ -1,0 +1,7 @@
+model/
+.dockerignore
+.gitignore
+onnx-serve-cpu.Dockerfile
+onnx-serve-gpu.Dockerfile
+deploy_model_cpu.sh
+README.md

@@ -3,11 +3,11 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable
 
-from modelci.persistence.bo.model_bo import ModelBO
-from modelci.persistence.bo.model_objects import IOShape, ModelVersion, Engine, Framework, Weight
 from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
-from modelci.persistence.model_service import ModelService
+from modelci.persistence.bo.model_bo import ModelBO
+from modelci.persistence.bo.model_objects import IOShape, ModelVersion, Engine, Framework, Weight
+from modelci.persistence.service import ModelService
 
 
 def register_model(
