@@ -12,7 +12,8 @@ In this tutorial, we demonstrate modelci, a toolbox providing APIs that fetch, c
 
 We can register a pre-trained model using `modelci.hub.manager.register_model(...)`. This API has two modes:
 
-- `auto_generate`
+- `auto_generate`:
+
     Enabled by setting `no_generate=False` (default), which converts your model (a PyTorch `nn.Module` or a
     TensorFlow `keras.Model` object) into all possible model family.
 - `no_generate`  
