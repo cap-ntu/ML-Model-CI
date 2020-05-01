@@ -1,5 +1,7 @@
 # ML-Model-CI
 
+[![Build Status](https://travis-ci.com/cap-ntu/ML-Model-CI.svg?token=SvqJmaGbqAbwcc7DNkD2&branch=master)](https://travis-ci.com/cap-ntu/ML-Model-CI)
+
 ## Features
 
 - Manager provides a refined management for model registration, deletion, update and selection.
