@@ -13,6 +13,8 @@
 
 ### Installation
 
+- [ ] One-step Docker installation [[Refer]](#intergration/README.md)
+
 - [ ] step by step
 
 <ol>
@@ -34,13 +36,17 @@ conda install pytorch cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
 ```shell script
 docker --rm -d -p 27017:27017 --name modelci-mongo mongo
 ```
+
 And init database by:  
 Go into the docker
+
 ```shell script
 docker exec -ti modelci-mongo mongo
 ```
+
 And create user:
-```
+
+```bash
 > use modelci
 switch to db modelci
 > db.createUser({user: "modelci", pwd: "modelci@2020", roles: ["readWrite"]});
