@@ -1,0 +1,11 @@
+model_weight_path:  
+dataset: ImageNet
+acc: 0.76
+task: image classification
+inputs: inputs
+outputs: outputs
+architecture: ResNet50
+framework: Framework.PYTORCH
+engine: Engine.TORCHSCRIPT 
+version: ModelVersion(1)
+no_generate: True
