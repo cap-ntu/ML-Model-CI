@@ -15,6 +15,8 @@ Firstly, make sure that you have started a MongoDB service and configured the Mo
 
 ## 1. Register a Pre-trained Model
 
+- [ ] with a simple configuration file [[template]](/example#register_resnet50_pytorch.yml)
+
 We can register a pre-trained model using `modelci.hub.manager.register_model(...)`. This API has two modes:
 
 - `auto_generate`:
