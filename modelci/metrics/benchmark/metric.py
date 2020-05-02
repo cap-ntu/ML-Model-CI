@@ -9,8 +9,8 @@ import csv
 import datetime
 import requests
 import numpy as np
-from time import time, sleep
-from multiprocessing import Process, cpu_count, Pool
+import time
+from threading import Thread
 from abc import ABCMeta, abstractmethod
 
 
@@ -30,9 +30,9 @@ class BaseDataWrapper(metaclass=ABCMeta):
         # the raw data needs to be processed
         self.raw_data = raw_data
         # the processed data
-        preprocess_start_time = time()
+        preprocess_start_time = time.time()
         self.processed_data = self.data_preprocess()
-        preprocess_end_time = time()
+        preprocess_end_time = time.time()
         # the time we spent on the data preprocessing
         self.preprocess_time = preprocess_end_time - preprocess_start_time
         # The pre-batched set of images
@@ -81,8 +81,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     @param sla: SLA, default is 1 sec.
     @param percentile: The SLA percentile. Default is 95.
     """
-    def __init__(self, data_wrapper:BaseDataWrapper, threads=None, asynchronous=None, percentile=None,
-                    sla=None):
+    def __init__(self, data_wrapper:BaseDataWrapper, asynchronous=False, percentile=95, sla=1.0):
         # check if the input data is an instance of BaseDataWrapper
         if isinstance(data_wrapper, BaseDataWrapper):
             self.data_wrapper = data_wrapper
@@ -92,28 +91,10 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         self.throughputs = []
         self.latencies = []
-
-        if threads == None:
-            self.threads = cpu_count() * 24
-        else:
-            self.threads = threads
     
-        if asynchronous == None:
-            self.asynchronous = False
-        else:
-            self.asynchronous = asynchronous
-
-        self.pool = Pool(processes=self.threads)
-
-        if percentile == None:
-            self.percentile = 95
-        else:
-            self.percentile = percentile
-            
-        if sla == None:
-            self.sla = 1.0
-        else:
-            self.sla = sla
+        self.asynchronous = asynchronous
+        self.percentile = percentile
+        self.sla = sla
 
     def run_model(self):
         # reset the results
@@ -128,10 +109,10 @@ class BaseModelInspector(metaclass=ABCMeta):
         else:
             raise ValueError("Not enough test values, try to make more testing data.")
 
-        pass_start_time = time()
+        pass_start_time = time.time()
         for batch in self.data_wrapper.batches:
             if self.asynchronous:
-                self.pool.apply_async(self.start_infer_with_time, args=(batch,), callback=self.__inference_callback)
+                ReqThread(self.__inference_callback, self.start_infer_with_time, batch).start()
             else:
                 a_batch_latency = self.start_infer_with_time(batch)
                 self.latencies.append(a_batch_latency)
@@ -140,21 +121,15 @@ class BaseModelInspector(metaclass=ABCMeta):
                 # TODO: replace printing with logging
                 print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
-        # TODO: Improve the asynchronous testing method, make sure the GPU can run in 100% and take about 75% throughput here.
-        # FIXME: Fix asynchronous issue inside object, make sure all the requests have a response.
-        # waitting until all the async requests have responses.
         while len(self.latencies) != len(self.data_wrapper.batches):
             pass
 
-        pass_end_time = time()
+        pass_end_time = time.time()
         all_data_latency = pass_end_time - pass_start_time
         all_data_throughput = len(self.data_wrapper.processed_data) / (pass_end_time - pass_start_time)
         custom_percentile = np.percentile(self.latencies, self.percentile)
 
         self.print_results(all_data_throughput, all_data_latency, custom_percentile)
-        # Remove processes from pool
-        self.pool.close()
-        self.pool.join()
 
     def __inference_callback(self, a_batch_latency):
         """
@@ -166,17 +141,17 @@ class BaseModelInspector(metaclass=ABCMeta):
         self.throughputs.append(a_batch_throughput)
 
         # TODO: replace printing with logging
-        print("a_batch_latency: {:.4f}".format(a_batch_latency), 'sec')
-        print("a_batch_throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
+        # print("a_batch_latency: {:.4f}".format(a_batch_latency), 'sec')
+        # print("a_batch_throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
     def start_infer_with_time(self, batch_input):
         """
         Perform inference non-asynchronosly, and return the total time.
         """
         self.setup_inference()
-        start_time = time()
+        start_time = time.time()
         self.infer(batch_input)
-        end_time = time()
+        end_time = time.time()
         return end_time - start_time
 
     def setup_inference(self):
@@ -206,24 +181,31 @@ class BaseModelInspector(metaclass=ABCMeta):
 
     # TODO: replace printing with logging
     def print_results(self, throughput, latiency, custom_percentile):
-        twenty_fifth_percentile = np.percentile(self.latencies, 25)
-        fiftieth_percentile = np.percentile(self.latencies, 50)
-        seventy_fifth_percentile = np.percentile(self.latencies, 75)
+        percentile_50 = np.percentile(self.latencies, 50)
+        percentile_95 = np.percentile(self.latencies, 95)
+        percentile_99 = np.percentile(self.latencies, 99)
 
         print(f'total batches: {len(self.data_wrapper.batches)}')
         print(f'total latiency: {latiency} s')
         print(f'total throughput: {throughput} req/sec')
-        print(f'25th-percentile latiency: {twenty_fifth_percentile} s')
-        print(f'50th-percentile latiency: {fiftieth_percentile} s')
-        print(f'75th-percentile latiency: {seventy_fifth_percentile} s')
+        print(f'50th-percentile latiency: {percentile_50} s')
+        print(f'95th-percentile latiency: {percentile_95} s')
+        print(f'99th-percentile latiency: {percentile_99} s')
         print(f'{self.percentile}th-percentile latiency: {custom_percentile} s')
         print(f'completed at {datetime.datetime.now()}')
 
-    # A fix for multiprocessing inside class object, remove the 'self' from the states.
-    def __getstate__(self):
-        self_dict = self.__dict__.copy()
-        del self_dict['pool']
-        return self_dict
 
-    def __setstate__(self, state):
-        self.__dict__.update(state)
+class ReqThread(Thread):
+    """
+    Thread class for sending a request.
+    """
+    def __init__(self, callback, infer_mothod, batch_data):
+        Thread.__init__(self)
+        self.callback = callback
+        self.batch_data = batch_data
+        self.infer = infer_mothod
+        
+    def run(self):
+        start_time = time.thread_time()
+        self.infer(self.batch_data)
+        self.callback(time.thread_time())
