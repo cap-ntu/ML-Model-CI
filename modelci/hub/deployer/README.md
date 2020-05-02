@@ -13,9 +13,9 @@ Supported model name:
 Supported production model formats associated with serving systems:
 
 - TorchScript -> Self-defined gRPC docker
-- TensorFlow SaveModel -> Tensorflow-Serving
+- TensorFlow SavedModel -> Tensorflow-Serving
 - ONNX -> ONNX runtime
-- TensorRT -> TensorRT inference Server
+- TensorRT -> TensorRT inference Server (can also support all above formats)
 
 Support production communication protocal
 

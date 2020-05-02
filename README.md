@@ -49,7 +49,7 @@ docker exec -ti modelci-mongo mongo
 
 And create user:
 
-```bash
+```SQL
 > use modelci
 switch to db modelci
 > db.createUser({user: "modelci", pwd: "modelci@2020", roles: ["readWrite"]});
