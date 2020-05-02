@@ -1,13 +1,16 @@
+<p align="center"> <img src="docs/img/modelci.png" alt="..."> </p>
+
 # ML-Model-CI
 
 [![Build Status](https://travis-ci.com/cap-ntu/ML-Model-CI.svg?token=SvqJmaGbqAbwcc7DNkD2&branch=master)](https://travis-ci.com/cap-ntu/ML-Model-CI)
 
 ## Features
 
-- Manager provides a refined management for model registration, deletion, update and selection.
-- Converter is to convert models between frameworks.
-- Diagnoser is to diagnose models and provides a detailed report about model performance in production environment.
-- Deployer is to place models to devices and serve them automatically.
+- **Housekeeper** provides a refined management for model registration, deletion, update and selection.
+- **Converter** is to convert models between frameworks.
+- **Profiler** can diagnose a model and provide a detailed report about model performance in production environment.
+- **Dispatcher** is to place models to devices and serve them automatically.
+- **Controller** supports elastic test and deployment.
 
 ## Quick Start
 
