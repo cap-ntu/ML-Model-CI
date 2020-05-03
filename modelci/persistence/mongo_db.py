@@ -31,13 +31,15 @@ class MongoDB(object):
         }
         self._sessions = []
 
+        self.db = None
+
     def connect(self, alias='default'):
         """Connect to a MongoDB session.
 
         Args:
              alias (:obj:`str`, optional): The alias name. Default to 'default'.
         """
-        mongo.connect(alias=alias, **self._conn_settings)
+        self.db = mongo.connect(alias=alias, **self._conn_settings)
         self._sessions.append(alias)
 
     def close(self, alias: str = None):
