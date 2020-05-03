@@ -41,14 +41,11 @@ class Diagnoser(object):
         self.model_path, self.model_info = retrieve_model_by_name(architecture_name=architecture_name, 
                                                     framework=framework, engine=engine)
 
-        print(self.model_path, self.model_info)
-
     def init_model_info(self, task):
         """
         init the model information before testing, should be called before calling diagnose
         By model task.
         """
         self.model_path, self.model_info = retrieve_model_by_task(task=task)
-        print(self.model_path, self.model_info)
 
 
