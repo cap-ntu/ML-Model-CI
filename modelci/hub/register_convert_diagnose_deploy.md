@@ -41,7 +41,7 @@ register_model(
     acc=0.76,
     task='image classification',
     inputs=[IOShape([-1, 3, 224, 224], float)],
-    outputs=[IOShape([1], int)],
+    outputs=[IOShape([-1, 1000], float)],
     no_generate=True
 )
 ```

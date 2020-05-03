@@ -41,7 +41,7 @@ sh deploy_model_cpu.sh {MODEL_NAME} {REST_API_PORT}
 ```
 GPU version:
 ```shell script
-sh depolu_model_gpu.sh {MODEL_NAME} {REST_API_PORT}
+sh depoly_model_gpu.sh {MODEL_NAME} {REST_API_PORT}
 ```
 
 </li>

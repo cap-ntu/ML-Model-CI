@@ -5,12 +5,13 @@ This class contains utility classes used in model service for building model bus
 """
 
 from enum import Enum, unique
-from typing import Tuple, List, Union, Optional
+from typing import Tuple, List, Union, Optional, BinaryIO
 
 from mongoengine import GridFSProxy
 
-from ..po.model_po import IOShapePO
 from modelci.utils.trtis_objects import ModelInputFormat
+from ..po.model_po import IOShapePO
+from ...utils import trtis_objects
 
 
 @unique
@@ -42,6 +43,10 @@ class Status(Enum):
     PASS = 1
     RUNNING = 2
     FAIL = 3
+
+
+"""Generic data type (same as TRTIS::DataType"""
+DataType = trtis_objects.DataType
 
 
 class ModelVersion(object):
@@ -78,7 +83,7 @@ class IOShape(object):
     def __init__(
             self,
             shape: List[int],
-            dtype: Union[type, str],
+            dtype: Union[type, str, DataType],
             name: str = None,
             format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
     ):
@@ -91,6 +96,8 @@ class IOShape(object):
             format (ModelInputFormat): Input format, used for TensorRT currently.
                 Default to `ModelInputFormat.FORMAT_NONE`.
         """
+        from .type_conversion import type_to_data_type
+
         # input / output name
         self.name = name
         # input / output tensor shape
@@ -98,16 +105,28 @@ class IOShape(object):
         # input format
         self.format = format
         if isinstance(dtype, str):
-            # input / output datatype
-            self.dtype = eval(dtype)
+            dtype = type_to_data_type(eval(dtype))
+        elif isinstance(dtype, type):
+            dtype = type_to_data_type(dtype)
+        elif isinstance(dtype, DataType):
+            pass
         else:
-            self.dtype = dtype
+            raise ValueError(
+                f'data type should be an instance of `type`, type name or `DataType`, but got {type(dtype)}'
+            )
+
+        # warning if the dtype is DataType.TYPE_INVALID
+        if dtype == DataType.TYPE_INVALID:
+            print('W: `dtype` is converted to invalid.')
+
+        # input / output datatype
+        self.dtype = dtype
 
     def to_io_shape_po(self):
         """Convert IO shape business object to IO shape plain object.
         """
 
-        return IOShapePO(name=self.name, shape=self.shape, dtype=self.dtype.__name__, format=self.format)
+        return IOShapePO(name=self.name, shape=self.shape, dtype=self.dtype.name, format=self.format)
 
     @staticmethod
     def from_io_shape_po(io_shape_po: IOShapePO):
@@ -160,7 +179,7 @@ class Weight(object):
 
     def __init__(
             self,
-            weight: Optional[bytes] = bytes(),
+            weight: Union[bytes, BinaryIO] = bytes(),
             *,
             filename: str = 'dummy',  # TODO: file name auto-gen
             content_type: str = 'application/octet-stream',

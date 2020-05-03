@@ -1,0 +1,15 @@
+weight: /home/lym/.modelci/ResNet50/pytorch-torchscript/1.zip
+dataset: ImageNet
+acc: 0.76
+task: image classification
+inputs:
+  - shape: [-1, 224, 224, 3]
+    dtype: TYPE_FP32
+outputs:
+  - shape: [-1, 1000]
+    dtype: TYPE_FP32
+architecture: ResNet50,
+framework: PYTORCH,
+engine: TORCHSCRIPT,
+version: 1,
+no_generate: True

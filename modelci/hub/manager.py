@@ -1,12 +1,13 @@
 import subprocess
 from functools import partial
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Union
+
+import yaml
 
 from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
-from modelci.persistence.bo.model_bo import ModelBO
-from modelci.persistence.bo.model_objects import IOShape, ModelVersion, Engine, Framework, Weight
+from modelci.persistence.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 from modelci.persistence.service import ModelService
 
 
@@ -49,24 +50,30 @@ def register_model(
     if no_generate:
         # type and existence check
         assert isinstance(origin_model, str)
-        model_dir = Path(origin_model)
-        assert model_dir.exists()
+        model_dir = Path(origin_model).absolute()
+        assert model_dir.exists(), f'model weight does not exist at {origin_model}'
 
         if all([architecture, framework, engine, version]):  # from explicit architecture, framework, engine and version
             ext = model_dir.suffix
             path = generate_path(architecture, framework, engine, version).with_suffix(ext)
+            # if already in the destination folder
+            if path == model_dir:
+                pass
             # create destination folder
-            if ext:
-                path.parent.mkdir(parents=True, exist_ok=True)
             else:
-                path.mkdir(parents=True, exist_ok=True)
+                if ext:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                else:
+                    path.mkdir(parents=True, exist_ok=True)
 
-            # copy to cached folder
-            subprocess.call(['cp', model_dir, path])
+                # copy to cached folder
+                subprocess.call(['cp', model_dir, path])
         else:  # from implicit extracted from path, check validity of the path later at registration
             path = model_dir
-        model_dir_list.append(str(path))
+        model_dir_list.append(path)
     else:
+        # TODO: generate from path name
+
         # generate model variant
         model_dir_list.extend(_generate_model_family(
             origin_model,
@@ -96,6 +103,69 @@ def register_model(
             ModelService.post_model(model)
 
         # TODO(lym): profile
+
+
+def register_model_from_yaml(file_path: Union[Path, str]):
+    def convert_ioshape_plain_to_ioshape(ioshape_plain):
+        """Convert IOShape-like dictionary to IOShape.
+        """
+        # unpack
+        i, ioshape_plain = ioshape_plain
+
+        assert isinstance(ioshape_plain['shape'], Iterable), \
+            f'inputs[{i}].shape expected to be iterable, but got {ioshape_plain["shape"]}'
+        assert isinstance(ioshape_plain['dtype'], str), \
+            f'inputs[{i}].dtype expected to be a `DataType`, but got {ioshape_plain["dtype"]}.'
+
+        ioshape_plain['dtype'] = DataType[ioshape_plain['dtype']]
+
+        return IOShape(**ioshape_plain)
+
+    # check if file exist
+    file_path = Path(file_path)
+    assert file_path.exists(), f'Model definition file at {str(file_path)} does not exist'
+
+    # read yaml
+    with open(file_path) as f:
+        model_config = yaml.safe_load(f)
+
+    origin_model = model_config['weight']
+    dataset = model_config['dataset']
+    acc = model_config['acc']
+    task = model_config['task']
+    inputs_plain = model_config['inputs']
+    outputs_plain = model_config['outputs']
+    architecture = model_config.get('architecture', None)
+    framework = model_config.get('framework', None)
+    engine = model_config.get('engine', None)
+    version = model_config.get('version', None)
+    no_generate = model_config.get('no_generate', False)
+
+    # convert inputs and outputs
+    inputs = map(convert_ioshape_plain_to_ioshape, enumerate(inputs_plain))
+    outputs = map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain))
+
+    # wrap POJO
+    if framework is not None:
+        framework = Framework[framework.upper()]
+    if engine is not None:
+        engine = Engine[engine.upper()]
+    if version is not None:
+        version = ModelVersion(version)
+
+    register_model(
+        origin_model=origin_model,
+        dataset=dataset,
+        acc=acc,
+        task=task,
+        inputs=inputs,
+        outputs=outputs,
+        architecture=architecture,
+        framework=framework,
+        engine=engine,
+        version=version,
+        no_generate=no_generate,
+    )
 
 
 def _generate_model_family(

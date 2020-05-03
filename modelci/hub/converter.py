@@ -13,10 +13,11 @@ from betterproto import Casing
 from onnx import optimizer
 from torch import nn
 
-from modelci.persistence.bo.model_objects import IOShape
+from modelci.persistence.bo import IOShape
 from modelci.utils.trtis_objects import ModelConfig, ModelVersionPolicy, ModelOutput, ModelInput, ModelInstanceGroup, \
     ModelInstanceGroupKind
-from ..hub.utils import GiB, type_to_trt_type, parse_path, TensorRTPlatform
+from ..hub.utils import GiB, parse_path, TensorRTPlatform
+from ..persistence.bo.type_conversion import type_to_data_type
 
 
 class TorchScriptConverter(object):
@@ -273,7 +274,7 @@ class TRTConverter(object):
             # obtain name, dims, and data_type values
             model_input = ModelInput(
                 name=node.name,
-                data_type=type_to_trt_type(node.dtype),
+                data_type=type_to_data_type(node.dtype),
                 dims=list(node.shape)[1:],
                 format=node.format
             )
@@ -290,7 +291,7 @@ class TRTConverter(object):
         for node in node_def:
             model_output = ModelOutput(
                 name=node.name,
-                data_type=type_to_trt_type(node.dtype),
+                data_type=type_to_data_type(node.dtype),
                 dims=list(node.shape)[1:]
             )
 
