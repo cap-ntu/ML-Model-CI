@@ -32,11 +32,12 @@ from functools import partial
 
 import tensorrtserver.api.model_config_pb2 as model_config
 from PIL import Image
-from hysia.data_engine.postprocessor import image_classification_postprocessor
-from hysia.data_engine.preprocessor import image_classification_preprocessor
-from hysia.hub.utils import model_dtype_to_np
-from hysia.utils.trtis_objects import ModelStatus, ServerStatus
 from tensorrtserver.api import ServerStatusContext, InferContext, ProtocolType
+
+from modelci.data_engine.postprocessor import image_classification_postprocessor
+from modelci.data_engine.preprocessor import image_classification_preprocessor
+from modelci.hub.utils import model_dtype_to_np
+from modelci.utils.trtis_objects import ModelStatus, ServerStatus
 
 
 class UserData:

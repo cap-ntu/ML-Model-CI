@@ -20,7 +20,7 @@ docker build -t pytorch-serving -f onnx-serve-cpu.Dockerfile .
 ## Usage
 1. Get pretrained torch model
     See `modelci/hub/init_data.py`.
-    The model will be saved at `~/.hysia/ResNet50/pytorch-onnx/` directory.
+    The model will be saved at `~/.modelci/ResNet50/pytorch-onnx/` directory.
 
 2. deploy model
     CPU version:

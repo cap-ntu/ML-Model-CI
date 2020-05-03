@@ -11,11 +11,11 @@ GPU version is not supported yet due to some TF/CUDA version issues.
 See `modelci/hub/init_data.py`. For example, running 
 ```shell script
 # set environment
-set -o allexport; source hysia/env-mongodb.env; set +o allexport
+set -o allexport; source modelci/env-mongodb.env; set +o allexport
 export PYTHONPATH="${PWD}"
 python expriments/init_data.py --model resnet50 --framework tensorflow 
 ```
-Models will be saved at `~/.hysia/ResNet50/tensorflow-tfs/` directory.
+Models will be saved at `~/.modelci/ResNet50/tensorflow-tfs/` directory.
 
 </li>
 <li> Deploy model

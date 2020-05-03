@@ -45,7 +45,7 @@ def generate_path(model_name: str, framework: Framework, engine: Engine, version
     if not isinstance(version, ModelVersion):
         version = ModelVersion(str(version))
 
-    return Path.home() / '.hysia' / model_name / f'{framework.name.lower()}-{engine.name.lower()}' / str(version)
+    return Path.home() / '.modelci' / model_name / f'{framework.name.lower()}-{engine.name.lower()}' / str(version)
 
 
 def GiB(val):

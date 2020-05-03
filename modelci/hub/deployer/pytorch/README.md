@@ -23,7 +23,7 @@ docker build -t pytorch-serving -f torch-serve-cpu.Dockerfile .
 ## Usage
 1. Get pretrained torch model
     See `modelci/hub/init_data.py`.
-   The model will be saved at `~/.hysia/ResNet50/pytorch-torchscript/` directory.
+   The model will be saved at `~/.modelci/ResNet50/pytorch-torchscript/` directory.
 
 2. deploy model
     CPU version:

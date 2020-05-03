@@ -93,7 +93,7 @@ def register_model(
                 outputs=outputs, weight=Weight(f, filename=filename)
             )
 
-        ModelService.post_model(model)
+            ModelService.post_model(model)
 
         # TODO(lym): profile
 
