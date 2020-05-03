@@ -38,6 +38,7 @@ class Diagnoser(object):
             self.inspector.set_batch_size(batch_size)
 
         self.inspector.run_model(self.server_name) 
+        self.__stop_testing_server()
 
     def diagnose_all_batches(self):
         """
@@ -45,7 +46,9 @@ class Diagnoser(object):
         """
         for size in [1, 2, 4, 8, 16, 32, 64, 128]:
             self.inspector.set_batch_size(size)
-            self.inspector.run_model(self.server_name) 
+            self.inspector.run_model(self.server_name)
+
+        self.__stop_testing_server()
 
     def __deploy_model(self, model_info):
         """
@@ -55,12 +58,18 @@ class Diagnoser(object):
         if self.check_device_status():
             pass
 
-    def check_device_status(self):
+    def __check_device_status(self):
         """
         To check the server is good to deploy the model now.
         """
         #TODO: using monitor to see the result.
         return Ture
+
+    def __stop_testing_server(self):
+        """
+        After testing, we should release the resources.
+        """
+        pass
 
     def init_model_info(self, architecture_name, framework, engine):
         """
