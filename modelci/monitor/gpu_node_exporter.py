@@ -23,3 +23,4 @@ class GPUNodeExporter(object):
 if __name__ == '__main__':
     a = GPUNodeExporter()
     a.requst_all_gpu_info()
+
