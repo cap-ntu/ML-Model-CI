@@ -17,24 +17,12 @@ tf.app.flags.DEFINE_string('server', 'localhost:8500', 'PredictionService host:p
 tf.app.flags.DEFINE_string('image', './sample_data/cat.jpg', 'path to image in JPEG format')
 
 
-class TestDataWrapper(BaseDataWrapper):
-    '''
-    Tested sub-class for DataWrapper to implement a custom data preprocessing.
-    '''
-
-    def __init__(self, meta_data_url, raw_data, batch_size=None):
-        super().__init__(meta_data_url, raw_data, batch_size)
-
-    def data_preprocess(self):
-        return self.raw_data # don't do any data preprocess
-
-
 class TestModelInspector(BaseModelInspector):
     '''
     Tested sub-class for BaseModelInspector to implement a custom model runner.
     '''
-    def __init__(self, data_wrapper:BaseDataWrapper, asynchronous=None):
-        super().__init__(data_wrapper=data_wrapper, asynchronous=asynchronous)
+    def __init__(self, raw_data:list, batch_size=1, asynchronous=None):
+        super().__init__(raw_data=raw_data, batch_size=batch_size, asynchronous=asynchronous)
         self.request = None
         self.stub = None
 
@@ -64,15 +52,12 @@ class TestModelInspector(BaseModelInspector):
 
 # Tests
 if __name__ == "__main__":
-    # meta data and url for testing
-    meta_data_url = 'http://localhost:8501/v1/models/resnet'
     fake_image_data = []
     for i in range(6400): # number of fake data
         with open('./sample_data/cat.jpg', 'rb') as f:
             fake_image_data.append(f.read())
 
     # test functions, set batch size and other parameter here.
-    testDataWrapper = TestDataWrapper(meta_data_url=meta_data_url, raw_data=fake_image_data, batch_size=32) 
-    testModelInspector = TestModelInspector(testDataWrapper, asynchronous=True)
+    testModelInspector = TestModelInspector(raw_data=fake_image_data, batch_size=32, asynchronous=True)
     testModelInspector.run_model('tfserving_resnet') 
 

@@ -13,25 +13,54 @@ class Diagnoser(object):
     """
     Diagnoser class, call this to test model performance.
     """
-    def __init__(self, inspector:BaseModelInspector, server_name):
+    def __init__(self, inspector=None, server_name=None, model_info=None, model_path=None):
         """
         Init a diagnoser object
 
         @param wrapper:BaseDataWrapper
         @param inspector:BaseModelInspector
         """
-        self.inspector = inspector
+        if isinstance(inspector, BaseModelInspector):
+            self.inspector = inspector
+        else:
+            self.inspector = None
+            raise TypeError("The inspector should be an instance of class BaseModelInspector!")
+
         self.server_name = server_name
+        self.model_info = model_info
+        self.model_path = model_path
 
-        self.model_info = None
-        self.model_path = None
-
-    def diagnose(self):
+    def diagnose(self, batch_size=None):
         """
         start diagnosing and profiling model.
+        """
+        if batch_size is not None:
+            self.inspector.set_batch_size(batch_size)
+
+        self.inspector.run_model(self.server_name) 
+
+    def diagnose_all_batches(self):
+        """
+        run model tests in batch size = 1, 2, 4, 8, 16, 32, 64, 128
+        """
+        for size in [1, 2, 4, 8, 16, 32, 64, 128]:
+            self.inspector.set_batch_size(size)
+            self.inspector.run_model(self.server_name) 
+
+    def __deploy_model(self, model_info):
+        """
+        deploy model here.
         TODO: auto select a free GPU device to test, make sure before testing, the GPU utilization is 0%.
         """
-        self.inspector.run_model(self.server_name) 
+        if self.check_device_status():
+            pass
+
+    def check_device_status(self):
+        """
+        To check the server is good to deploy the model now.
+        """
+        #TODO: using monitor to see the result.
+        return Ture
 
     def init_model_info(self, architecture_name, framework, engine):
         """

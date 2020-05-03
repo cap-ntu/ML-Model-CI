@@ -17,32 +17,39 @@ from abc import ABCMeta, abstractmethod
 from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 
-class BaseDataWrapper(metaclass=ABCMeta):
+class BaseModelInspector(metaclass=ABCMeta):
     """
-    A class for pre-processing data that for inference, other model needs to implement this class
-    and complete the data preprocessing method.
-    """
+    A class for running the model inference with metrics testing. User can 
+    call the the method to run and test the model and return the tested 
+    latency and throughput. 
 
-    def __init__(self, model_info_url:str, raw_data:list, batch_size=None):
-        if batch_size is not None:
-            self.batch_size = batch_size
-        else:
-            self.batch_size = 1 # default: 1
-        # The model information sent from the server url
-        self.model_info = requests.get(model_info_url).json()
-        # the raw data needs to be processed
-        self.raw_data = raw_data
-        # the processed data
-        preprocess_start_time = time.time()
-        self.processed_data = self.data_preprocess()
-        preprocess_end_time = time.time()
-        # the time we spent on the data preprocessing
-        self.preprocess_time = preprocess_end_time - preprocess_start_time
-        # The pre-batched set of images
+    Parameters
+    ----------
+    @param: data wrapper, needed.
+    @param asynchronous: runnning asynchronously, default is False.
+    @param threads: number of threads while running the inference, default is cpu_count() * 24.
+    @param sla: SLA, default is 1 sec.
+    @param percentile: The SLA percentile. Default is 95.
+    """
+    def __init__(self, raw_data:list, batch_size=1, asynchronous=False, percentile=95, sla=1.0):
+        self.throughputs = []
+        self.latencies = []
+    
+        self.asynchronous = asynchronous
+        self.percentile = percentile
+        self.sla = sla
+        self.batch_size = batch_size
+        self.preprocess_time = self.start_preprocess()
+        self.processed_data = raw_data
         self.batches = self.__client_batch_request()
 
         # TODO: replace printing with logging
-        print("DataWrapper - Data preprecess time: ", self.preprocess_time, '\n')
+        print(" - Data preprecess time: ", self.preprocess_time, '\n')
+
+    def start_preprocess(self):
+        start_time = time.time()
+        self.data_preprocess()
+        return time.time() - start_time
 
     @abstractmethod
     def data_preprocess(self):
@@ -51,6 +58,13 @@ class BaseDataWrapper(metaclass=ABCMeta):
         @param __raw_data: the raw data read by load_data method.
         """
         pass
+
+    def set_batch_size(self, new_bs):
+        """
+        update the batch size here.
+        """
+        self.batch_size = new_bs
+        self.batches = self.__client_batch_request()
 
     def __client_batch_request(self):
         """
@@ -69,67 +83,37 @@ class BaseDataWrapper(metaclass=ABCMeta):
             batches.append(input_batch)
         return batches
 
-
-class BaseModelInspector(metaclass=ABCMeta):
-    """
-    A class for running the model inference with metrics testing. User can 
-    call the the method to run and test the model and return the tested 
-    latency and throughput. 
-
-    Parameters
-    ----------
-    @param data_wrapper: data wrapper, needed.
-    @param asynchronous: runnning asynchronously, default is False.
-    @param threads: number of threads while running the inference, default is cpu_count() * 24.
-    @param sla: SLA, default is 1 sec.
-    @param percentile: The SLA percentile. Default is 95.
-    """
-    def __init__(self, data_wrapper:BaseDataWrapper, asynchronous=False, percentile=95, sla=1.0):
-        # check if the input data is an instance of BaseDataWrapper
-        if isinstance(data_wrapper, BaseDataWrapper):
-            self.data_wrapper = data_wrapper
-        else:
-            self.data_wrapper = None
-            raise TypeError("The data wrapper should be an instance of class DataWrapper!")
-
-        self.throughputs = []
-        self.latencies = []
-    
-        self.asynchronous = asynchronous
-        self.percentile = percentile
-        self.sla = sla
-
     def run_model(self, server_name):
         # reset the results
         self.throughputs = []
         self.latencies = []
 
         # warm-up
-        if len(self.data_wrapper.batches) > 10:
-            warm_up_batches = self.data_wrapper.batches[:10]
+        if len(self.batches) > 10:
+            warm_up_batches = self.batches[:10]
             for batch in warm_up_batches:
                 self.start_infer_with_time(batch)
         else:
             raise ValueError("Not enough test values, try to make more testing data.")
 
         pass_start_time = time.time()
-        for batch in self.data_wrapper.batches:
+        for batch in self.batches:
             if self.asynchronous:
                 ReqThread(self.__inference_callback, self.start_infer_with_time, batch).start()
             else:
                 a_batch_latency = self.start_infer_with_time(batch)
                 self.latencies.append(a_batch_latency)
-                a_batch_throughput =  self.data_wrapper.batch_size / a_batch_latency
+                a_batch_throughput =  self.batch_size / a_batch_latency
                 self.throughputs.append(a_batch_throughput)
                 # TODO: replace printing with logging
                 print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
-        while len(self.latencies) != len(self.data_wrapper.batches):
+        while len(self.latencies) != len(self.batches):
             pass
 
         pass_end_time = time.time()
         all_data_latency = pass_end_time - pass_start_time
-        all_data_throughput = len(self.data_wrapper.processed_data) / (pass_end_time - pass_start_time)
+        all_data_throughput = len(self.processed_data) / (pass_end_time - pass_start_time)
         custom_percentile = np.percentile(self.latencies, self.percentile)
 
         # init CAdvisor
@@ -153,7 +137,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         @param elapsed_time: The amount of required for the inference request to complete
         """
         self.latencies.append(a_batch_latency) 
-        a_batch_throughput =  self.data_wrapper.batch_size / a_batch_latency
+        a_batch_throughput =  self.batch_size / a_batch_latency
         self.throughputs.append(a_batch_throughput)
 
         # TODO: replace printing with logging
@@ -202,7 +186,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         percentile_95 = np.percentile(self.latencies, 95)
         percentile_99 = np.percentile(self.latencies, 99)
 
-        print(f'total batches: {len(self.data_wrapper.batches)}')
+        print(f'total batches: {len(self.batches)}')
         print(f'total latiency: {latiency} s')
         print(f'total throughput: {throughput} req/sec')
         print(f'50th-percentile latiency: {percentile_50} s')
