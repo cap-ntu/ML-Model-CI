@@ -8,14 +8,14 @@ GPU version is not supported yet due to some TF/CUDA version issues.
 <ol>
 <li> Get pre-trained Keras model
 
-See `modelci/hub/init_data.py`. For example, running 
+We assume you have setup the MongoDB and all environment variables [install](/README.md#installation). 
+See `modelci/hub/init_data.py`.  
+For example, running 
 ```shell script
-# set environment
-set -o allexport; source modelci/env-mongodb.env; set +o allexport
-export PYTHONPATH="${PWD}"
-python expriments/init_data.py --model resnet50 --framework tensorflow 
+python modelci/init_data.py --model resnet50 --framework tensorflow
 ```
-Models will be saved at `~/.modelci/ResNet50/tensorflow-tfs/` directory.
+Models will be saved at `~/.modelci/ResNet50/tensorflow-tfs/` directory.  
+**Note**: You do not need to rerun the above code if you have done so for [TensorRT](/modelci/hub/deployer/trt).
 
 </li>
 <li> Deploy model

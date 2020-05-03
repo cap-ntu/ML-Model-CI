@@ -9,6 +9,7 @@ Road map
 - [ ] API and gRPC test with profiling  
 
 ## Install
+
 ```shell script
 cp ../config/imagenet_class_index.json .
 
@@ -18,10 +19,20 @@ docker build -t pytorch-serving -f onnx-serve-cpu.Dockerfile .
 ```
 
 ## Usage
-1. Get pretrained torch model
-    See `modelci/hub/init_data.py`.
-    The model will be saved at `~/.modelci/ResNet50/pytorch-onnx/` directory.
 
+<ol>
+<li> Get pretrained torch model
+
+We assume you have setup the MongoDB and all environment variables by [install](/README.md#installation). 
+See `modelci/hub/init_data.py`.  
+For example, running 
+```shell script
+python modelci/init_data.py --model resnet50 --framework pytorch
+```
+Models will be saved at `~/.modelci/ResNet50/pytorch-torchscript/` directory.  
+**Note**: You do not need to rerun the above code if you have done so for [TorchScript](/modelci/hub/deployer/pytorch).
+
+</li>
 2. deploy model
     CPU version:
     ```shell script
@@ -31,3 +42,4 @@ docker build -t pytorch-serving -f onnx-serve-cpu.Dockerfile .
     ```shll script
     sh depolu_model_gpu.sh {MODEL_NAME} {REST_API_PORT}
     ```
+</ol>
