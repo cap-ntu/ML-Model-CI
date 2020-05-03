@@ -41,7 +41,7 @@ sh scripts/start_service.sh
 #### Option1: Using setup script
 
 ```shell script
-bash scripts/setup_env.sh
+source scripts/setup_env.sh
 ```
 
 #### Option2: Using IDE
