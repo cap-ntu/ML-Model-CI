@@ -12,7 +12,7 @@ class ModelBO(object):
     """Model business object.
 
     This is an model entity class for the use of communication protocol in business logic layer
-    (i.e. `hysia.service.model_service.ModelService`).
+    (i.e. `modelci.persistence.service.ModelService`).
 
     It wraps information about a model:
         - model architecture name

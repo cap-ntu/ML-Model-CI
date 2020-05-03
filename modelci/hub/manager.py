@@ -93,7 +93,7 @@ def register_model(
                 outputs=outputs, weight=Weight(f, filename=filename)
             )
 
-        ModelService.post_model(model)
+            ModelService.post_model(model)
 
         # TODO(lym): profile
 
@@ -120,7 +120,7 @@ def _generate_model_family(
         generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape
-        ONNXConverter.from_torch_module(model, onnx_dir, inputs, max_batch_size)
+        ONNXConverter.from_torch_module(model, onnx_dir, inputs)
         generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT

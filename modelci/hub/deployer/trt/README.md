@@ -1,5 +1,17 @@
 # TensorRT serving
 
+## Quick startup
+
+We assume you have setup the MongoDB and all environment variables by [install](/README.md#installation).
+See `modelci/hub/init_data.py`.  
+Converted TRT model from TensorFlow ResNet50.
+```shell script
+python modelci/init_data.py --model resnet50 --framework tensorflow
+```
+Models will be saved at `~/.modelci/ResNet50/tensorflow-trt/` directory.  
+**Note**: You do not need to rerun the above code if you have done so for 
+[TensorFlow Serving](/modelci/hub/deployer/tfs).
+
 ## Workflow
 
 1. Get model in other serving engine (TFS, plain TF, ONNX...)
@@ -8,7 +20,7 @@
 [onnx-tensorrt](https://github.com/onnx/onnx-tensorrt), ...)
     1. ONNX to TRT
         ONNX can convert to a trt model: `modal.plan`. However, some ONNX ops are not supported by TRT. See 
-        supported ONNX version for specific TRT version [here]().
+        supported ONNX version for specific TRT version [here](#trt-compatibility).
     2. TF 2.0 to TRT  
         TF 2.0 does not support converting frozen graphs. We are using SavedModel to TF-TRT serving.
 3. Generate model configuration  

@@ -29,7 +29,7 @@
 conda env create -f environment.yml
 
 # install PyTorch with specific CUDA version
-conda install pytorch cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
+conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
 ```
 
 </li>
