@@ -4,8 +4,8 @@
 ### API
 
 #### 1. Connect to mongodb
-Configure your MongoDB connection setting at `modelci/env-mongodb.env`. Source the env file when you want to connect
-to the database by:
+Configure your MongoDB connection setting at `modelci/env-mongodb.env`. (You may have done this by 
+[installation](/README.md#installation). Source the env file when you want to connect to the database by:
 ```shell script
 set -o allexport
 source modelci/env-mongodb.env
