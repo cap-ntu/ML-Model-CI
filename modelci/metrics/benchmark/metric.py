@@ -10,8 +10,11 @@ import datetime
 import requests
 import numpy as np
 import time
+from dateutil import parser
 from threading import Thread
 from abc import ABCMeta, abstractmethod
+
+from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 
 class BaseDataWrapper(metaclass=ABCMeta):
@@ -96,7 +99,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         self.percentile = percentile
         self.sla = sla
 
-    def run_model(self):
+    def run_model(self, server_name):
         # reset the results
         self.throughputs = []
         self.latencies = []
@@ -129,7 +132,20 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_data_throughput = len(self.data_wrapper.processed_data) / (pass_end_time - pass_start_time)
         custom_percentile = np.percentile(self.latencies, self.percentile)
 
-        self.print_results(all_data_throughput, all_data_latency, custom_percentile)
+        # init CAdvisor
+        cadvisor = CAdvisor()
+        all_information_tfs = cadvisor.request_by_name(server_name)
+        model_info_tfs = cadvisor.get_model_info(all_information_tfs)
+        stats_tfs = model_info_tfs[list(model_info_tfs.keys())[0]]['stats']
+
+        val_stats = [x for x in stats_tfs[-int(all_data_latency):] if x['accelerators'][0]['duty_cycle'] is not 0]
+        all_batch_avg_memory_total = sum([i['accelerators'][0]['memory_total'] for i in val_stats]) / len(val_stats)
+        all_batch_avg_memory_used = sum([i['accelerators'][0]['memory_used'] for i in val_stats]) / len(val_stats)
+        all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
+        memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
+
+        self.print_results(all_data_throughput, all_data_latency, custom_percentile, all_batch_avg_memory_total,
+                           all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per)
 
     def __inference_callback(self, a_batch_latency):
         """
@@ -180,7 +196,8 @@ class BaseModelInspector(metaclass=ABCMeta):
         pass
 
     # TODO: replace printing with logging
-    def print_results(self, throughput, latiency, custom_percentile):
+    def print_results(self, throughput, latiency, custom_percentile, all_batch_avg_memory_total, 
+                        all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per):
         percentile_50 = np.percentile(self.latencies, 50)
         percentile_95 = np.percentile(self.latencies, 95)
         percentile_99 = np.percentile(self.latencies, 99)
@@ -191,7 +208,11 @@ class BaseModelInspector(metaclass=ABCMeta):
         print(f'50th-percentile latiency: {percentile_50} s')
         print(f'95th-percentile latiency: {percentile_95} s')
         print(f'99th-percentile latiency: {percentile_99} s')
-        print(f'{self.percentile}th-percentile latiency: {custom_percentile} s')
+        # print(f'{self.percentile}th-percentile latiency: {custom_percentile} s')
+        print(f'total GPU memory: {all_batch_avg_memory_total} bytes')
+        print('average GPU memory usage percentile: {:.4f}'.format(memory_avg_usage_per))
+        print(f'average GPU memory used: {all_batch_avg_memory_used} bytes')
+        print('average GPU utilization: {:.4f}%'.format(all_batch_avg_util))
         print(f'completed at {datetime.datetime.now()}')
 
 

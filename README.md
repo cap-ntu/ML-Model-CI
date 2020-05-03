@@ -20,9 +20,7 @@
 
 - [ ] step by step
 
-<ol>
-
-<li> Create environment
+#### Create environment
 
 ```shell script
 # create environment
@@ -32,54 +30,24 @@ conda env create -f environment.yml
 conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
 ```
 
-</li>
-
-<li> Install MongoDB service
+#### Install Service
 
 ```shell script
-docker run --rm -d -p 27017:27017 --name modelci-mongo mongo
+sh scripts/start_service.sh
 ```
 
-And init database by:  
-Go into the docker
+### Setup environment variables
+
+#### Option1: Using setup script
 
 ```shell script
-docker exec -ti modelci-mongo mongo
+source scripts/setup_env.sh
 ```
 
-And create user:
+#### Option2: Using IDE
 
-```log
-> use modelci
-switch to db modelci
-> db.createUser({user: "modelci", pwd: "modelci@2020", roles: ["readWrite"]});
-Successfully added user: { "user" : "modelci", "roles" : [ "readWrite" ] }
-> exit
-bye
-```
-
-</li>
-
-<li> Setup environment variables
-
-Exporting environments
-```shell script
-set -o allexport
-source modelci/env-mongodb.env
-set +o allexport
-```
-
-If you are using an IDE to run the following test, remember to add `modelci/env-mongodb.env` as an EnvFile.
-
-Exporting PYTHONPATH at the project root:
-```shell script
-export PYTHONPATH="${PATHONPATH}:${PWD}"
-```
-If you are using an IDE, set project root as source root.
-
-</li>
-
-</ol>
+1. Add `modelci/env-mongodb.env` as an EnvFile.
+2. Set project root as source root.
 
 ### Example
 

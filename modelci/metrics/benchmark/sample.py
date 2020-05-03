@@ -73,6 +73,6 @@ if __name__ == "__main__":
 
     # test functions, set batch size and other parameter here.
     testDataWrapper = TestDataWrapper(meta_data_url=meta_data_url, raw_data=fake_image_data, batch_size=32) 
-    testModelInspector = TestModelInspector(testDataWrapper, asynchronous=False)
-    testModelInspector.run_model() 
+    testModelInspector = TestModelInspector(testDataWrapper, asynchronous=True)
+    testModelInspector.run_model('tfserving_resnet') 
 
