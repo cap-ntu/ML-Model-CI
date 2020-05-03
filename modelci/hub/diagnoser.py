@@ -23,15 +23,15 @@ class Diagnoser(object):
         self.inspector = inspector
         self.server_name = server_name
 
-        self.model_info = model_info
-        self.model_path = model_path
+        self.model_info = None
+        self.model_path = None
 
     def diagnose(self):
         """
         start diagnosing and profiling model.
         TODO: auto select a free GPU device to test, make sure before testing, the GPU utilization is 0%.
         """
-        inspector.run_model(self.server_name) 
+        self.inspector.run_model(self.server_name) 
 
     def init_model_info(self, architecture_name, framework, engine):
         """
