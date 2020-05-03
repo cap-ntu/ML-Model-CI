@@ -4,8 +4,7 @@ In this tutorial, we demonstrate modelci, a toolbox providing APIs that fetch, c
 model in different form of variant.
 
 Firstly, make sure that you have started a MongoDB service and configured the MongoDB environment. See 
-[installation](/README.md#installation) and 
-[configure MongoDB environment](/modelci/persistence/README.md#1-connect-to-mongodb).
+[installation](/README.md#installation).
 
 ## TODO
 
