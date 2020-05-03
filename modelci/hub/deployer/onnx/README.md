@@ -33,13 +33,16 @@ Models will be saved at `~/.modelci/ResNet50/pytorch-torchscript/` directory.
 **Note**: You do not need to rerun the above code if you have done so for [TorchScript](/modelci/hub/deployer/pytorch).
 
 </li>
-2. deploy model
-    CPU version:
-    ```shell script
-    sh deploy_model_cpu.sh {MODEL_NAME} {REST_API_PORT}
-    ```
-    GPU version:
-    ```shll script
-    sh depolu_model_gpu.sh {MODEL_NAME} {REST_API_PORT}
-    ```
+<li> deploy model
+
+CPU version:
+```shell script
+sh deploy_model_cpu.sh {MODEL_NAME} {REST_API_PORT}
+```
+GPU version:
+```shell script
+sh depolu_model_gpu.sh {MODEL_NAME} {REST_API_PORT}
+```
+
+</li>
 </ol>
