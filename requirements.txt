@@ -53,6 +53,7 @@ tensorflow==2.1.0
 tensorflow-estimator==2.1.0
 termcolor==1.1.0
 toolz==0.10.0
+torch==1.5.0
 typing-extensions==3.7.4.2
 urllib3==1.25.8
 wcwidth==0.1.9
