@@ -12,7 +12,7 @@ import uvicorn
 from PIL import Image
 from fastapi import FastAPI
 from fastapi import File
-from proto import service_pb2_grpc, service_pb2
+import service_pb2_grpc, service_pb2
 
 # get path
 model_base_dir = Path('/model') / sys.argv[1]
