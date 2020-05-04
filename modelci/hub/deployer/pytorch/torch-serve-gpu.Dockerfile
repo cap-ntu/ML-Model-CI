@@ -1,10 +1,13 @@
 ARG CUDA="10.1"
 ARG CUDNN="7"
 
-FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-devel-ubuntu16.04
+FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-runtime-ubuntu16.04
+
+# set built-time arguments
+ARG CUDA
 
 # set system environment
-ENV CONDA_ROOT=/miniconda/
+ENV CONDA_ROOT=/miniconda
 ENV CONDA_PREFIX=${CONDA_ROOT}
 ENV PATH=${CONDA_ROOT}/bin:${PATH}
 ENV CONDA_AUTO_UPDATE_CONDA=false
