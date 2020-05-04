@@ -105,7 +105,13 @@ class IOShape(object):
         # input format
         self.format = format
         if isinstance(dtype, str):
-            dtype = type_to_data_type(eval(dtype))
+            try:
+                # if the type name is unified python type
+                dtype = type_to_data_type(eval(dtype))
+            except NameError:
+                # try if the dtype is `DataType`
+                dtype = DataType[dtype.upper()]
+
         elif isinstance(dtype, type):
             dtype = type_to_data_type(dtype)
         elif isinstance(dtype, DataType):

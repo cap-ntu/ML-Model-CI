@@ -5,6 +5,8 @@ attrs==19.3.0
 betterproto==1.2.3
 blinker==1.4
 cachetools==3.1.1
+certifi==2020.4.5.1
+cffi==1.14.0
 chardet==3.0.4
 click==7.1.1
 cryptography==2.8
@@ -21,6 +23,8 @@ hpack==3.0.0
 hyperframe==5.2.0
 idna==2.9
 importlib-metadata==1.5.0
+Keras-Applications==1.0.8
+Keras-Preprocessing==1.1.0
 mongoengine==0.19.1
 more-itertools==8.2.0
 multidict==4.7.5
@@ -29,7 +33,9 @@ oauthlib==3.1.0
 olefile==0.46
 opt-einsum==3.1.0
 packaging==20.3
+Pillow==7.1.2
 pluggy==0.13.1
+protobuf==3.11.4
 py==1.8.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.7
@@ -54,9 +60,11 @@ tensorflow-estimator==2.1.0
 termcolor==1.1.0
 toolz==0.10.0
 torch==1.5.0
+torchvision==0.6.0a0+82fd1c8
 typing-extensions==3.7.4.2
 urllib3==1.25.8
 wcwidth==0.1.9
 Werkzeug==1.0.1
 wrapt==1.12.1
 zipp==3.1.0
+setuptools==41.0.0
