@@ -19,7 +19,7 @@ RUN apt-get update -y \
 
 # install conda environment
 RUN conda env update --name base --file /content/environment.yml \
- && conda install -y pytorch torchvision cpuonly -c pytorch-nightly -c conda-forge \
+ && conda install -y pytorch torchvision cpuonly -c pytorch -c conda-forge \
  && conda clean -ayf \
  && pip install onnxruntime==1.1.0 \
  && rm -rf ~/.cache/pip
