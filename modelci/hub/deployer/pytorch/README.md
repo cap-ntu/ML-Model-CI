@@ -11,10 +11,10 @@ Road map
 ## Install
 
 ```shell script
-cp ../config/imagenet_class_index.json .
+cp ../config/utils.py .
 
 # Generate gRPC code
-python -m grpc_tools.protoc -Iproto --python_out=. --grpc_python_out=. proto/service.proto
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/service.proto
 
 # Build Docker
 docker build -t pytorch-serving -f torch-serve-cpu.Dockerfile .  

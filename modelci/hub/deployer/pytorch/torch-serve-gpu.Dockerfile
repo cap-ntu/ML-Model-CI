@@ -29,7 +29,7 @@ RUN curl -L https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_
 
 # Create a Python environment
 RUN conda env update --name base -f /content/environment.yml \
- && conda install -y pytorch torchvision cudatoolkit=${CUDA} -c pytorch \
+ && conda install -y pytorch cudatoolkit=${CUDA} -c pytorch \
  && conda clean -ya \
  && rm -rf ~/.cache/pip
 

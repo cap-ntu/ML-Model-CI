@@ -14,7 +14,7 @@ Road map
 cp ../config/imagenet_class_index.json .
 
 # Build Docker
-docker build -t pytorch-serving -f onnx-serve-cpu.Dockerfile .  
+docker build -t onnx-serving -f onnx-serve-cpu.Dockerfile .  
 # For GPU version, use onnx-serve-gpu.Dockerfile instead
 ```
 
