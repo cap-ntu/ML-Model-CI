@@ -1,7 +1,7 @@
 import subprocess
 from functools import partial
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Iterable, Union, List
 
 import yaml
 
@@ -16,8 +16,8 @@ def register_model(
         dataset: str,
         acc: float,
         task: str,
-        inputs: Iterable[IOShape],
-        outputs: Iterable[IOShape],
+        inputs: List[IOShape],
+        outputs: List[IOShape],
         architecture: str = None,
         framework: Framework = None,
         engine: Engine = None,
@@ -142,8 +142,8 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     no_generate = model_config.get('no_generate', False)
 
     # convert inputs and outputs
-    inputs = map(convert_ioshape_plain_to_ioshape, enumerate(inputs_plain))
-    outputs = map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain))
+    inputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(inputs_plain)))
+    outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain)))
 
     # wrap POJO
     if framework is not None:
@@ -173,8 +173,8 @@ def _generate_model_family(
         model_name: str,
         framework: Framework,
         filename: str,
-        inputs: Iterable[IOShape],
-        outputs: Iterable[IOShape] = None,
+        inputs: List[IOShape],
+        outputs: List[IOShape] = None,
         max_batch_size: int = -1
 ):
     generated_dir_list = list()

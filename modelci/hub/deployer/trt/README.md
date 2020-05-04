@@ -12,6 +12,16 @@ Models will be saved at `~/.modelci/ResNet50/tensorflow-trt/` directory.
 **Note**: You do not need to rerun the above code if you have done so for 
 [TensorFlow Serving](/modelci/hub/deployer/tfs).
 
+
+Deploy with TRTIS Docker:
+```shell script
+sh deploy_model.sh {MODEL_NAME} {REST_API_PORT} {GRPC_PORT} {METRICS_PORT}
+```
+For example:
+```shell script
+sh deploy_model.sh ResNet50 8200 8201 8202
+```
+
 ## Workflow
 
 1. Get model in other serving engine (TFS, plain TF, ONNX...)
