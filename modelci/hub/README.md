@@ -2,8 +2,6 @@
 
 Manage (CURD), convert, diagnose and deploy DL models supported by industrial serving systems.
 
-- [ ] Wait new arch figure.
-
 ## Manage
 
 A collection of high level APIs to drive model service, including register (including uploading) models with a branch of auto-generated model family, select suitable model based on requirement and other model management APIs.
@@ -35,4 +33,3 @@ Employ serving systems and docker to deploy models
 - [x] Tensorflow-Serving
 - [x] ONNX_Runtime
 - [x] TensorRT-Inference-Server
-- [ ] TorchServer
