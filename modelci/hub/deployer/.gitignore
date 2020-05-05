@@ -1,1 +1,6 @@
 **/imagenet_class_index.json
+**/utils.py
+**/**/service_pb2.py
+**/**/service_pb2_grpc.py
+
+!config/utils.py
