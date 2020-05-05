@@ -37,7 +37,16 @@ def type_to_data_type(tensor_type: type):
             tf.float16: DataType.TYPE_FP16,
             tf.float32: DataType.TYPE_FP32,
             tf.float64: DataType.TYPE_FP64,
-            tf.string: DataType.TYPE_STRING
+            tf.string: DataType.TYPE_STRING,
+            np.dtype(np.bool): DataType.TYPE_BOOL,
+            np.dtype(np.uint8): DataType.TYPE_UINT8,
+            np.dtype(np.uint16): DataType.TYPE_UINT16,
+            np.dtype(np.uint32): DataType.TYPE_UINT32,
+            np.dtype(np.uint64): DataType.TYPE_UINT64,
+            np.dtype(np.float16): DataType.TYPE_FP16,
+            np.dtype(np.float32): DataType.TYPE_FP32,
+            np.dtype(np.float64): DataType.TYPE_FP64,
+            np.dtype(np.str): DataType.TYPE_STRING,
         }
     )
 

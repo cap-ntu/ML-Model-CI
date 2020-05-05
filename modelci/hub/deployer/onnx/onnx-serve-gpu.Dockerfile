@@ -29,8 +29,7 @@ RUN curl -L https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_
 
 # Create a Python environment
 RUN conda env update --name base -f /content/environment.yml \
- && conda install -y pytorch torchvision cudatoolkit=${CUDA} -c pytorch \
- && pip install onnxruntime-gpu==0.5.0 \
+ && pip install onnxruntime-gpu==1.2.0 \
  && conda clean -ya \
  && rm -rf ~/.cache/pip
 
