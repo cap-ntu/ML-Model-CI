@@ -4,14 +4,18 @@ Road map
 - [x] try official script for deploying ONNX model via a REST API with FastAPI  
 - [x] serve Resnet50  
 - [x] pack a ONNX serving docker  
-- [ ] add gRPC support of the ONNX serving  
+- [x] add gRPC support of the ONNX serving  
 - [ ] API test script and gRPC test script  
 - [ ] API and gRPC test with profiling  
 
 ## Install
 
 ```shell script
-cp ../config/imagenet_class_index.json .
+cp ../config/utils.py .
+cp ../config/docker-env.env.example ./docker-env.env
+
+# Generate gRPC code
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/service.proto
 
 # Build Docker
 docker build -t onnx-serving -f onnx-serve-cpu.Dockerfile .  

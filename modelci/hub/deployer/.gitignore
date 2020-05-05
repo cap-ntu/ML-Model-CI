@@ -2,5 +2,6 @@
 **/utils.py
 **/**/service_pb2.py
 **/**/service_pb2_grpc.py
+**/docker-env.env
 
 !config/utils.py
