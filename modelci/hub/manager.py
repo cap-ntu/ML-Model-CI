@@ -190,7 +190,7 @@ def _generate_model_family(
         generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape
-        ONNXConverter.from_torch_module(model, onnx_dir, inputs)
+        ONNXConverter.from_torch_module(model, onnx_dir, inputs, optimize=False)
         generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
