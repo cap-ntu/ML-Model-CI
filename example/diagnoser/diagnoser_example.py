@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # init clients for different serving platforms
     tfs_client = ExampleTFSClient(test_img_bytes, batch_num=100, batch_size=32, asynchronous=False)
-    # torch_client = ExampleTorchClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
+    torch_client = ExampleTorchClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
     onnx_client = ExampleONNXClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
 
     # Diagnoser usage
