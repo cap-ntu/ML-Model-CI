@@ -14,7 +14,7 @@ import tensorflow.compat.v1 as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
 tf.app.flags.DEFINE_string('server', 'localhost:8500', 'PredictionService host:port')
-tf.app.flags.DEFINE_string('image', './cat.jpg', 'path to image in JPEG format')
+tf.app.flags.DEFINE_string('image', './data/cat.jpg', 'path to image in JPEG format')
 
 
 class ExampleTFSClient(BaseModelInspector):

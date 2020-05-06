@@ -12,7 +12,7 @@ from onnx_client import ExampleONNXClient
 if __name__ == "__main__":
 
     # Fake data for testing
-    data_path = './cat.jpg'
+    data_path = './data/cat.jpg'
 
     # for TensorFlow Serving
     test_img_bytes = None
