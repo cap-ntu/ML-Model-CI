@@ -11,7 +11,7 @@ from onnx_client import ExampleONNXClient
 
 if __name__ == "__main__":
 
-    # Fack data for testing
+    # Fake data for testing
     data_path = './cat.jpg'
 
     # for TensorFlow Serving
@@ -22,13 +22,12 @@ if __name__ == "__main__":
     # for TorchScript and ONNX
     test_img_ndarray: np.ndarray = cv2.imread(data_path)
 
-    # init clients for different serving platforms
+    # init clients for different serving platforms, you can custom a client by implementing the BaseModelInspector class.
     tfs_client = ExampleTFSClient(test_img_bytes, batch_num=100, batch_size=32, asynchronous=False)
     torch_client = ExampleTorchClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
     onnx_client = ExampleONNXClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
 
-    # Diagnoser usage
     diagnoser = Diagnoser(inspector=onnx_client, server_name='onnxs')
     diagnoser.diagnose()
-    # diagnoser.diagnose(batch_size=1) # you can use a new batch_size to update the tfs_client's.
+    # diagnoser.diagnose(batch_size=1) # you can use a new batch_size to overwrite the client's.
     # diagnoser.diagnose_all_batches() # run all 1, 2, 4, 8, 16, 32, 64, 128 batch size 

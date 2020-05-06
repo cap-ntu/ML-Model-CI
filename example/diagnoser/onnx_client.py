@@ -1,19 +1,17 @@
 """
 Author: huangyz0918
-Desc: sample client for TorchScript of ResNet-50
+Desc: template client for ONNX of ResNet-50
 Date: 26/04/2020
 """
 
-import grpc
+import torch
+import grpc, json
 import numpy as np
-import requests
-import torch, json
 from toolz import compose
 from torchvision import transforms
+
 from proto.service_pb2 import InferRequest
 from proto.service_pb2_grpc import PredictStub
-
-from typing import Generator, Iterable, Union
 
 from modelci.utils.misc import json_update
 from modelci.persistence.bo.type_conversion import type_to_data_type
@@ -21,9 +19,6 @@ from modelci.metrics.benchmark.metric import BaseModelInspector
 
 
 class ExampleONNXClient(BaseModelInspector):
-    '''
-    Example ONNX Runtime Client for ResNet-50
-    '''
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         self.batches = self.__client_batch_request() # FIXME: creating batches twice will increase the data preprocessing time

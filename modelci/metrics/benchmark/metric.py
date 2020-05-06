@@ -117,7 +117,10 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_data_throughput = (self.batch_size * self.batch_num) / (pass_end_time - pass_start_time)
         custom_percentile = np.percentile(self.latencies, self.percentile)
 
-        # init CAdvisor
+        # init CAdvisor 
+        #FIXME: if the number of batch is really small, the GPU utilization will get a smaller value. 
+        # Usually, in order to increase accuracy, we need to increase the testing number of batchs, try to make sure 
+        # the testing program can run over 1 minutes.
         cadvisor = CAdvisor()
         all_information = cadvisor.request_by_name(server_name)
         model_info = cadvisor.get_model_info(all_information)
@@ -143,9 +146,6 @@ class BaseModelInspector(metaclass=ABCMeta):
         a_batch_throughput =  self.batch_size / a_batch_latency
         self.throughputs.append(a_batch_throughput)
 
-        # TODO: replace printing with logging
-        # print("a_batch_latency: {:.4f}".format(a_batch_latency), 'sec')
-        # print("a_batch_throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
     def start_infer_with_time(self, batch_input):
         """
