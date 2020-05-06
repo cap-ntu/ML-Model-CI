@@ -19,5 +19,5 @@ Supported production model formats associated with serving systems:
 
 Support production communication protocal
 
-- RESTful
+- HTTP
 - gRPC

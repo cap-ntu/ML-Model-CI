@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Iterable
+from typing import Optional, List
 
 from bson import ObjectId
 
@@ -12,7 +12,7 @@ class ModelBO(object):
     """Model business object.
 
     This is an model entity class for the use of communication protocol in business logic layer
-    (i.e. `hysia.service.model_service.ModelService`).
+    (i.e. `modelci.persistence.service.ModelService`).
 
     It wraps information about a model:
         - model architecture name
@@ -30,7 +30,7 @@ class ModelBO(object):
     """
 
     def __init__(self, name: str, framework: Framework, engine: Engine, version: ModelVersion, dataset: str, acc: float,
-                 task: str, inputs: Iterable[IOShape], outputs: Iterable[IOShape], weight: Weight = Weight(),
+                 task: str, inputs: List[IOShape], outputs: List[IOShape], weight: Weight = Weight(),
                  profile_result: ProfileResultBO = None, status: Status = Status.UNKNOWN,
                  create_time: datetime = datetime.now()):
         """Initializer.
@@ -42,8 +42,8 @@ class ModelBO(object):
             dataset (str): Model training dataset.
             acc (float): Model accuracy.
             task (str): Type of model detective or predictive task.
-            inputs (Iterable[IOShape]): Input shape and data type.
-            outputs (Iterable[IOShape]): Output shape and data type.
+            inputs (List[IOShape]): Input shape and data type.
+            outputs (List[IOShape]): Output shape and data type.
             weight (bytes): Model weight binary. Default to empty bytes.
             profile_result (ProfileResultBO): Profiling result. Default to None.
             status (Status): Model running status. Default to `UNKNOWN`.

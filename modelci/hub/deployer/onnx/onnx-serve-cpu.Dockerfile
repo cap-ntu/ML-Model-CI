@@ -19,9 +19,8 @@ RUN apt-get update -y \
 
 # install conda environment
 RUN conda env update --name base --file /content/environment.yml \
- && conda install -y pytorch torchvision cpuonly -c pytorch-nightly -c conda-forge \
  && conda clean -ayf \
- && pip install onnxruntime==1.1.0 \
+ && pip install onnxruntime==1.2.0 \
  && rm -rf ~/.cache/pip
 RUN find ${CONDA_ROOT}/ -follow -type f -name '*.a' -delete 2> /dev/null; exit 0 \
  && find ${CONDA_ROOT}/ -follow -type f -name '*.pyc' -delete 2> /dev/null; exit 0 \

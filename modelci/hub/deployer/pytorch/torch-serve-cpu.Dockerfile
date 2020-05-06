@@ -19,7 +19,7 @@ RUN apt-get update -y \
 
 # install conda environment
 RUN conda env update --name base --file /content/environment.yml \
- && conda install -y pytorch torchvision cpuonly -c pytorch-nightly -c conda-forge \
+ && conda install -y pytorch cpuonly -c pytorch -c conda-forge \
  && conda clean -ayf \
  && rm -rf ~/.cache/pip
 RUN find ${CONDA_ROOT}/ -follow -type f -name '*.a' -delete 2> /dev/null; exit 0 \

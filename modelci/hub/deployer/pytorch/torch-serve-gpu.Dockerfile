@@ -1,10 +1,13 @@
 ARG CUDA="10.1"
 ARG CUDNN="7"
 
-FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-devel-ubuntu16.04
+FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-runtime-ubuntu16.04
+
+# set built-time arguments
+ARG CUDA
 
 # set system environment
-ENV CONDA_ROOT=/miniconda/
+ENV CONDA_ROOT=/miniconda
 ENV CONDA_PREFIX=${CONDA_ROOT}
 ENV PATH=${CONDA_ROOT}/bin:${PATH}
 ENV CONDA_AUTO_UPDATE_CONDA=false
@@ -22,14 +25,14 @@ RUN apt-get update -y \
  && apt-get install -y curl
 
 # Install Miniconda
-RUN curl -so /miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+RUN curl -L https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_64.sh -o /miniconda.sh \
  && chmod +x /miniconda.sh \
  && /miniconda.sh -b -p /miniconda \
  && rm /miniconda.sh
 
 # Create a Python environment
 RUN conda env update --name base -f /content/environment.yml \
- && conda install -y pytorch torchvision cudatoolkit=${CUDA} -c pytorch-nightly -c conda-forge \
+ && conda install -y pytorch cudatoolkit=${CUDA} -c pytorch \
  && conda clean -ya \
  && rm -rf ~/.cache/pip
 

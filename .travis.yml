@@ -7,14 +7,9 @@ before_install:
     - "export PYTHONPATH=$PYTHONPATH:$(pwd)"
 
 install:
-    - pip install pip==9.0.3
-    - pip install requests==2.20.1
-    - pip install pytest==4.6.2
-    - pip install pytest-env==0.6.2
-    - pip install pymongo==3.9.0
-    - pip install spacy==2.2.1
-    - pip install mongoengine==0.18.2
-    
+    - pip install pip==20.1
+    - pip install -r requirements.txt
+
 services:
     - mongodb
 
