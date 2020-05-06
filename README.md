@@ -56,3 +56,24 @@ source scripts/setup_env.sh
 ## Benchmark
 
 - [ ] ModelZoo with model performance
+
+## Roadmap
+
+- [ ] diagnoser API
+- [ ] add diagnose tutorial at modelci/hub/register_convert_diagnose_deploy.md
+- [ ] restful API
+- [ ] web frontend
+- [ ] according to /intergration, create a setup shell script
+- [ ] opensource stuff
+
+Provide CURD for models
+
+- [x] create -> register
+- [ ] update
+- [x] retrive
+- [ ] delete
+
+===============
+
+- [ ] cli toolkit (click package)
+- [ ] intergrate k8s

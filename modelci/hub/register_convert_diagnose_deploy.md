@@ -6,15 +6,13 @@ model in different form of variant.
 Firstly, make sure that you have started a MongoDB service and configured the MongoDB environment. See 
 [installation](/README.md#installation).
 
-## TODO
-
-- [ ] restful API
-- [ ] cli toolkit
-- [ ] web frontend
-
 ## 1. Register a Pre-trained Model
 
-- [ ] with a simple configuration file [[template]](/example#register_resnet50_pytorch.yml)
+### With a simple configuration file [[template]](/example#register_resnet50_pytorch.yml)
+
+```python
+register_model_from_yaml("/example/resnet50_explicit_path.yml")
+```
 
 We can register a pre-trained model using `modelci.hub.manager.register_model(...)`. This API has two modes:
 
@@ -178,10 +176,6 @@ TRTConverter.from_onnx(onnx_path, save_path, inputs=inputs, outputs=outputs)
 
 After conversion, the system will deploy the model to avaliable devices and run diagnose to test their performance
 
-- [ ] latency & throughtput
-
-- [ ] intergration APIs
-
 ## 4. Deploy the Cached Model
 
 Deploy a model as a service listening on specific ports. This function will use a local cached model (obtained by 
@@ -201,12 +195,7 @@ serve(saved_path, device)
 
 ## 5. Manage Models
 
-Provide CURD for models
 
-- [x] create -> register
-- [ ] update
-- [ ] retrive
-- [ ] delete
 
 ### 5.1 Retrieve
 
