@@ -17,25 +17,19 @@ tf.app.flags.DEFINE_string('server', 'localhost:8500', 'PredictionService host:p
 tf.app.flags.DEFINE_string('image', './cat.jpg', 'path to image in JPEG format')
 
 
-class TestModelClient(BaseModelInspector):
+class ExampleTFSClient(BaseModelInspector):
     '''
-    Tested sub-class for BaseModelInspector to implement a custom model runner.
+    Example TensorFlow Serving Client for ResNet-50
     '''
-    def __init__(self, raw_data:list, batch_size=1, asynchronous=None):
-        super().__init__(raw_data=raw_data, batch_size=batch_size, asynchronous=asynchronous)
+    def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
+        super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         self.request = None
         self.stub = None
 
     def data_preprocess(self):
         pass
 
-    def server_batch_request(self):
-        '''
-        should batch the data from server side, leave blank if don't.
-        '''
-        pass
-
-    def setup_inference(self):
+    def make_request(self, input_batch):
         '''
         setup inference method, you can setup some requests here, implemented from parent class.
         '''
