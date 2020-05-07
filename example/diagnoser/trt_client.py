@@ -14,7 +14,7 @@ from modelci.hub.utils import parse_trt_model
 from modelci.data_engine.preprocessor import image_classification_preprocessor
 
 
-class ExampleTRTClient(BaseModelInspector):
+class CVTRTClient(BaseModelInspector):
     '''
     Tested sub-class for BaseModelInspector to implement a custom model runner.
     '''

@@ -18,7 +18,7 @@ from modelci.persistence.bo.type_conversion import type_to_data_type
 from modelci.metrics.benchmark.metric import BaseModelInspector
 
 
-class ExampleONNXClient(BaseModelInspector):
+class CVONNXClient(BaseModelInspector):
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         self.batches = self.__client_batch_request() # FIXME: creating batches twice will increase the data preprocessing time
