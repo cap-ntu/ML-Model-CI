@@ -47,7 +47,7 @@ source scripts/setup_env.sh
 1. Add `modelci/env-mongodb.env` as an EnvFile.
 2. Set project root as source root.
 
-### Example
+## Tutorial
 
 Please go to [[Tutorial]](/register_convert_diagnose_deploy.md)
 
