@@ -252,7 +252,7 @@ def retrieve_model_by_name(architecture_name: str = 'ResNet50', framework: Frame
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
     Returns:
-        Path: Model save path
+        ModelBO: Model business object.
     """
 
     # retrieve
@@ -274,7 +274,7 @@ def retrieve_model_by_task(task='image classification'):
     Arguments:
         task (str): Task name. Default to "image classification"
     Returns:
-        Path: Model save path
+        ModelBo: Model business object.
     """
     # retrieve
     models = ModelService.get_models_by_task(task)
