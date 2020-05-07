@@ -5,10 +5,17 @@ Date: 03/05/2020
 """
 import docker 
 
+from example.diagnoser.tfs_client import CVTFSClient
+from example.diagnoser.trt_client import CVTRTClient
+from example.diagnoser.torch_client import CVTorchClient
+from example.diagnoser.onnx_client import CVONNXClient
+
 from modelci.persistence.bo import IOShape, Engine, Framework, ModelVersion
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
 
+
+DEFAULT_BATCH_NUM = 100 # in the client class, default is 1, but 1 is to small to test, so here we set a 100 as default value.
 
 class Diagnoser(object):
     """
@@ -67,6 +74,7 @@ class Diagnoser(object):
         exporter = GPUNodeExporter()
         self.available_devices = exporter.get_idle_gpu(util_level=0.01, memeory_level=0.01)
 
+        # for testing
         print('\n available GPU devices: ', self.available_devices)
         print('model saved path: ', saved_path)
         print('model id: ', model_id)
@@ -91,12 +99,26 @@ class Diagnoser(object):
         self.__stop_testing_container()
         print('finished.')
 
-
     def __auto_select_client(self):
-        # TODO according to the serving engine, select the right testing client.
-        # print(self.model_info)
-        return self.inspector
-
+        # according to the serving engine, select the right testing client.
+        # TODO: replace the input None data in each client with self-generated data.
+        serving_engine = self.model_info.engine
+        if serving_engine == Framework.NONE:
+            raise Exception('please choose a serving engine for the model') #TODO How can we deploy to all available platforms if we don't know the engine?
+        elif serving_engine == Framework.TFS:
+            return CVTFSClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+        elif serving_engine == Framework.TORCHSCRIPT:
+            return CVTorchClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+        elif serving_engine == Framework.ONNX:
+            return CVONNXClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+        elif serving_engine == Framework.TRT:
+            return CVTRTClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+        elif serving_engine == Framework.TVM:
+            return None
+        elif serving_engine == Framework.CUSTOMIZED:
+             raise Exception('please pass a custom client to the Diagnoser.__init__.')
+        else:
+            return None
 
     def __stop_testing_container(self):
         """

@@ -13,12 +13,12 @@ from modelci.metrics.benchmark.metric import BaseModelInspector
 import tensorflow.compat.v1 as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
-tf.app.flags.DEFINE_string('server', 'localhost:8500', 'PredictionService host:port')
-tf.app.flags.DEFINE_string('image', './data/cat.jpg', 'path to image in JPEG format')
 
 
 class CVTFSClient(BaseModelInspector):
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
+        tf.app.flags.DEFINE_string('server', 'localhost:8500', 'PredictionService host:port')
+        tf.app.flags.DEFINE_string('image', './data/cat.jpg', 'path to image in JPEG format')
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         self.request = None
         self.stub = None
