@@ -222,12 +222,9 @@ def get_remote_model_weight(model: ModelBO):
     Return:
         Path: Model saved path.
     """
-    filename = Path(model.weight.filename)
-    save_path = generate_path(model.name, model.framework, model.engine, filename.stem)
-    save_path.parent.mkdir(exist_ok=True, parents=True)
+    save_path = model.saved_path
 
-    # add extension back
-    save_path = save_path.with_suffix(filename.suffix)
+    save_path.parent.mkdir(exist_ok=True, parents=True)
 
     if not save_path.exists():
         with open(str(save_path), 'wb') as f:
@@ -255,7 +252,7 @@ def retrieve_model_by_name(architecture_name: str = 'ResNet50', framework: Frame
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
     Returns:
-        Path: Model save path
+        ModelBO: Model business object.
     """
 
     # retrieve
@@ -266,7 +263,9 @@ def retrieve_model_by_name(architecture_name: str = 'ResNet50', framework: Frame
     # TODO: filter version
     model = models[0]
 
-    return get_remote_model_weight(model)
+    get_remote_model_weight(model)
+
+    return model
 
 
 def retrieve_model_by_task(task='image classification'):
@@ -275,7 +274,7 @@ def retrieve_model_by_task(task='image classification'):
     Arguments:
         task (str): Task name. Default to "image classification"
     Returns:
-        Path: Model save path
+        ModelBo: Model business object.
     """
     # retrieve
     models = ModelService.get_models_by_task(task)
@@ -284,7 +283,9 @@ def retrieve_model_by_task(task='image classification'):
         raise FileNotFoundError('Model not found!')
     model = models[0]
 
-    return get_remote_model_weight(model)
+    get_remote_model_weight(model)
+
+    return model
 
 
 def update_model():
