@@ -222,8 +222,12 @@ def get_remote_model_weight(model: ModelBO):
     Return:
         Path: Model saved path.
     """
-    save_path = generate_path(model.name, model.framework, model.engine, model.weight.filename)
+    filename = Path(model.weight.filename)
+    save_path = generate_path(model.name, model.framework, model.engine, filename.stem)
     save_path.parent.mkdir(exist_ok=True, parents=True)
+
+    # add extension back
+    save_path = save_path.with_suffix(filename.suffix)
 
     if not save_path.exists():
         with open(str(save_path), 'wb') as f:
