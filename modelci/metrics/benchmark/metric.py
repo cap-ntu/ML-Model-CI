@@ -43,7 +43,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         self.batch_num = batch_num
         self.batch_size = batch_size
 
-        self.raw_data = np.array(repeat_data)
+        self.raw_data = repeat_data
         self.processed_data = self.raw_data
 
         self.data_preprocess()
@@ -74,7 +74,10 @@ class BaseModelInspector(metaclass=ABCMeta):
         '''
         batches = []
         for i in range(self.batch_num):
-            batches.append(np.repeat(self.processed_data, self.batch_size))
+            batch = []
+            for j in range(self.batch_size):
+                batch.append(self.processed_data)
+            batches.append(batch)
         return batches
 
     def run_model(self, server_name):
