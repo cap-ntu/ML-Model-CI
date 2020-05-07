@@ -212,11 +212,11 @@ from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
 from modelci.persistence.bo import Framework, Engine
 
 # By model name and optionally filtered by model framework and(or) model engine
-model = retrieve_model_by_name(
+model_bo = retrieve_model_by_name(
     architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT
 )
 # By task
-model2 = retrieve_model_by_task(task='image classification')
+model_bo2 = retrieve_model_by_task(task='image classification')
 ```
 
 The returned tuple contains the local model cached path and model meta information (e.g. model name, model framework).  
