@@ -8,10 +8,14 @@ Firstly, make sure that you have started a MongoDB service and configured the Mo
 
 ## 1. Register a Pre-trained Model
 
-### With a simple configuration file [[template]](/example#register_resnet50_pytorch.yml)
+### With a simple configuration file [[template]](/example/resnet50_explicit_path.yml)
 
 ```python
-register_model_from_yaml("/example/resnet50_explicit_path.yml")
+from modelci.hub.manager import register_model_from_yaml
+
+model_yaml = ...
+
+register_model_from_yaml(model_yaml)
 ```
 
 We can register a pre-trained model using `modelci.hub.manager.register_model(...)`. This API has two modes:
@@ -208,11 +212,11 @@ from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
 from modelci.persistence.bo import Framework, Engine
 
 # By model name and optionally filtered by model framework and(or) model engine
-saved_path, info = retrieve_model_by_name(
+model_bo = retrieve_model_by_name(
     architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT
 )
 # By task
-saved_path2, info2 = retrieve_model_by_task(task='image classification')
+model_bo2 = retrieve_model_by_task(task='image classification')
 ```
 
 The returned tuple contains the local model cached path and model meta information (e.g. model name, model framework).  

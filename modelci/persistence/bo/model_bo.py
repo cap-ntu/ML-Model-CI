@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, List
 
 from bson import ObjectId
@@ -67,6 +68,17 @@ class ModelBO(object):
     @property
     def id(self):
         return self._id
+
+    @property
+    def saved_path(self):
+        from ...hub.utils import generate_path
+
+        filename = Path(self.weight.filename)
+        save_path = generate_path(self.name, self.framework, self.engine, filename.stem)
+        # add extension back
+        save_path = save_path.with_suffix(filename.suffix)
+
+        return save_path
 
     def to_model_po(self):
         """Convert business object to plain object.
