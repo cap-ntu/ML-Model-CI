@@ -59,12 +59,24 @@ class Diagnoser(object):
         """
         select the free machine and deploy automatically to test the model using availibe platforms.
         """
-        self.__deploy_model() # deploy the model automatically.
-        for device in self.available_devices:
+        saved_path = self.model_info.saved_path
+        model_id = self.model_info.id
+        model_name = self.model_info.name
+        model_framework = self.model_info.framework
+        serving_engine = self.model_info.engine
+        exporter = GPUNodeExporter()
+        self.available_devices = exporter.get_idle_gpu(util_level=0.01, memeory_level=0.01)
+
+        print('\n available GPU devices: ', self.available_devices)
+        print('model saved path: ', saved_path)
+        print('model id: ', model_id)
+        print('mode name: ', model_name)
+        print('model framework: ', model_framework)
+        print('model serving engine: ', serving_engine)
+
+        for device in self.available_devices: # deploy the model automatically in all available devices.
             print(f'deploying model in device: {device} ...')
 
-            # deploy and start serving
-            self.__deploy_model()
             try: # to check the container has started successfully or not.
                 self.docker_client.containers.get(self.server_name)
             except Exception:
@@ -78,25 +90,6 @@ class Diagnoser(object):
 
         self.__stop_testing_container()
         print('finished.')
-
-    def __deploy_model(self):
-        """
-        deploy model here. # TODO
-        """
-        saved_path = self.model_info.saved_path
-        model_id = self.model_info.id
-        model_name = self.model_info.name
-        model_framework = self.model_info.framework
-        serving_engine = self.model_info.engine
-        exporter = GPUNodeExporter()
-        self.available_devices = exporter.get_idle_gpu(util_level=0.01, memeory_level=0.01)
-
-        print('available GPU devices: ', self.available_devices)
-        print('model saved path: ', saved_path)
-        print('model id: ', model_id)
-        print('mode name: ', model_name)
-        print('model framework: ', model_framework)
-        print('model serving engine: ', serving_engine)
 
 
     def __auto_select_client(self):
