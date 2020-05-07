@@ -16,9 +16,7 @@
 
 ### Installation
 
-- [ ] One-step Docker installation [[Refer]](#intergration/README.md)
-
-- [ ] step by step
+- [ ] One-step Docker installation [[Refer]](/intergration/README.md)
 
 #### Create environment
 
@@ -51,7 +49,7 @@ source scripts/setup_env.sh
 
 ### Example
 
-- [ ] a brief example (register, convert, dianose and deploy)
+Please go to [[Tutorial]](/register_convert_diagnose_deploy.md)
 
 ## Benchmark
 
