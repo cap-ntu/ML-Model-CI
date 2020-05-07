@@ -8,8 +8,8 @@ inputs:
 outputs:
   - shape: [-1, 1000]
     dtype: TYPE_FP32
-architecture: ResNet50,
-framework: PYTORCH,
-engine: TORCHSCRIPT,
-version: 1,
+architecture: ResNet50
+framework: PYTORCH
+engine: TORCHSCRIPT
+version: 1
 no_generate: True
