@@ -185,11 +185,12 @@ class Weight(object):
 
     def __init__(
             self,
-            weight: Union[bytes, BinaryIO] = bytes(),
+            weight: Union[bytes, BinaryIO] = None,
             *,
             filename: str = 'dummy',  # TODO: file name auto-gen
             content_type: str = 'application/octet-stream',
-            gridfs_file: Optional[GridFSProxy] = None
+            gridfs_file: Optional[GridFSProxy] = None,
+            lazy_fetch: bool = True,
     ):
         """Initializer.
 
@@ -198,13 +199,30 @@ class Weight(object):
             gridfs_file (Optional[GridFSProxy]): Grid FS object storing the weight. Default to None.
                 This attribute is to keep track of Grid FS file, in order to perform a file udpate.
         """
-        self.weight = weight
+        self._weight = weight
         self.gridfs_file = gridfs_file
-        if gridfs_file is not None:
-            self.weight = gridfs_file.read()
-            gridfs_file.seek(0)
+        if self.gridfs_file is not None:
             self.filename = gridfs_file.filename
             self.content_type = gridfs_file.content_type
+            if not lazy_fetch:
+                # lazy fetch
+                self.weight()
         else:
             self.filename = filename
             self.content_type = content_type
+
+    @property
+    def weight(self):
+        """For lazy fetch weight
+        """
+        if self.gridfs_file is not None:
+            self._weight = self.gridfs_file.read()
+            self.gridfs_file.seek(0)
+        return self._weight
+
+    @weight.setter
+    def weight(self, new_weight: Union[bytes, BinaryIO]):
+        if isinstance(new_weight, bytes) or isinstance(new_weight, BinaryIO):
+            self._weight = new_weight
+        else:
+            raise TypeError(f'weight expected to be one of `bytes`, `BinaryIO`, but got {type(new_weight)}')

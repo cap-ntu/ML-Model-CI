@@ -15,6 +15,20 @@ class ModelBO(object):
     This is an model entity class for the use of communication protocol in business logic layer
     (i.e. `modelci.persistence.service.ModelService`).
 
+    Args:
+        name (str): Name of the architecture.
+        framework (Framework): Model framework. E.g. TensorFlow, PyTorch.
+        engine (Engine): Model engine. E.g. ONNX, TensorRT.
+        dataset (str): Model training dataset.
+        acc (float): Model accuracy.
+        task (str): Type of model detective or predictive task.
+        inputs (List[IOShape]): Input shape and data type.
+        outputs (List[IOShape]): Output shape and data type.
+        weight (Weight): Model weight binary. Default to empty bytes.
+        profile_result (ProfileResultBO): Profiling result. Default to None.
+        status (Status): Model running status. Default to `UNKNOWN`.
+        create_time (datetime): Model registration time. Default to current datetime.
+
     It wraps information about a model:
         - model architecture name
         - framework
@@ -30,25 +44,22 @@ class ModelBO(object):
         - create datetime
     """
 
-    def __init__(self, name: str, framework: Framework, engine: Engine, version: ModelVersion, dataset: str, acc: float,
-                 task: str, inputs: List[IOShape], outputs: List[IOShape], weight: Weight = Weight(),
-                 profile_result: ProfileResultBO = None, status: Status = Status.UNKNOWN,
-                 create_time: datetime = datetime.now()):
+    def __init__(
+            self,
+            name: str,
+            framework: Framework,
+            engine: Engine,
+            version: ModelVersion,
+            dataset: str,
+            acc: float,
+            task: str, inputs: List[IOShape],
+            outputs: List[IOShape],
+            weight: Weight = Weight(),
+            profile_result: ProfileResultBO = None,
+            status: Status = Status.UNKNOWN,
+            create_time: datetime = datetime.now()
+    ):
         """Initializer.
-
-        Args:
-            name (str): Name of the architecture.
-            framework (Framework): Model framework. E.g. TensorFlow, PyTorch.
-            engine (Engine): Model engine. E.g. ONNX, TensorRT.
-            dataset (str): Model training dataset.
-            acc (float): Model accuracy.
-            task (str): Type of model detective or predictive task.
-            inputs (List[IOShape]): Input shape and data type.
-            outputs (List[IOShape]): Output shape and data type.
-            weight (bytes): Model weight binary. Default to empty bytes.
-            profile_result (ProfileResultBO): Profiling result. Default to None.
-            status (Status): Model running status. Default to `UNKNOWN`.
-            create_time (datetime): Model registration time. Default to current datetime.
         """
         self._id: Optional[str] = None
         self.name = name
@@ -135,8 +146,7 @@ class ModelBO(object):
         )
         model._id = model_po.id
 
-        # TODO: lazy fetch
-        model.weight = Weight(gridfs_file=model_po.weight)
+        model.weight = Weight(gridfs_file=model_po.weight, lazy_fetch=lazy_fetch)
 
         if model_po.profile_result is not None:
             model.profile_result = ProfileResultBO.from_profile_result_po(model_po.profile_result)
@@ -146,4 +156,5 @@ class ModelBO(object):
     def reload(self):
         """Reload model business object.
         """
-        pass  # TODO: reload
+        # TODO: reload
+        raise NotImplementedError()

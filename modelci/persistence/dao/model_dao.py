@@ -5,8 +5,9 @@ Model Data Access Object.
 This module contains model data access object (ModelDAO) providing methods to communicate with Mongo DB. `ModelDAO` uses
 `mongoengine` as ORM for MongoDB access.
 """
-from bson import ObjectId
 from typing import List
+
+from bson import ObjectId
 
 from ..po.dynamic_profile_result_po import DynamicProfileResultPO
 from ..po.model_po import ModelPO
@@ -34,18 +35,6 @@ class ModelDAO(object):
             ModelPO: Model plain object. None for model PO not found.
         """
         return ModelPO.objects(id=id_).first()
-
-    # @staticmethod
-    # def get_models_by_name(name: str) -> List[ModelPO]:
-    #     """Get a list of model plain objects given model name.
-    #
-    #     Args:
-    #         name (str): Model architecture name.
-    #
-    #     Return:
-    #         List[ModelPO]: A list of model plain objects. An empty list will be returned if no such model.
-    #     """
-    #     return ModelPO.objects(name=name)
 
     @staticmethod
     def get_models_by_name(name: str, **kwargs) -> List[ModelPO]:
