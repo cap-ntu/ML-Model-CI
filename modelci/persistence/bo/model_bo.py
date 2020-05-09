@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List
@@ -107,11 +108,16 @@ class ModelBO(object):
         )
         if self._id is not None:
             model_po.id = ObjectId(self._id)
-            # save weight to Grid FS, TODO: Patch save, retrieve -> compare -> replace / do nothing
+            # patch save weight to Grid FS
             model_po.weight = self.weight.gridfs_file
-            model_po.weight.replace(
-                self.weight.weight, filename=self.weight.filename, content_type=self.weight.content_type
-            )
+            # compare with the newly loaded weight and the stored weight in MongoDB
+            if self.weight.is_dirty():
+                new_md5 = hashlib.md5(self.weight.weight).hexdigest()
+                if new_md5 != self.weight.md5:
+                    model_po.weight.replace(
+                        self.weight.weight, filename=self.weight.filename, content_type=self.weight.content_type
+                    )
+                self.weight.clear_dirty_flag()
         else:
             model_po.weight.put(
                 self.weight.weight, filename=self.weight.filename, content_type=self.weight.content_type

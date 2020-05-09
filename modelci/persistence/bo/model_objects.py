@@ -185,7 +185,7 @@ class Weight(object):
 
     def __init__(
             self,
-            weight: Union[bytes, BinaryIO] = None,
+            weight: bytes = None,
             *,
             filename: str = 'dummy',  # TODO: file name auto-gen
             content_type: str = 'application/octet-stream',
@@ -198,9 +198,13 @@ class Weight(object):
             weight (Optional[bytes]): model weight read from Grid FS.
             gridfs_file (Optional[GridFSProxy]): Grid FS object storing the weight. Default to None.
                 This attribute is to keep track of Grid FS file, in order to perform a file udpate.
+            lazy_fetch (bool): The weight is not loaded from MongoDB initially when this flag is set `True`. Default to
+                `True`.
         """
         self._weight = weight
         self.gridfs_file = gridfs_file
+        # Flag for the set of model weight
+        self._dirty = False
         if self.gridfs_file is not None:
             self.filename = gridfs_file.filename
             self.content_type = gridfs_file.content_type
@@ -213,9 +217,9 @@ class Weight(object):
 
     @property
     def weight(self):
-        """For lazy fetch weight
+        """Weight binary For lazy fetch.
         """
-        if self.gridfs_file is not None:
+        if self._weight is None and self.gridfs_file is not None:
             self._weight = self.gridfs_file.read()
             self.gridfs_file.seek(0)
         return self._weight
@@ -224,5 +228,23 @@ class Weight(object):
     def weight(self, new_weight: Union[bytes, BinaryIO]):
         if isinstance(new_weight, bytes) or isinstance(new_weight, BinaryIO):
             self._weight = new_weight
+            # the weight is dirty
+            self._dirty = True
         else:
             raise TypeError(f'weight expected to be one of `bytes`, `BinaryIO`, but got {type(new_weight)}')
+
+    @property
+    def md5(self):
+        """File md5 got from GridFS for identification. Return None if the file is not uploaded to GridFS. Note that
+        if you set the weight manually, the md5 value will not be updated, unless the new value is updated to GridFS.
+        """
+        if self.gridfs_file is not None:
+            return self.gridfs_file.md5
+        else:
+            return None
+
+    def is_dirty(self):
+        return self._dirty
+
+    def clear_dirty_flag(self):
+        self._dirty = False
