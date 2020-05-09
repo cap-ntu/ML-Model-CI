@@ -9,9 +9,15 @@
     [
       "build-plugin-moment-locales",
       {
-        "locales": [
-          "zh-cn"
-        ]
+        "locales": ["zh-cn"]
+      }
+    ],
+    [
+      "build-plugin-antd",
+      {
+        "themeConfig": {
+          "primary-color": "#1890ff"
+        }
       }
     ]
   ]

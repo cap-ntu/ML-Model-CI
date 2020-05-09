@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Shell, ConfigProvider } from '@alifd/next';
+import enUS from '@alifd/next/lib/locale/en-us';
 import PageNav from './components/PageNav';
 import Logo from './components/Logo';
 import Footer from './components/Footer';
@@ -51,7 +52,7 @@ export default function BasicLayout({
     setDevice(getDevice(e && e.target && e.target.innerWidth));
   });
   return (
-    <ConfigProvider device={device}>
+    <ConfigProvider device={device} locale={enUS}>
       <Shell
         type="dark"
         style={{
@@ -60,8 +61,8 @@ export default function BasicLayout({
       >
         <Shell.Branding>
           <Logo
-            image="https://img.alicdn.com/tfs/TB1.ZBecq67gK0jSZFHXXa9jVXa-904-826.png"
-            text="Logo"
+            image="https://i.loli.net/2020/05/08/VuJI6wTh5GftmDi.png"
+            text="Machine Learning ModelCI Web Portal"
           />
         </Shell.Branding>
         <Shell.Navigation
