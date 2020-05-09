@@ -1,7 +1,16 @@
 import React from 'react';
-import { Button, Table, Card, Modal, Divider, Input } from 'antd';
+import {
+  Button,
+  Table,
+  Card,
+  Modal,
+  Divider,
+  Input,
+  Radio,
+  Descriptions,
+  Badge,
+} from 'antd';
 const { Search } = Input;
-
 
 function showModelDetails(record) {
   console.log(record);
@@ -82,21 +91,24 @@ const columns = [
     key: 'x',
     render: () => (
       <div>
-        <a
-          onClick={() => {
-            console.log('You clicked edit');
-          }}
-        >
-          Edit
-        </a>
-        <Divider type="vertical" />
-        <a
-          onClick={() => {
-            console.log('You clicked profile');
-          }}
-        >
-          Profile
-        </a>
+        <Radio.Group size="small">
+          <Radio.Button
+            size="small"
+            onClick={() => {
+              console.log('You clicked edit');
+            }}
+          >
+            Edit
+          </Radio.Button>
+          <Radio.Button
+            size="small"
+            onClick={() => {
+              console.log('You clicked profile');
+            }}
+          >
+            Profile
+          </Radio.Button>
+        </Radio.Group>
       </div>
     ),
   },
@@ -116,16 +128,16 @@ const data = [
     hasDetail: false,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.580597400665283 sec',
+    allLatency: '26.5805974 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
     memPer: '0.9726',
     gpuUtil: '75.6538%',
-    latency50: '0.2650185823440552 s',
-    latency95: '0.27614104747772217 s',
-    latency99: '0.2790443968772889 s',
+    latency50: '0.265018582 s',
+    latency95: '0.276141047 s',
+    latency99: '0.279044396 s',
   },
   {
     key: 2,
@@ -140,16 +152,16 @@ const data = [
     hasDetail: true,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.580597400665283 sec',
+    allLatency: '26.5805974 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
     memPer: '0.9726',
     gpuUtil: '75.6538%',
-    latency50: '0.2650185823440552 s',
-    latency95: '0.27614104747772217 s',
-    latency99: '0.2790443968772889 s',
+    latency50: '0.265018582 s',
+    latency95: '0.276141047 s',
+    latency99: '0.279044396 s',
   },
   {
     key: 3,
@@ -164,16 +176,16 @@ const data = [
     hasDetail: true,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.580597400665283 sec',
+    allLatency: '26.5805974 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
     memPer: '0.9726',
     gpuUtil: '75.6538%',
-    latency50: '0.2650185823440552 s',
-    latency95: '0.27614104747772217 s',
-    latency99: '0.2790443968772889 s',
+    latency50: '0.265018582 s',
+    latency95: '0.276141047 s',
+    latency99: '0.279044396 s',
   },
   {
     key: 4,
@@ -188,16 +200,16 @@ const data = [
     hasDetail: true,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.580597400665283 sec',
+    allLatency: '26.5805974 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
     memPer: '0.9726',
     gpuUtil: '75.6538%',
-    latency50: '0.2650185823440552 s',
-    latency95: '0.27614104747772217 s',
-    latency99: '0.2790443968772889 s',
+    latency50: '0.265018582 s',
+    latency95: '0.276141047 s',
+    latency99: '0.279044396 s',
   },
   {
     key: 5,
@@ -212,16 +224,16 @@ const data = [
     hasDetail: false,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.580597400665283 sec',
+    allLatency: '26.5805974 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
     memPer: '0.9726',
     gpuUtil: '75.6538%',
-    latency50: '0.2650185823440552 s',
-    latency95: '0.27614104747772217 s',
-    latency99: '0.2790443968772889 s',
+    latency50: '0.265018582 s',
+    latency95: '0.276141047 s',
+    latency99: '0.279044396 s',
   },
   {
     key: 6,
@@ -236,16 +248,16 @@ const data = [
     hasDetail: true,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.580597400665283 sec',
+    allLatency: '26.5805974 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
     memPer: '0.9726',
     gpuUtil: '75.6538%',
-    latency50: '0.2650185823440552 s',
-    latency95: '0.27614104747772217 s',
-    latency99: '0.2790443968772889 s',
+    latency50: '0.265018582 s',
+    latency95: '0.276141047 s',
+    latency99: '0.279044396 s',
   },
 ];
 
@@ -286,52 +298,79 @@ const Dashboard = () => {
         expandable={{
           expandedRowRender: (record) => (
             <div>
-              <p style={{ margin: '5px' }}>Model Name: {record.modelName}</p>
-              <p style={{ margin: '5px' }}>
-                Pretrained Dataset: {record.modelDataset}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Serving Engine: {record.modelEngine}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Serving Device: {record.servingDevice}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Tested Batch Size: {record.batchSize}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Tested Batch Number: {record.batchNum}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Tested Batch Number: {record.batchNum}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Total Memory of Device: {record.totalMem}
-              </p>
-              <p style={{ margin: '5px' }}>
-                Total Memory Used: {record.usedMem} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                Total Memory Loaded Percentile: {record.memPer} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                Total GPU Utilization: {record.gpuUtil} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                All Batch Latency: {record.allLatency} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                Overall 50th Percentile Latency: {record.latency50} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                Overall 95th Percentile Latency: {record.latency95} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                Overall 99th Percentile Latency: {record.allThroughput} 
-              </p>
-              <p style={{ margin: '5px' }}>
-                All Batch Throughput: {record.allThroughput} 
-              </p>
+              <Descriptions
+                style={{ width: '92%', margin: '0 auto' }}
+                column={4}
+                size="small"
+                title="Serving Info"
+              >
+                <Descriptions.Item label="Model Name">
+                  {record.modelName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Model Framework">
+                  {record.modelFramework}
+                </Descriptions.Item>
+                <Descriptions.Item label="Serving Engine">
+                  {record.modelEngine}
+                </Descriptions.Item>
+                <Descriptions.Item label="Serving Device">
+                  {record.servingDevice}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tested Batch Size">
+                  {record.batchSize}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tested Batch Number">
+                  {record.batchNum}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tested Status" span={2}>
+                  <Badge status="success" text="Tested with Success" />{' '}
+                  <Divider type="vertical" />
+                  <Radio.Group size="small">
+                    <Radio.Button
+                      size="small"
+                      onClick={() => {
+                        console.log('You clicked Deploy');
+                      }}
+                    >
+                      Deploy this Model
+                    </Radio.Button>
+                  </Radio.Group>
+                </Descriptions.Item>
+              </Descriptions>
+              <Descriptions
+                style={{ width: '92%', margin: '0 auto', marginTop: '20px' }}
+                column={3}
+                size="small"
+                title="Testing Metrics"
+              >
+                <Descriptions.Item label="Total Memory of Device">
+                  {record.totalMem}
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Memory Used">
+                  {record.usedMem}
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Memory Loaded Percentile">
+                  {record.memPer}
+                </Descriptions.Item>
+                <Descriptions.Item label="Total GPU Utilization" span={3}>
+                  {record.gpuUtil}
+                </Descriptions.Item>
+                <Descriptions.Item label="All Batch Latency">
+                  {record.allLatency}
+                </Descriptions.Item>
+                <Descriptions.Item label="All Batch Throughput" span={2}>
+                  {record.allThroughput}
+                </Descriptions.Item>
+                <Descriptions.Item label="50th Percentile Latency">
+                  {record.latency50}
+                </Descriptions.Item>
+                <Descriptions.Item label="95th Percentile Latency">
+                  {record.latency95}
+                </Descriptions.Item>
+                <Descriptions.Item label="99th Percentile Latency">
+                  {record.latency99}
+                </Descriptions.Item>
+              </Descriptions>
             </div>
           ),
           rowExpandable: (record) => record.hasDetail,
