@@ -35,8 +35,7 @@ class GPUNodeExporter(object):
         for k, v in info_list:
             info_dict[k].append(v)
 
-        print("There {} GPUs in this worker.".format((len(dict(info_dict)))))
-
+        # print("There {} GPUs in this worker.".format((len(dict(info_dict))))) # TODO replace with logging
         return dict(info_dict)
 
     def __parse_text(self, text_info):
@@ -65,7 +64,6 @@ class GPUNodeExporter(object):
         info_dict = self.requst_all_gpu_info()
         idle_gpus = []
         for k, v in info_dict.items():
-            print(k)
             # for temp in v:
             #     print(list(temp.values()))
             gpu_stat = { list(temp.keys())[0]: float(list(temp.values())[0]) for temp in v }
@@ -74,7 +72,6 @@ class GPUNodeExporter(object):
                 pass
             else:
                 idle_gpus.append(k)
-        print(idle_gpus)
         return idle_gpus
 
 
@@ -83,7 +80,3 @@ class GPUNodeExporter(object):
 
     def get_gpu_type(self):
         raise NotImplementedError
-
-if __name__ == '__main__':
-    a = GPUNodeExporter()
-    a.get_idle_gpu()
