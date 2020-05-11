@@ -13,6 +13,7 @@ from example.diagnoser.onnx_client import CVONNXClient
 from modelci.persistence.bo import IOShape, Engine, Framework, ModelVersion
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
+from modelci.hub.deployer import serve
 
 
 DEFAULT_BATCH_NUM = 100 # in the client class, default is 1, but 1 is to small to test, so here we set a 100 as default value.
@@ -30,7 +31,7 @@ class Diagnoser(object):
         @param model_info: information about the model, can get from init_model_info method.
         """
         if inspector is None:
-            self.inspector = self.__auto_select_client() #TODO
+            self.inspector = self.__auto_select_client() #TODO: To Improve
         else:
             if isinstance(inspector, BaseModelInspector):
                 self.inspector = inspector
@@ -84,6 +85,8 @@ class Diagnoser(object):
 
         for device in self.available_devices: # deploy the model automatically in all available devices.
             print(f'deploying model in device: {device} ...')
+
+            serve(saved_path, 'gpu') # FIXME: related path in serving.py to get the bash scripts.
 
             try: # to check the container has started successfully or not.
                 self.docker_client.containers.get(self.server_name)
