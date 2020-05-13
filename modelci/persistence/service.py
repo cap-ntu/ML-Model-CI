@@ -1,19 +1,19 @@
 from bson import ObjectId
 
+from . import mongo
 from .bo.dynamic_profile_result_bo import DynamicProfileResultBO
 from .bo.model_bo import ModelBO
 from .bo.model_objects import Framework, Engine
 from .bo.static_profile_result_bo import StaticProfileResultBO
 from .dao.model_dao import ModelDAO
-
-from . import mongo
+from .exceptions import ServiceException
 
 
 class ModelService(object):
     __model_DAO = ModelDAO
 
-    @staticmethod
-    def get_models_by_name(name: str, framework: Framework = None, engine: Engine = None):
+    @classmethod
+    def get_models_by_name(cls, name: str, framework: Framework = None, engine: Engine = None):
         """Get a list of model BO given name
 
         Args:
@@ -31,12 +31,12 @@ class ModelService(object):
         if engine is not None:
             kwargs['engine'] = engine.value
 
-        model_pos = ModelService.__model_DAO.get_models_by_name(name=name, **kwargs)
+        model_pos = cls.__model_DAO.get_models_by_name(name=name, **kwargs)
         models = list(map(ModelBO.from_model_po, model_pos))
         return models
 
-    @staticmethod
-    def get_models_by_task(task: str):
+    @classmethod
+    def get_models_by_task(cls, task: str):
         """Get a list of model BO given task.
 
         Args:
@@ -45,12 +45,12 @@ class ModelService(object):
         Return:
             A list of `ModelBO`
         """
-        model_pos = ModelService.__model_DAO.get_models_by_task(task=task)
+        model_pos = cls.__model_DAO.get_models_by_task(task=task)
 
         return list(map(ModelBO.from_model_po, model_pos))
 
-    @staticmethod
-    def get_model_by_id(id_: str):
+    @classmethod
+    def get_model_by_id(cls, id_: str):
         """Get model given model ID.
 
         Args:
@@ -59,10 +59,10 @@ class ModelService(object):
         Return:
              A model BO if found
         """
-        return ModelBO.from_model_po(ModelService.__model_DAO.get_model_by_id(ObjectId(id_)))
+        return ModelBO.from_model_po(cls.__model_DAO.get_model_by_id(ObjectId(id_)))
 
-    @staticmethod
-    def post_model(model: ModelBO):
+    @classmethod
+    def post_model(cls, model: ModelBO):
         """Register a model into ModelDB and GridFS. `model.id` should be set as `None`, otherwise, the function will
         raise a `ValueError`.
 
@@ -73,17 +73,30 @@ class ModelService(object):
             bool: True if successful, False otherwise
 
         Raises:
-            ValueError: If `model.id` is not None
+            ValueError: If `model.id` is not None.
+            ServiceException: If model has exists with the same primary keys (name, framework, engine and version).
         """
         # check model id
         if model.id is not None:
             raise ValueError('field `id` is expected `None`, but got {}. You should use `update_model` for a existing '
                              'model BO'.format(model.id))
-        model_po = model.to_model_po()
-        return bool(ModelService.__model_DAO.update_model(model_po))
 
-    @staticmethod
-    def update_model(model: ModelBO, force_insert=False):
+        model_po = model.to_model_po()
+        if cls.__model_DAO.exists_by_primary_keys(
+                name=model_po.name,
+                framework=model_po.framework,
+                engine=model_po.engine,
+                version=model_po.version
+        ):
+            raise ServiceException(
+                f'Model business object with primary keys name={model_po.name}, framework={model_po.framework}, '
+                f'engine={model_po.engine}, version={model_po.version} has exists.'
+            )
+
+        return bool(cls.__model_DAO.save_model(model_po))
+
+    @classmethod
+    def update_model(cls, model: ModelBO, force_insert=False):
         """Update a model to ModelDB and GridFS. The function will check the existence of the provided model. It will
             invoke the update.
 
@@ -106,13 +119,13 @@ class ModelService(object):
             # if `force_insert` is set
             if force_insert:
                 model_po = model.to_model_po()
+                return bool(cls.__model_DAO.save_model(model_po))
             else:
                 raise ValueError('Model ID {} does not exist. You may change the ID or set `force_insert=True` '
                                  'when call.'.format(model.id))
-        return bool(ModelService.__model_DAO.update_model(model_po))
 
-    @staticmethod
-    def delete_model_by_id(id_: str):
+    @classmethod
+    def delete_model_by_id(cls, id_: str):
         """Delete a model from ModelDB given ID.
 
         Args:
@@ -122,12 +135,12 @@ class ModelService(object):
             bool: True for successful, False otherwise
         """
         id_ = ObjectId(id_)
-        model_po = ModelService.__model_DAO.get_model_by_id(id_)
+        model_po = cls.__model_DAO.get_model_by_id(id_)
         model_po.weight.delete()
-        return ModelService.__model_DAO.delete_model_by_id(id_)
+        return cls.__model_DAO.delete_model_by_id(id_)
 
-    @staticmethod
-    def register_static_profiling_result(id_, static_result: StaticProfileResultBO):
+    @classmethod
+    def register_static_profiling_result(cls, id_, static_result: StaticProfileResultBO):
         """Register or update static profiling result to a model.
 
         Args:
@@ -141,7 +154,7 @@ class ModelService(object):
             ValueError: `model.id` does not exist in ModelDB
         """
         id_ = ObjectId(id_)
-        if ModelService.__model_DAO.is_id_exists(id_):
+        if ModelService.__model_DAO.exists_by_id(id_):
             return ModelService.__model_DAO.register_static_profiling_result(
                 id_,
                 static_result.to_static_profile_result_po()
@@ -149,8 +162,8 @@ class ModelService(object):
         else:
             raise ValueError('Model ID {} does not exist.'.format(id_))
 
-    @staticmethod
-    def append_dynamic_profiling_result(id_: str, dynamic_result: DynamicProfileResultBO):
+    @classmethod
+    def append_dynamic_profiling_result(cls, id_: str, dynamic_result: DynamicProfileResultBO):
         """Add one dynamic profiling result to a model.
 
         Args:
@@ -164,16 +177,16 @@ class ModelService(object):
             ValueError: `model.id` does not exist in ModelDB
         """
         id_ = ObjectId(id_)
-        if ModelService.__model_DAO.is_id_exists(id_):
-            return ModelService.__model_DAO.register_dynamic_profiling_result(
+        if cls.__model_DAO.exists_by_id(id_):
+            return cls.__model_DAO.register_dynamic_profiling_result(
                 id_,
                 dynamic_result.to_dynamic_profile_result_po()
             )
         else:
             raise ValueError('Model ID {} does not exist.'.format(id_))
 
-    @staticmethod
-    def update_dynamic_profiling_result(id_: str, dynamic_result: DynamicProfileResultBO, force_insert=False):
+    @classmethod
+    def update_dynamic_profiling_result(cls, id_: str, dynamic_result: DynamicProfileResultBO, force_insert=False):
         """Update one dynamic profiling result to a model.
 
         Args:
@@ -191,17 +204,18 @@ class ModelService(object):
         id_ = ObjectId(id_)
         dpr_po = dynamic_result.to_dynamic_profile_result_po()
         # if model ID exists
-        if ModelService.__model_DAO.is_id_exists(id_):
+        if cls.__model_DAO.exists_by_id(id_):
             # if the dynamic profiling result to be updated exists
-            if ModelService.__model_DAO.is_dynamic_profiling_result_exist(id_, dpr_po):
-                return ModelService.__model_DAO.update_dynamic_profiling_result(id_, dpr_po)
+            if cls.__model_DAO.is_dynamic_profiling_result_exist(id_, dpr_po):
+                return cls.__model_DAO.update_dynamic_profiling_result(id_, dpr_po)
             # force insert is set
             elif force_insert:
-                return ModelService.__model_DAO.register_dynamic_profiling_result(id_, dpr_po)
+                return cls.__model_DAO.register_dynamic_profiling_result(id_, dpr_po)
             else:
-                raise ValueError('Dynamic profiling result to be updated with ip={}, device_id={} does not exist\n'
-                                 'Either set `force_insert` or change the ip and device_id'
-                                 .format(dpr_po.ip, dpr_po.device_id))
+                raise ValueError(
+                    f'Dynamic profiling result to be updated with ip={dpr_po.ip}, device_id={dpr_po.device_id} does \n'
+                    f'not exist. Either set `force_insert` or change the ip and device_id'
+                )
         # if model ID does not exist
         else:
             raise ValueError('Model ID {} does not exist.'.format(id_))
