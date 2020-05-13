@@ -242,15 +242,14 @@ We can use `modelci.hub.utils.parse_path(...)` to extract model identification.
 from modelci.hub.utils import parse_path
 
 # from return value of model retrieval
-saved_path, _ = (..., ...)
+model_bo = ...
 
-info = parse_path(saved_path)
-
+info = parse_path(model_bo.saved_path)
 ```
 
 The extracted information is a dictionary containing:
 
-```bash
+```yaml
 {
     'architecture': architecture,
     'framework': framework,

@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List
@@ -15,6 +16,22 @@ class ModelBO(object):
     This is an model entity class for the use of communication protocol in business logic layer
     (i.e. `modelci.persistence.service.ModelService`).
 
+    Args:
+        name (str): Name of the architecture.
+        framework (Framework): Model framework. E.g. TensorFlow, PyTorch.
+        engine (Engine): Model engine. E.g. ONNX, TensorRT.
+        dataset (str): Model training dataset.
+        acc (float): Model accuracy.
+            TODO(lym): can be improved later Since different tasks use different metrics,
+                this arg is better to be a dict {metric(str, input by users): value(float)}.
+        task (str): Type of model detective or predictive task.
+        inputs (List[IOShape]): Input shape and data type.
+        outputs (List[IOShape]): Output shape and data type.
+        weight (Weight): Model weight binary. Default to empty bytes.
+        profile_result (ProfileResultBO): Profiling result. Default to None.
+        status (Status): Model running status. Default to `UNKNOWN`.
+        create_time (datetime): Model registration time. Default to current datetime.
+
     It wraps information about a model:
         - model architecture name
         - framework
@@ -30,25 +47,22 @@ class ModelBO(object):
         - create datetime
     """
 
-    def __init__(self, name: str, framework: Framework, engine: Engine, version: ModelVersion, dataset: str, acc: float,
-                 task: str, inputs: List[IOShape], outputs: List[IOShape], weight: Weight = Weight(),
-                 profile_result: ProfileResultBO = None, status: Status = Status.UNKNOWN,
-                 create_time: datetime = datetime.now()):
+    def __init__(
+            self,
+            name: str,
+            framework: Framework,
+            engine: Engine,
+            version: ModelVersion,
+            dataset: str,
+            acc: float,
+            task: str, inputs: List[IOShape],
+            outputs: List[IOShape],
+            weight: Weight = Weight(),
+            profile_result: ProfileResultBO = None,
+            status: Status = Status.UNKNOWN,
+            create_time: datetime = datetime.now()
+    ):
         """Initializer.
-
-        Args:
-            name (str): Name of the architecture.
-            framework (Framework): Model framework. E.g. TensorFlow, PyTorch.
-            engine (Engine): Model engine. E.g. ONNX, TensorRT.
-            dataset (str): Model training dataset.
-            acc (float): Model accuracy.
-            task (str): Type of model detective or predictive task.
-            inputs (List[IOShape]): Input shape and data type.
-            outputs (List[IOShape]): Output shape and data type.
-            weight (bytes): Model weight binary. Default to empty bytes.
-            profile_result (ProfileResultBO): Profiling result. Default to None.
-            status (Status): Model running status. Default to `UNKNOWN`.
-            create_time (datetime): Model registration time. Default to current datetime.
         """
         self._id: Optional[str] = None
         self.name = name
@@ -96,11 +110,16 @@ class ModelBO(object):
         )
         if self._id is not None:
             model_po.id = ObjectId(self._id)
-            # save weight to Grid FS, TODO: Patch save, retrieve -> compare -> replace / do nothing
+            # patch save weight to Grid FS
             model_po.weight = self.weight.gridfs_file
-            model_po.weight.replace(
-                self.weight.weight, filename=self.weight.filename, content_type=self.weight.content_type
-            )
+            # compare with the newly loaded weight and the stored weight in MongoDB
+            if self.weight.is_dirty():
+                new_md5 = hashlib.md5(self.weight.weight).hexdigest()
+                if new_md5 != self.weight.md5:
+                    model_po.weight.replace(
+                        self.weight.weight, filename=self.weight.filename, content_type=self.weight.content_type
+                    )
+                self.weight.clear_dirty_flag()
         else:
             model_po.weight.put(
                 self.weight.weight, filename=self.weight.filename, content_type=self.weight.content_type
@@ -135,8 +154,7 @@ class ModelBO(object):
         )
         model._id = model_po.id
 
-        # TODO: lazy fetch
-        model.weight = Weight(gridfs_file=model_po.weight)
+        model.weight = Weight(gridfs_file=model_po.weight, lazy_fetch=lazy_fetch)
 
         if model_po.profile_result is not None:
             model.profile_result = ProfileResultBO.from_profile_result_po(model_po.profile_result)
@@ -146,4 +164,5 @@ class ModelBO(object):
     def reload(self):
         """Reload model business object.
         """
-        pass  # TODO: reload
+        # TODO: reload
+        raise NotImplementedError()
