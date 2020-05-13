@@ -22,6 +22,8 @@ class ModelBO(object):
         engine (Engine): Model engine. E.g. ONNX, TensorRT.
         dataset (str): Model training dataset.
         acc (float): Model accuracy.
+            TODO(lym): can be improved later Since different tasks use different metrics,
+                this arg is better to be a dict {metric(str, input by users): value(float)}.
         task (str): Type of model detective or predictive task.
         inputs (List[IOShape]): Input shape and data type.
         outputs (List[IOShape]): Output shape and data type.
