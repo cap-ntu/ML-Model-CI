@@ -16,13 +16,29 @@ from ..po.static_profile_result_po import StaticProfileResultPO
 
 class ModelDAO(object):
     @staticmethod
-    def is_id_exists(id_: ObjectId):
+    def exists_by_id(id_: ObjectId):
         """Check if the given Object ID exists in MongoDB.
 
         Args:
             id_ (ObjectId): Model ID.
         """
         return bool(ModelPO.objects(id=id_))
+
+    @staticmethod
+    def exists_by_primary_keys(**kwargs):
+        """
+
+        Args:
+            **kwargs: Keyword arguments of primary keys. Supported values:
+                name (str): Model name.
+                engine (int): Driving engine enum value.
+                framework (int): Model framework enum value.
+                version (int): Model version number.
+
+        Returns:
+            bool: Existence of the model.
+        """
+        return bool(ModelPO.objects(**kwargs))
 
     @staticmethod
     def get_model_by_id(id_: ObjectId) -> ModelPO:
@@ -63,16 +79,31 @@ class ModelDAO(object):
         return ModelPO.objects(task=task)
 
     @staticmethod
-    def update_model(model: ModelPO) -> int:  # TODO: try ModelPO.objects(...).update()?
-        """Update or register model PO.
+    def save_model(model: ModelPO, force_insert=False) -> ModelPO:
+        """Save a model PO.
 
         Args:
-            model (ModelPO): Model plain object to be saved or updated.
+            model (ModelPO): Model plain object to be saved.
+            force_insert (bool): Only try to create a new document. Default to `False`.
 
-        Return:
-            int: number of affected rows.
+        Returns:
+            ModelPo: Updated model plain object.
         """
-        return model.save()
+        return model.save(force_insert=force_insert)
+
+    @staticmethod
+    def update_model(id_: ObjectId, **kwargs) -> ModelPO:  # TODO: try ModelPO.objects(...).update()?
+        """
+        Update or register model PO.
+
+        Args:
+            id_ (ObjectId): Model ID.
+            **kwargs: Keyword arguments to be updated.
+
+        Returns:
+            ModelPO:
+        """
+        return ModelPO.objects(id=id_).update(**kwargs)
 
     @staticmethod
     def delete_model_by_id(id_: ObjectId) -> int:
