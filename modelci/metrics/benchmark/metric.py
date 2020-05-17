@@ -194,7 +194,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         pass
 
     # TODO: replace printing with saving code in mongodb, or logging.
-    def print_results(self, throughput, latiency, custom_percentile, all_batch_avg_memory_total, 
+    def print_results(self, throughput, latency, custom_percentile, all_batch_avg_memory_total, 
                         all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per):
         '''
         Export the testing results to local JSON file.
@@ -202,7 +202,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         Parameters
         ----------        
         @throughput: The tested overall throughput for all batches.
-        @latiency: The tested latency for all batches.
+        @latency: The tested latency for all batches.
         @custom_percentile: The custom percentile you want to check for latencies.
         @all_batch_avg_memory_total: The capacity memory usages for the inference container.
         @all_batch_avg_memory_used: Used memory amount of this inference for all batches.
@@ -215,12 +215,12 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         print('\n')
         print(f'total batches: {len(self.batches)}, batch_size: {self.batch_size}')
-        print(f'total latiency: {latiency} s')
+        print(f'total latency: {latency} s')
         print(f'total throughput: {throughput} req/sec')
-        print(f'50th-percentile latiency: {percentile_50} s')
-        print(f'95th-percentile latiency: {percentile_95} s')
-        print(f'99th-percentile latiency: {percentile_99} s')
-        # print(f'{self.percentile}th-percentile latiency: {custom_percentile} s')
+        print(f'50th-percentile latency: {percentile_50} s')
+        print(f'95th-percentile latency: {percentile_95} s')
+        print(f'99th-percentile latency: {percentile_99} s')
+        # print(f'{self.percentile}th-percentile latency: {custom_percentile} s')
         print(f'total GPU memory: {all_batch_avg_memory_total} bytes')
         print('average GPU memory usage percentile: {:.4f}'.format(memory_avg_usage_per))
         print(f'average GPU memory used: {all_batch_avg_memory_used} bytes')

@@ -8,8 +8,8 @@ By running once, you can get some performance informations.
 - a through list contains every batch's throughput.
 - overall latency
 - overall throughput
-- 25th-percentile latiency
-- 50th-percentile latiency
-- 75th-percentile latiency
+- 25th-percentile latency
+- 50th-percentile latency
+- 75th-percentile latency
 
 And we do also support a custom percentile, you can setup that by passing a `percentile` in the `BaseModelInspector` constructor. 
