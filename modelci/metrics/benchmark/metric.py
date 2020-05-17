@@ -125,10 +125,12 @@ class BaseModelInspector(metaclass=ABCMeta):
         # Usually, in order to increase accuracy, we need to increase the testing number of batchs, try to make sure 
         # the testing program can run over 1 minutes.
         cadvisor = CAdvisor()
+        SLEEP_TIME = 15
+        time.sleep(SLEEP_TIME)
         all_information = cadvisor.request_by_name(server_name)
         model_info = cadvisor.get_model_info(all_information)
         stats = model_info[list(model_info.keys())[0]]['stats']
-        val_stats = [x for x in stats[-int(all_data_latency):] if x['accelerators'][0]['duty_cycle'] is not 0]
+        val_stats = [x for x in stats[-int(SLEEP_TIME + all_data_latency):] if x['accelerators'][0]['duty_cycle'] is not 0]
         all_batch_avg_memory_total = sum([i['accelerators'][0]['memory_total'] for i in val_stats]) / len(val_stats)
         all_batch_avg_memory_used = sum([i['accelerators'][0]['memory_used'] for i in val_stats]) / len(val_stats)
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
@@ -148,6 +150,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         self.latencies.append(a_batch_latency) 
         a_batch_throughput =  self.batch_size / a_batch_latency
         self.throughputs.append(a_batch_throughput)
+        # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
 
     def start_infer_with_time(self, batch_input):
@@ -239,6 +242,5 @@ class ReqThread(Thread):
         self.infer = infer_mothod
         
     def run(self):
-        start_time = time.thread_time()
         self.infer(self.batch_data)
         self.callback(time.thread_time())
