@@ -5,7 +5,7 @@ version: 2
 cli:
   server: https://app.fossa.com
   fetcher: custom
-  project: https://github.com/huangyz0918/ML-Model-CI.git
+  project: https://github.com/cap-ntu/ML-Model-CI.git
 analyze:
   modules:
   - name: frontend
