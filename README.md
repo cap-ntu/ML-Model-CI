@@ -5,8 +5,11 @@
 [![Build Status](https://travis-ci.com/cap-ntu/ML-Model-CI.svg?token=SvqJmaGbqAbwcc7DNkD2&branch=master)](https://travis-ci.com/cap-ntu/ML-Model-CI)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/bfb9f8b11d634602acd8b67484a43318)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cap-ntu/ML-Model-CI&amp;utm_campaign=Badge_Grade)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B8170%2Fgithub.com%2Fcap-ntu%2FML-Model-CI.svg?type=shield)](https://app.fossa.com/projects/custom%2B8170%2Fgithub.com%2Fcap-ntu%2FML-Model-CI?ref=badge_shield)
+[![codecov](https://codecov.io/gh/cap-ntu/ML-Model-CI/branch/master/graph/badge.svg?token=DH07HSD9WC)](https://codecov.io/gh/cap-ntu/ML-Model-CI)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-YES-yellow.svg)](https://github.com/cap-ntu/ML-Model-CI/graphs/commit-activity) 
-[![GitHub stars](https://img.shields.io/github/stars/cap-ntu/ML-Model-CI.svg?style=social)](https://GitHub.com/cap-ntu/ML-Model-CI/stargazers/)
+[![Slack Status](https://ml-model-ci.slack.com/badge.svg)](https://ml-model-ci.slack.com)
+
+
 
 ## Features
 
