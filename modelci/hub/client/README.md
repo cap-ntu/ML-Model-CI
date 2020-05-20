@@ -1,33 +1,33 @@
-## Profiler Example
+# Profiler Example
 
 Use the following tools to profile your Deep Learning model.
 
-### Quick Start 
+## Quick Start 
 
-#### Load Data
+### Load Data
 
 This step depends on your model input format. You can pass one processed data item (we can duplicate that for testing) or give a set of thesting data to test.
 
-Here is are several examples,
+Here are several examples,
 
 ```python
-    data_path = './data/cat.jpg'
+data_path = './data/cat.jpg'
 
-    # for TensorFlow Serving
-    test_img_bytes = None
-    with open(data_path, 'rb') as f:
-        test_img_bytes = f.read()
+# for TensorFlow Serving
+test_img_bytes = None
+with open(data_path, 'rb') as f:
+    test_img_bytes = f.read()
 
-    # for TensorRT Serving
-    test_img = Image.open(data_path)
+# for TensorRT Serving
+test_img = Image.open(data_path)
 
-    # for TorchScript and ONNX
-    test_img_ndarray: np.ndarray = cv2.imread(data_path)
+# for TorchScript and ONNX
+test_img_ndarray: np.ndarray = cv2.imread(data_path)
 ```
 
-#### Implement a Client
+### Implement a Client
 
-We have a basic client class (`BaseModelInspector`) for you to implement, by implementing the client, you can get the profiling results using your own clinet. 
+We have a basic client class (`BaseModelInspector`) for you to implement, by implementing the client, you can get the profiling results using your own client. 
 
 ```python 
 from modelci.metrics.benchmark.metric import BaseModelInspector
@@ -57,7 +57,7 @@ class CustomClient(BaseModelInspector):
         """
 ```
 
-#### Using ModelCI Profiler
+### Using ModelCI Profiler
 
 Once the testing data and the client are ready, you can instance a ModelCI Profiler and start model profiling.
 
@@ -93,3 +93,16 @@ completed at 2020-05-20 09:52:23.629047
 Will be saved into the local database automatically.
 
 A runnable demo can be found in [sample.py](./sample.py).
+
+### Profiling Automatically
+
+If you don't know how to implement a custom client for your model, or even didn't prepare a testing data. You can try `auto_diagnose`. 
+
+```python 
+# start profiling automatically.
+profiler.auto_diagnose()
+# start profiling automatically with specific batch sizes, here is [2, 4, 16].
+profiler.auto_diagnose([2, 4, 16])
+```
+
+the profiler will search for a suitable client according to the model information, and start the model profiling automatically.
