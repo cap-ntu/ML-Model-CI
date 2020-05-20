@@ -46,6 +46,6 @@ if __name__ == "__main__":
     profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
     profiler.diagnose()
     # profiler.diagnose(batch_size=1) # you can use a new batch_size to overwrite the client's.
-    # profiler.diagnose_all_batches([1, 2, 4, 8, 16, 32]) # run all 1, 2, 4, 8, 16, 32 batch size 
+    # profiler.diagnose_all_batches([1, 2, 4, 8, 16, 32]) # run all 1, 2, 4, 8, 16, 32 batch size
 
     # profiler.auto_diagnose([2, 4, 16])
