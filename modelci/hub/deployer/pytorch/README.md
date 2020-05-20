@@ -18,8 +18,9 @@ cp ../config/docker-env.env.example ./docker-env.env
 python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/service.proto
 
 # Build Docker
-docker build -t pytorch-serving -f torch-serve-cpu.Dockerfile .  
-# For GPU version, use torch-serve-gpu.Dockerfile instead
+docker build -t pytorch-serving:latest -f torch-serve-cpu.Dockerfile .  
+# For GPU version, use torch-serve-gpu.Dockerfile instead, tag GPU version as onnx-serving:latest-gpu
+# docker build -t pytorch-serving:latest-gpu -f onnx-serve-gpu.Dockerfile .
 ```
 
 ## Usage
