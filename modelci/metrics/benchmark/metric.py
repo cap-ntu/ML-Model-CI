@@ -27,7 +27,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     ----------
     @param batch_num: the number of batches you want to run
     @param batch_size: batch size you want
-    @param asynchronous: runnning asynchronously, default is False.
+    @param repeat_data: data unit to repeat.
     @param asynchronous: runnning asynchronously, default is False.
     @param sla: SLA, default is 1 sec.
     @param percentile: The SLA percentile. Default is 95.
