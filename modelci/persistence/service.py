@@ -113,7 +113,7 @@ class ModelService(object):
             ValueError: If `model.id` does not exist in ModelDB, and `force_insert` is not set.
         """
         # check for the existence of Model
-        if ModelService.__model_DAO.is_id_exists(model.id):
+        if ModelService.__model_DAO.exists_by_id(model.id):
             model_po = model.to_model_po()
         else:
             # if `force_insert` is set
