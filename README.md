@@ -1,4 +1,4 @@
-<p align="center"> <img src="docs/img/modelci.png" alt="..."> </p>
+<p align="center"> <img src="docs/img/iconv1.svg" width="250" alt="..."> </p>
 
 <h1 align="center">
     Machine Learning Model CI
