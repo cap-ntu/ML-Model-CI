@@ -15,8 +15,8 @@
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
   <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
   <a href="#tutorial">Tutorial</a> •
   <a href="#benchmark">Benchmark</a> •
   <a href="#roadmap">Roadmap</a> •
@@ -33,13 +33,11 @@
 - **Dispatcher** is to place models to devices and serve them automatically.
 - **Controller** supports elastic test and deployment.
 
-## Quick Start
-
-### Installation
+## Installation
 
 - [ ] One-step Docker installation [[Refer]](/intergration/README.md)
 
-#### Create environment
+#### Create Environment
 
 ```shell script
 # create environment
@@ -68,6 +66,9 @@ source scripts/setup_env.sh
 1. Add `modelci/env-mongodb.env` as an EnvFile.
 2. Set project root as source root.
 
+## Quick Start
+
+
 ## Tutorial
 
 Please go to [[Tutorial]](/register_convert_diagnose_deploy.md)
@@ -92,9 +93,22 @@ Provide CURD for models
 - [x] retrive
 - [ ] delete
 
-===============
-
 - [ ] cli toolkit (click package)
 - [ ] intergrate k8s
 
 ## License
+```
+   Copyright 2020 Nanyang Technological University, Singapore
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```
