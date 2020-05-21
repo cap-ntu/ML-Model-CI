@@ -20,7 +20,7 @@ python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/service
 # Build Docker
 docker build -t pytorch-serving:latest -f torch-serve-cpu.Dockerfile .  
 # For GPU version, use torch-serve-gpu.Dockerfile instead, tag GPU version as onnx-serving:latest-gpu
-# docker build -t pytorch-serving:latest-gpu -f onnx-serve-gpu.Dockerfile .
+# docker build -t pytorch-serving:latest-gpu -f torch-serve-gpu.Dockerfile .
 ```
 
 ## Usage
@@ -35,7 +35,7 @@ For example, running
 python modelci/init_data.py --model resnet50 --framework pytorch
 ```
 Models will be saved at `~/.modelci/ResNet50/pytorch-torchscript/` directory.  
-**Note**: You do not need to rerun the above code if you have done so for [ONNX](/modelci/hub/deployer/onnx).
+**Note**: You do not need to rerun the above code if you have done so for [ONNX](/modelci/hub/deployer/onnxs).
 
 </li>
 <li> deploy model
