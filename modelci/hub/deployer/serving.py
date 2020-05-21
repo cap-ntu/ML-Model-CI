@@ -1,13 +1,16 @@
 import argparse
-import subprocess
-import sys
+import logging
+import re
 from pathlib import Path
 from typing import Union
 
+import docker
+from docker.types import Mount, Ulimit
+
+from modelci.hub.deployer import config
+from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
+from modelci.hub.utils import parse_path
 from modelci.persistence.bo import Framework, Engine
-from ..deployer import config
-from ..manager import retrieve_model_by_name, retrieve_model_by_task
-from ..utils import parse_path
 
 
 def serve(save_path: Union[Path, str], device: str = 'cpu'):
@@ -19,55 +22,103 @@ def serve(save_path: Union[Path, str], device: str = 'cpu'):
     """
     # TODO: CUDA device specification
     info = parse_path(Path(save_path))
-    to = 'cpu' if device.lower() == 'cpu' else 'gpu'
+
+    # obtain device
+    if device == 'cpu':
+        cuda = False
+    else:
+        matched = re.match(r'^cuda(?::([0-9]+))?$', device)
+        if matched is None:
+            logging.warning('Wrong device specification, using `cpu`.')
+            cuda = False
+        else:
+            cuda = True
+            device_num = matched.groups()[0]
+            if device_num is None:
+                device_num = 0
+
+    docker_tag = 'latest-gpu' if cuda else 'latest'
 
     architecture: str = info['architecture']
     engine: Engine = info['engine']
+
     # TODO: change to subprocess.run, see https://stackoverflow.com/a/34873354; Return code
+    docker_client = docker.from_env()
+
+    # set mount
+    mounts = [Mount(target=f'/models/{architecture}', source=str(info['base_dir']), type='bind', read_only=True)]
+
+    common_kwargs = {'detach': True, 'auto_remove': True, 'mounts': mounts}
+    environment = dict()
+
+    if cuda:
+        common_kwargs['runtime'] = 'nvidia'
+        environment['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+        environment['CUDA_VISIBLE_DEVICES'] = device_num
+
     if engine == Engine.TFS:
-        subprocess.call(['sh', f'tfs/deploy_model_{to}.sh', architecture, config.TFS_HTTP_PORT, config.TFS_GRPC_PORT])
+        ports = {'8501': config.TFS_HTTP_PORT, '8500': config.TFS_GRPC_PORT}
+        environment['MODEL_NAME'] = architecture
+        docker_client.containers.run(
+            f'tensorflow/serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+        )
     elif engine == Engine.TORCHSCRIPT:
-        subprocess.call(['sh', f'pytorch/deploy_model_{to}.sh', architecture, config.TORCHSCRIPT_HTTP_PORT])
+        ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
+        environment['MODEL_NAME'] = architecture
+        docker_client.containers.run(
+            f'pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+        )
     elif engine == Engine.ONNX:
-        subprocess.call(['sh', f'onnx/deploy_model_{to}.sh', architecture, config.ONNX_HTTP_PORT])
+        ports = {'8000': config.ONNX_HTTP_PORT, '8001': config.ONNX_GRPC_PORT}
+        environment['MODEL_NAME'] = architecture
+        docker_client.containers.run(
+            f'onnx-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+        )
     elif engine == Engine.TRT:
-        subprocess.call(['sh', 'trt/deploy_model.sh', architecture, config.TRT_HTTP_PORT, config.TRT_GRPC_PORT,
-                         config.TRT_PROMETHEUS_PORT])
+        if not cuda:
+            raise RuntimeError('TensorRT cannot be run without CUDA. Please specify a CUDA device.')
+
+        ports = {'8000': config.TRT_HTTP_PORT, '8001': config.TRT_GRPC_PORT, '8002': config.TRT_PROMETHEUS_PORT}
+        ulimits = [Ulimit(name='memlock', soft=-1, hard=-1), Ulimit(name='stack', soft=67100864, hard=67100864)]
+        trt_kwargs = {'ulimits': ulimits, 'shm_size': '1G'}
+        docker_client.containers.run(
+            f'nvcr.io/nvidia/tensorrtserver:19.10-py3', 'trtserver --model-repository=/models',
+            environment=environment, ports=ports, **common_kwargs, **trt_kwargs,
+        )
     else:
         exit('Not supported.')
 
 
+def serve_by_name(args):
+    model = args.model
+    framework = Framework[args.framework.upper()]
+    engine = Engine[args.engine.upper()]
+
+    model_bo = retrieve_model_by_name(architecture_name=model, framework=framework, engine=engine)
+    serve(model_bo.saved_path, device=args.device)
+
+
+def serve_by_task(args):
+    model_bo = retrieve_model_by_task(task=args.task)
+    serve(model_bo.saved_path, device=args.device)
+
+
 if __name__ == '__main__':
-    # FIXME: bug exist, caused by serve by task
     parser = argparse.ArgumentParser(description='Serving')
-    parser.add_argument('-m', '--model', type=str, help='Model name')
-    parser.add_argument('-f', '--framework', type=str, help='Framework name')
-    parser.add_argument('-e', '--engine', type=str, help='Engine name')
-    parser.add_argument('--task', type=str, help='task name')
+    subparsers = parser.add_subparsers()
+
+    by_name_parser = subparsers.add_parser('name', help='Serving by name')
+    by_name_parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
+    by_name_parser.add_argument('-f', '--framework', type=str, required=True, help='Framework name')
+    by_name_parser.add_argument('-e', '--engine', type=str, required=True, help='Engine name')
+    by_name_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
+    by_name_parser.set_defaults(func=serve_by_name)
+
+    by_task_parser = subparsers.add_parser('task', help='Serving by task')
+    by_task_parser.add_argument('--task', type=str, required=True, help='task name')
+    by_task_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
+    by_task_parser.set_defaults(func=serve_by_task)
 
     # parse argument
-    args = parser.parse_args()
-    model = args.model
-    framework = Framework[args.framework.upper()] if args.framework else None
-    engine = Engine[args.engine.upper()] if args.engine else None
-
-    # serve by name
-    if model:
-        if not framework:
-            print('--framework is missing')
-            parser.print_help(sys.stderr)
-            sys.exit(1)
-        elif not engine:
-            print('--engine is missing')
-            parser.print_help(sys.stderr)
-            sys.exit(1)
-        else:
-            save_path = retrieve_model_by_name(architecture_name=model, framework=framework, engine=engine)
-            serve(save_path)
-    # serve by task
-    elif bool(args.task):
-        save_path = retrieve_model_by_task(task=args.task)
-        serve(save_path)
-    else:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
+    args_ = parser.parse_args()
+    args_.func(args_)

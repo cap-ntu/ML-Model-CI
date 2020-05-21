@@ -28,6 +28,7 @@ conda env create -f environment.yml
 
 # install PyTorch with specific CUDA version
 conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
+pip install tensorflow-serving-api
 ```
 
 #### Install Service
