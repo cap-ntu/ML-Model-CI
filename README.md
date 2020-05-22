@@ -80,7 +80,7 @@ Please go to [[Tutorial]](/register_convert_diagnose_deploy.md)
 
 ## Roadmap
 
-- [ ] diagnoser API
+- [ ] profiler API
 - [ ] add diagnose tutorial at modelci/hub/register_convert_diagnose_deploy.md
 - [ ] restful API
 - [ ] web frontend
