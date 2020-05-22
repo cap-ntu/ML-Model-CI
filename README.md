@@ -20,11 +20,10 @@
   <a href="#quick-start">Quick Start</a> •
   <a href="#tutorial">Tutorial</a> •
   <a href="#benchmark">Benchmark</a> •
+  <a href="#development">Contributing</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="#license">License</a>
 </p>
-
-
 
 ## Features
 
@@ -36,57 +35,47 @@
 
 ## Installation
 
-- [ ] One-step Docker installation [[Refer]](/intergration/README.md)
+### Docker 
 
-#### Create Environment
-
-```shell script
-# create environment
-conda env create -f environment.yml
-
-# install PyTorch with specific CUDA version
-conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
-pip install tensorflow-serving-api
+```bash
+docker pull xxx #TODO
 ```
 
-#### Install Service
+Check more intergrations, please refer to [here](/intergration/README.md).
 
-```shell script
-sh scripts/start_service.sh
+### CLI 
+
+```bash
+curl xxx.get_cli.sh #TODO
+# or pip install modelci
 ```
-
-### Setup environment variables
-
-#### Option1: Using setup script
-
-```shell script
-source scripts/setup_env.sh
-```
-
-#### Option2: Using IDE
-
-1. Add `modelci/env-mongodb.env` as an EnvFile.
-2. Set project root as source root.
 
 ## Quick Start
 
+ModelCI offers a user-friendly interface for you to manage your model related workflows. 
 
 ## Tutorial
 
-Please go to [[Tutorial]](/register_convert_diagnose_deploy.md)
+- [Register Model in the Model Database]()
+- [Converting Model to Different Frameworks]()
+- [Profiling Model Automatically]()
+- [Deploy Model in Specific Devices]()
 
 ## Benchmark
 
 - [ ] ModelZoo with model performance
 
+## Contributing
+
+MLModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) for more information.
+
 ## Roadmap
 
-- [ ] profiler API
-- [ ] add diagnose tutorial at modelci/hub/register_convert_diagnose_deploy.md
+- [x] profiler API
+- [x] add diagnose tutorial at modelci/hub/register_convert_diagnose_deploy.md
 - [ ] restful API
-- [ ] web frontend
+- [x] web frontend
 - [ ] according to /intergration, create a setup shell script
-- [ ] opensource stuff
 
 Provide CURD for models
 
