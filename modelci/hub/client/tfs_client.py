@@ -5,15 +5,13 @@ Date: 26/04/2020
 """
 
 import grpc
-import numpy as np
-import requests
-
-from modelci.metrics.benchmark.metric import BaseModelInspector
 
 import tensorflow.compat.v1 as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
+
 from modelci.hub.deployer.config import TFS_GRPC_PORT
+from modelci.metrics.benchmark.metric import BaseModelInspector
 
 
 class CVTFSClient(BaseModelInspector):
@@ -37,7 +35,7 @@ class CVTFSClient(BaseModelInspector):
 
     def infer(self, input_batch):
         self.request.inputs['image_bytes'].CopyFrom(tf.make_tensor_proto(input_batch, shape=[len(input_batch)]))
-        result = self.stub.Predict(self.request, 10.0)
+        self.stub.Predict(self.request, 10.0)
 
 
 

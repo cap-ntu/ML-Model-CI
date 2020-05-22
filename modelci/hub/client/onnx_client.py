@@ -7,7 +7,6 @@ Date: 26/04/2020
 import torch
 import grpc, json
 import numpy as np
-from toolz import compose
 from torchvision import transforms
 
 from proto.service_pb2 import InferRequest

@@ -13,8 +13,8 @@ from tfs_client import CVTFSClient
 # from onnx_client import CVONNXClient
 
 from modelci.hub.profiler import Profiler
-from modelci.hub.manager import register_model_from_yaml, retrieve_model_by_name, retrieve_model_by_task
-from modelci.persistence.bo.model_objects import Engine, Framework, ModelVersion
+from modelci.hub.manager import retrieve_model_by_name
+from modelci.persistence.bo.model_objects import Engine, Framework
 
 
 if __name__ == "__main__":
