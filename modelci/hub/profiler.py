@@ -10,7 +10,7 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.onnx_client import CVONNXClient
 
-from modelci.persistence.bo import IOShape, Engine, Framework, ModelVersion
+from modelci.persistence.bo import Engine, Framework, ModelVersion
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
 from modelci.hub.deployer import serve

@@ -18,7 +18,7 @@ from modelci.hub.deployer.config import TFS_GRPC_PORT
 
 class CVTFSClient(BaseModelInspector):
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
-        tf.app.flags.DEFINE_string('server', f'localhost:{TFS_GRPC_PORT}'', 'PredictionService host:port')
+        tf.app.flags.DEFINE_string('server', f'localhost:{TFS_GRPC_PORT}', 'PredictionService host:port')
         tf.app.flags.DEFINE_string('image', './data/cat.jpg', 'path to image in JPEG format')
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         self.request = None

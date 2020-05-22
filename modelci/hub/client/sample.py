@@ -1,19 +1,20 @@
 '''
 An example usage of profiler.py
+@authour huangyz0918
 '''
 import cv2 
 import numpy as np
 from PIL import Image
-import torch
+# import torch
 
 from tfs_client import CVTFSClient
-from trt_client import CVTRTClient
-from torch_client import CVTorchClient
-from onnx_client import CVONNXClient
+# from trt_client import CVTRTClient
+# from torch_client import CVTorchClient
+# from onnx_client import CVONNXClient
 
 from modelci.hub.profiler import Profiler
-from modelci.hub.manager import register_model, register_model_from_yaml, retrieve_model_by_name, retrieve_model_by_task
-from modelci.persistence.bo.model_objects import IOShape, Engine, Framework, ModelVersion
+from modelci.hub.manager import register_model_from_yaml, retrieve_model_by_name, retrieve_model_by_task
+from modelci.persistence.bo.model_objects import Engine, Framework, ModelVersion
 
 
 if __name__ == "__main__":
