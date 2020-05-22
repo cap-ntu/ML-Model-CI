@@ -6,7 +6,7 @@ Use the following tools to profile your Deep Learning model.
 
 ### Load Data
 
-This step depends on your model input format. You can pass one processed data item (we can duplicate that for testing) or give a set of thesting data to test.
+This step depends on your model input format. You can pass one processed data item (we can duplicate that for testing) or give a set of testing data to test.
 
 Here are several examples,
 
@@ -27,7 +27,7 @@ test_img_ndarray: np.ndarray = cv2.imread(data_path)
 
 ### Implement a Client
 
-We have a basic client class (`BaseModelInspector`) for you to implement, by implementing the client, you can get the profiling results using your own client. 
+We have a basic client class (`BaseModelInspector`) for you to implement. By implementing the client, you can get the profiling results using your own client. 
 
 ```python 
 from modelci.metrics.benchmark.metric import BaseModelInspector
@@ -72,7 +72,7 @@ profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_clien
 profiler.diagnose()
 ```
 
-the profiling result looks like, 
+The profiling result looks like, 
 
 ```bash
 
@@ -96,9 +96,11 @@ A runnable demo can be found in [sample.py](./sample.py).
 
 ### Profiling Automatically
 
-If you don't know how to implement a custom client for your model, or even didn't prepare a testing data. You can try `auto_diagnose`. 
+If you don't know how to implement a custom client for your model, or even didn't prepare testing data. You can try `auto_diagnose`. 
 
 ```python 
+# init a profiler, the server name must be the same as your serving container's.
+profiler = Profiler(model_info=mode_info, server_name='tfs')
 # start profiling automatically.
 profiler.auto_diagnose()
 # start profiling automatically with specific batch sizes, here is [2, 4, 16].

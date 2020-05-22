@@ -117,7 +117,7 @@ class Profiler(object):
         elif serving_engine == Framework.TRT:
             return CVTRTClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
         elif serving_engine == Framework.TVM:
-            return None
+            raise NotImplementedError
         elif serving_engine == Framework.CUSTOMIZED:
              raise Exception('please pass a custom client to the Profiler.__init__.')
         else:
