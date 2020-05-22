@@ -12,6 +12,7 @@ from tensorrtserver.api import InferContext, ProtocolType
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.hub.utils import parse_trt_model
 from modelci.data_engine.preprocessor import image_classification_preprocessor
+from modelci.hub.deployer.config import TRT_GRPC_PORT
 
 
 class CVTRTClient(BaseModelInspector):
@@ -24,7 +25,7 @@ class CVTRTClient(BaseModelInspector):
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         
     def data_preprocess(self):
-        self.input_name, self.output_name, c, h, w, format, dtype = parse_trt_model("localhost:8001", ProtocolType.from_str('gRPC'), 'ResNet50', self.batch_size, False)  
+        self.input_name, self.output_name, c, h, w, format, dtype = parse_trt_model(f"localhost:{TRT_GRPC_PORT}", ProtocolType.from_str('gRPC'), 'ResNet50', self.batch_size, False)  
         self.processed_data = image_classification_preprocessor(self.raw_data, format, dtype, c, h, w, 'NONE')
         
     def infer(self, input_batch):
