@@ -5,33 +5,43 @@ from pathlib import Path
 from typing import Union
 
 import docker
+from docker.models.containers import Container
 from docker.types import Mount, Ulimit
 
 from modelci.hub.deployer import config
 from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
 from modelci.hub.utils import parse_path
 from modelci.persistence.bo import Framework, Engine
+from modelci.utils.misc import remove_dict_null
 
 
-def serve(save_path: Union[Path, str], device: str = 'cpu'):
-    """Serve the given model save path.
+def serve(save_path: Union[Path, str], device: str = 'cpu', name: str = None) -> Container:
+    """Serve the given model save path in a Docker container.
 
-    Arguments:
+    Args:
         save_path (Union[Path, str]): Saved path to the model.
-        device (str):
+        device (str): Device name. E.g.: cpu, cuda, cuda:1.
+        name (str): Container name. Default to None.
+
+    Returns:
+        Container: Docker container object created.
     """
-    # TODO: CUDA device specification
+
     info = parse_path(Path(save_path))
+    architecture: str = info['architecture']
+    engine: Engine = info['engine']
 
     # obtain device
+    device_num = None
     if device == 'cpu':
         cuda = False
     else:
+        # match something like cuda, cuda:0, cuda:1
         matched = re.match(r'^cuda(?::([0-9]+))?$', device)
-        if matched is None:
+        if matched is None:  # load with CPU
             logging.warning('Wrong device specification, using `cpu`.')
             cuda = False
-        else:
+        else:  # load with CUDA
             cuda = True
             device_num = matched.groups()[0]
             if device_num is None:
@@ -39,16 +49,12 @@ def serve(save_path: Union[Path, str], device: str = 'cpu'):
 
     docker_tag = 'latest-gpu' if cuda else 'latest'
 
-    architecture: str = info['architecture']
-    engine: Engine = info['engine']
-
-    # TODO: change to subprocess.run, see https://stackoverflow.com/a/34873354; Return code
     docker_client = docker.from_env()
 
     # set mount
     mounts = [Mount(target=f'/models/{architecture}', source=str(info['base_dir']), type='bind', read_only=True)]
 
-    common_kwargs = {'detach': True, 'auto_remove': True, 'mounts': mounts}
+    common_kwargs = remove_dict_null({'detach': True, 'auto_remove': True, 'mounts': mounts, 'name': name})
     environment = dict()
 
     if cuda:
@@ -59,19 +65,19 @@ def serve(save_path: Union[Path, str], device: str = 'cpu'):
     if engine == Engine.TFS:
         ports = {'8501': config.TFS_HTTP_PORT, '8500': config.TFS_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
-        docker_client.containers.run(
+        container = docker_client.containers.run(
             f'tensorflow/serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.TORCHSCRIPT:
         ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
-        docker_client.containers.run(
+        container = docker_client.containers.run(
             f'pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.ONNX:
         ports = {'8000': config.ONNX_HTTP_PORT, '8001': config.ONNX_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
-        docker_client.containers.run(
+        container = docker_client.containers.run(
             f'onnx-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.TRT:
@@ -81,12 +87,14 @@ def serve(save_path: Union[Path, str], device: str = 'cpu'):
         ports = {'8000': config.TRT_HTTP_PORT, '8001': config.TRT_GRPC_PORT, '8002': config.TRT_PROMETHEUS_PORT}
         ulimits = [Ulimit(name='memlock', soft=-1, hard=-1), Ulimit(name='stack', soft=67100864, hard=67100864)]
         trt_kwargs = {'ulimits': ulimits, 'shm_size': '1G'}
-        docker_client.containers.run(
+        container = docker_client.containers.run(
             f'nvcr.io/nvidia/tensorrtserver:19.10-py3', 'trtserver --model-repository=/models',
             environment=environment, ports=ports, **common_kwargs, **trt_kwargs,
         )
     else:
-        exit('Not supported.')
+        raise RuntimeError(f'Not able to serve model with path `{str(save_path)}`.')
+
+    return container
 
 
 def serve_by_name(args):

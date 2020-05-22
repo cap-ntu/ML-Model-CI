@@ -1,8 +1,7 @@
 import logging
 
 
-class Logger:
-
+class Logger(object):
     DEFAULT_SEVERITY_LEVELS = {
         "StreamHandler": 'INFO',
     }
