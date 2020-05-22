@@ -43,7 +43,7 @@ docker pull xxx #TODO
 
 Please refer to [here](/intergration/README.md) for more information.
 
-### CLI 
+### Command Line  
 
 ```bash
 curl xxx.get_cli.sh #TODO
