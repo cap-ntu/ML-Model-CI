@@ -17,7 +17,6 @@ from modelci.persistence.bo import IOShape
 from modelci.utils.trtis_objects import ModelConfig, ModelVersionPolicy, ModelOutput, ModelInput, ModelInstanceGroup, \
     ModelInstanceGroupKind
 from ..hub.utils import GiB, parse_path, TensorRTPlatform
-from ..persistence.bo.type_conversion import type_to_data_type
 
 
 class TorchScriptConverter(object):
@@ -279,7 +278,7 @@ class TRTConverter(object):
 
             model_input = ModelInput(
                 name=node.name,
-                data_type=type_to_data_type(node.dtype),
+                data_type=node.dtype,
                 dims=dims,
                 format=node.format
             )
@@ -301,7 +300,7 @@ class TRTConverter(object):
 
             model_output = ModelOutput(
                 name=node.name,
-                data_type=type_to_data_type(node.dtype),
+                data_type=node.dtype,
                 dims=dims
             )
 

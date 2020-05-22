@@ -268,7 +268,7 @@ def retrieve_model_by_name(architecture_name: str = 'ResNet50', framework: Frame
     return model
 
 
-def retrieve_model_by_task(task='image classification'):
+def retrieve_model_by_task(task='image classification') -> ModelBO:
     """Query a model by task.
     This function will download a cache model from the model DB.
     Arguments:

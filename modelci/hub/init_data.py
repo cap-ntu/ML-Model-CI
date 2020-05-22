@@ -50,7 +50,7 @@ class ModelExporter(object):
                 dataset='imagenet',
                 acc=0.76,
                 task='image classification',
-                inputs=[IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NCHW)],
+                inputs=[IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NHWC)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet50',
                 framework=framework,
