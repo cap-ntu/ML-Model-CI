@@ -1,10 +1,10 @@
 # Contributing
 
-MLModelCI welcomes your contributions!
+ModelCI welcomes your contributions!
 
 ## Setup Environment
 
-To contribute to the MLModelCI, you need to setup the developing environment first, you can easily create the dev environments according to the following steps.
+To contribute to the ModelCI, you need to setup the developing environment first, you can easily create the dev environments according to the following steps. All the scripts should be executed under the root project of this repo.
 
 ### Create Anaconda Environment
 
@@ -23,7 +23,7 @@ pip install tensorflow-serving-api
 sh scripts/start_service.sh
 ```
 
-After installing the service we need, you must setup the environment variables to activate the service. You can run our script in command line, if you are using IDE to develop, you should add the EnvFile manually.
+After installing the service we need, you must setup the environment variables to activate the service. You can run the script in command line, if you are using IDE to develop, you should add the EnvFile manually.
 
 
 #### Option1: Using Script
@@ -45,11 +45,12 @@ After these steps, try runing ModelCI locally and start making a difference!
 
 ### Unit Tests
 [PyTest](https://docs.pytest.org/en/latest/) is used to execute tests. PyTest can be
-installed from PyPI via `pip install pytest`. Simply invoke `pytest --forked` to run the
-unit tests:
+installed from PyPI via `pip install pytest`. 
+
 ```bash
 python -m pytest tests/
 ```
+
 You can also provide the `-v` flag to `pytest` to see additional information about the
 tests.
 

@@ -41,7 +41,7 @@
 docker pull xxx #TODO
 ```
 
-Check more intergrations, please refer to [here](/intergration/README.md).
+Please refer to [here](/intergration/README.md) for more information.
 
 ### CLI 
 
@@ -56,6 +56,8 @@ ModelCI offers a user-friendly interface for you to manage your model related wo
 
 ## Tutorial
 
+Let's go deeper, we have some tutorials here for your reference
+
 - [Register Model in the Model Database]()
 - [Converting Model to Different Frameworks]()
 - [Profiling Model Automatically]()
@@ -67,7 +69,7 @@ ModelCI offers a user-friendly interface for you to manage your model related wo
 
 ## Contributing
 
-MLModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) for more information.
+ModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) to get start.
 
 ## Roadmap
 
