@@ -36,7 +36,7 @@ from tensorrtserver.api import ServerStatusContext, InferContext, ProtocolType
 
 from modelci.data_engine.postprocessor import image_classification_postprocessor
 from modelci.data_engine.preprocessor import image_classification_preprocessor
-from modelci.hub.utils import model_dtype_to_np
+from modelci.persistence.bo.type_conversion import model_data_type_to_np
 from modelci.utils.trtis_objects import ModelStatus, ServerStatus
 
 
@@ -134,7 +134,7 @@ def parse_model(url, protocol, model_name, batch_size, verbose=False):
         h = input.dims[1]
         w = input.dims[2]
 
-    return input.name, output.name, c, h, w, input.format, model_dtype_to_np(input.data_type)
+    return input.name, output.name, c, h, w, input.format, model_data_type_to_np(input.data_type)
 
 
 if __name__ == '__main__':
@@ -158,7 +158,7 @@ if __name__ == '__main__':
                         required=False, default='NONE',
                         help='Type of scaling to apply to image pixels. Default is NONE.')
     parser.add_argument('-u', '--url', type=str, required=False, default='localhost:8000',
-                        help='Inference server URL. Default is localhost:8000.')
+                        help='Inference server URL. Default is localhost:8200.')
     parser.add_argument('-i', '--protocol', type=str, required=False, default='HTTP',
                         help='Protocol (HTTP/gRPC) used to ' +
                              'communicate with inference service. Default is HTTP.')

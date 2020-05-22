@@ -6,11 +6,13 @@ import numpy as np
 import requests
 import tensorflow as tf
 
+from modelci.hub.deployer.config import TFS_HTTP_PORT
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Make image request.")
     parser.add_argument('-t', default=False, action="store_true", help="Test throughput and latency mode.")
     parser.add_argument('--model', type=str, help="Model name.")
-    parser.add_argument('--port', type=str, help="Port number.")
+    parser.add_argument('--port', type=str, default=str(TFS_HTTP_PORT), help="Port number.")
     parser.add_argument('--repeat', type=int, default=100, help="Repeat time.")
 
     args = parser.parse_args()

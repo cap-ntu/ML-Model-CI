@@ -10,17 +10,16 @@ import grpc
 import numpy as np
 import torch.jit
 from grpc._cython import cygrpc
-from toolz import compose
-
 from proto import service_pb2_grpc
 from proto.service_pb2 import InferResponse
 from proto.service_pb2_grpc import add_PredictServicer_to_server
+from toolz import compose
 from utils import model_data_type_to_np, DataType
 
 
 class ServingEngine(object):
     def __init__(self):
-        model_base_dir = Path('/model') / sys.argv[1]
+        model_base_dir = Path('/models') / sys.argv[1]
         # get valid version sub dir
         model_dir = list(filter(lambda x: os.path.isfile(x) and str(x.stem).isdigit(), model_base_dir.glob('**/*')))
         # set device

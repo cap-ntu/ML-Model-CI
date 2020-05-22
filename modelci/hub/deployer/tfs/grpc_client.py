@@ -11,6 +11,8 @@ import tensorflow as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
 
+from modelci.hub.deployer.config import TFS_GRPC_PORT
+
 
 class _ResultCounter(object):
 
@@ -124,7 +126,7 @@ if __name__ == '__main__':
     parser.add_argument("--input_name", type=str, help="Input name.")
     parser.add_argument("--signature", default="serving_default", type=str, help="Signature.")
     parser.add_argument("--repeat", default=100, type=int, help="Repeat time.")
-    parser.add_argument("--host", default="0.0.0.0:8500", type=str, help="Host IP.")
+    parser.add_argument("--host", default=f"0.0.0.0:{TFS_GRPC_PORT}", type=str, help="Host IP.")
     parser.add_argument("--concurrency", default=1, type=int, help="Concurrent inference requests limit")
     parser.add_argument('-t', default=False, action="store_true", help="Test throughput")
     args = parser.parse_args()

@@ -27,7 +27,8 @@ def parse_path(path: Path):
             'framework': framework,
             'engine': engine,
             'version': version,
-            'filename': filename
+            'filename': filename,
+            'base_dir': path.parent
         }
     else:
         raise ValueError('Incorrect model path pattern')

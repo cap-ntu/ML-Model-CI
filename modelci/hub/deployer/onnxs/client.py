@@ -5,13 +5,14 @@ import cv2
 import grpc
 import numpy as np
 import torch
+from proto.service_pb2 import InferRequest
+from proto.service_pb2_grpc import PredictStub
 from toolz import compose
 from torchvision import transforms
 
+from modelci.hub.deployer.config import ONNX_GRPC_PORT
 from modelci.persistence.bo.type_conversion import type_to_data_type
 from modelci.utils.misc import json_update
-from proto.service_pb2 import InferRequest
-from proto.service_pb2_grpc import PredictStub
 
 
 class RpcClient(object):
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     batch_size = 8
 
     raw_images = mock_frame_fetch('img_bigbang_scene.jpg', batch_size=batch_size)
-    with RpcClient(port='8001') as rpc_client:
+    with RpcClient(port=ONNX_GRPC_PORT) as rpc_client:
         request = transform_image(images=raw_images)
         response = rpc_client.service_request(request)
 
