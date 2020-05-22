@@ -20,7 +20,7 @@
   <a href="#quick-start">Quick Start</a> •
   <a href="#tutorial">Tutorial</a> •
   <a href="#benchmark">Benchmark</a> •
-  <a href="#development">Contributing</a> •
+  <a href="#contributing">Contributing</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="#license">License</a>
 </p>
