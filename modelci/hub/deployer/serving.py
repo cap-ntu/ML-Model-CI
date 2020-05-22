@@ -16,8 +16,7 @@ from modelci.utils.misc import remove_dict_null
 
 
 def serve(save_path: Union[Path, str], device: str = 'cpu', name: str = None) -> Container:
-    """
-    Serve the given model save path in a Docker container.
+    """Serve the given model save path in a Docker container.
 
     Args:
         save_path (Union[Path, str]): Saved path to the model.
@@ -26,6 +25,7 @@ def serve(save_path: Union[Path, str], device: str = 'cpu', name: str = None) ->
 
     Returns:
         Container: Docker container object created.
+
     """
 
     info = parse_path(Path(save_path))
