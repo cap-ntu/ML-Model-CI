@@ -54,9 +54,72 @@ curl xxx.get_cli.sh #TODO
 
 ModelCI offers a user-friendly interface for you to manage your model related workflows. 
 
+### Register a Model 
+
+Assume you have a ResNet50 model trained by PyTorch, you can easily add it to the database like this
+
+```python
+from modelci.hub.manager import register_model
+
+# Register a Trained ResNet50 Model in Database.
+register_model(
+    '~/ResNet50/pytorch/1.zip',
+    dataset='ImageNet',
+    acc=0.76,
+    task='image classification',
+    inputs=[IOShape([-1, 3, 224, 224], float)],
+    outputs=[IOShape([-1, 1000], float)]
+)
+```
+
+We also support other types of conversion.
+
+### Convert Model Type
+
+You can use ModelCI to convert your registered model to another platform, such as ONNX runtime.
+
+```python 
+from modelci.hub.converter import ONNXConverter
+from modelci.persistence.bo import IOShape
+
+torch_module = '~/ResNet50/pytorch/1.zip'
+saved_path = '~/ResNet50/onnx/1.zip'
+
+ONNXConverter.from_torch_module(torch_module, saved_path, input_shape=[IOShape([-1, 3, 224, 224], float)], batch_size=16)
+```
+
+### Retrieve Model Info and Deploy
+
+We can deploy the saved model to any specific device using ModelCI
+
+```python 
+from modelci.hub.deployer import serve
+from modelci.hub.manager import retrieve_model_by_name
+
+# get saved model information
+mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
+serve(save_path=model_info.saved_path, device='cuda:0', name='onnx-serving') # deploy the model to cuda device 0.
+```
+
+Now your model is running for inference!
+
+### Profile Your Model with Its Performance
+
+In order to measure the performance of the model running on different machines, ModelCI will automatically select the appropriate machine for performance testing and export the results to database.
+
+```python 
+from modelci.hub.client.torch_client import CVTorchClient # create appropriate client
+from modelci.hub.profiler import Profiler
+
+torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
+profiler = Profiler(model_info=mode_info, server_name='your serving container\'s name', inspector=torch_client)
+profiler.diagnose()
+```
+
+
 ## Tutorial
 
-Let's go deeper, we have some tutorials here for your reference
+Atfer the quick start, we have some tutorials here for detailed usages
 
 - [Register Model in the Model Database]()
 - [Converting Model to Different Frameworks]()
