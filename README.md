@@ -61,7 +61,7 @@ from modelci.hub.manager import register_model
 
 # Register a Trained ResNet50 Model in Database.
 register_model(
-    '~/ResNet50/pytorch/1.zip',
+    'home/ResNet50/pytorch/1.zip',
     dataset='ImageNet',
     acc=0.76,
     task='image classification',
