@@ -72,8 +72,6 @@ register_model(
 )
 ```
 
-We also support other types of conversion.
-
 ### Convert Model Type
 
 You can use ModelCI to convert your registered model to another platform, such as ONNX runtime.
@@ -82,15 +80,17 @@ You can use ModelCI to convert your registered model to another platform, such a
 from modelci.hub.converter import ONNXConverter
 from modelci.persistence.bo import IOShape
 
-torch_module = '~/ResNet50/pytorch/1.zip'
-saved_path = '~/ResNet50/onnx/1.zip'
-
-ONNXConverter.from_torch_module(torch_module, saved_path, input_shape=[IOShape([-1, 3, 224, 224], float)], batch_size=16)
+ONNXConverter.from_torch_module('<path to torch model>', 
+                                '<path to export onnx model>', 
+                                input_shape=[IOShape([-1, 3, 224, 224], float)], 
+                                batch_size=16)
 ```
 
-### Retrieve Model Info and Deploy
+We also support other types of conversion.
 
-We can deploy the saved model to any specific device using ModelCI
+### Retrieve Model and Deploy
+
+We can get the model information and deploy it to any specific device using ModelCI.
 
 ```python 
 from modelci.hub.deployer import serve
@@ -103,7 +103,7 @@ serve(save_path=model_info.saved_path, device='cuda:0', name='onnx-serving') # d
 
 Now your model is running for inference!
 
-### Profile Your Model with Its Performance
+### Profile Your Model
 
 In order to measure the performance of the model running on different machines, ModelCI will automatically select the appropriate machine for performance testing and export the results to database.
 
@@ -115,6 +115,8 @@ torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous
 profiler = Profiler(model_info=mode_info, server_name='your serving container\'s name', inspector=torch_client)
 profiler.diagnose()
 ```
+
+We can get several metrics after profiling, including serving throughputs, latency, GPU utilization and memory usage, for more information please take a look at our tutorials.
 
 
 ## Tutorial
