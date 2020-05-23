@@ -98,7 +98,9 @@ from modelci.hub.manager import retrieve_model_by_name
 
 # get saved model information
 mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
-serve(save_path=model_info.saved_path, device='cuda:0', name='onnx-serving') # deploy the model to cuda device 0.
+
+# deploy the model to cuda device 0.
+serve(save_path=model_info.saved_path, device='cuda:0', name='onnx-serving') 
 ```
 
 Now your model is running for inference!
@@ -108,15 +110,20 @@ Now your model is running for inference!
 In order to measure the performance of the model running on different machines, ModelCI will automatically select the appropriate machine for performance testing and export the results to database.
 
 ```python 
-from modelci.hub.client.torch_client import CVTorchClient # create appropriate client
+from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.profiler import Profiler
 
+# create a client
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
+
+# init the profiler
 profiler = Profiler(model_info=mode_info, server_name='your serving container\'s name', inspector=torch_client)
+
+# start profiling model
 profiler.diagnose()
 ```
 
-We can get several metrics after profiling, including serving throughputs, latency, GPU utilization and memory usage, for more information please take a look at our tutorials.
+We can get several metrics after profiling, including serving throughputs, latency, GPU utilization and memory usage For more information please take a look at our tutorials.
 
 
 ## Tutorial
