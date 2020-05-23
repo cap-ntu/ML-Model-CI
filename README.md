@@ -19,9 +19,7 @@
   <a href="#installation">Installation</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#tutorial">Tutorial</a> •
-  <a href="#benchmark">Benchmark</a> •
   <a href="#contributing">Contributing</a> •
-  <a href="#roadmap">Roadmap</a> •
   <a href="#license">License</a>
 </p>
 
@@ -132,36 +130,14 @@ For more information please take a look at our tutorials.
 
 Atfer the Quick Start, we have some tutorials here for detailed usages
 
-- [Register Model in the Model Database]()
-- [Converting Model to Different Frameworks]()
-- [Profiling Model Automatically]()
-- [Deploy Model in Specific Devices]()
-
-## Benchmark
-
-- [ ] ModelZoo with model performance
+- [Register Model in the Model Database](./docs/tutorial/register.md)
+- [Converting Model to Different Frameworks](./docs/tutorial/convert.md)
+- [Retrieve and Deploy Model to Specific Device](./docs/tutorial/retrieve-and-deploy.md)
+- [Profiling Model Automatically](./docs/tutorial/profile.md)
 
 ## Contributing
 
 ModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) to get start.
-
-## Roadmap
-
-- [x] profiler API
-- [x] add diagnose tutorial at modelci/hub/register_convert_diagnose_deploy.md
-- [ ] restful API
-- [x] web frontend
-- [ ] according to /intergration, create a setup shell script
-
-Provide CURD for models
-
-- [x] create -> register
-- [ ] update
-- [x] retrive
-- [ ] delete
-
-- [ ] cli toolkit (click package)
-- [ ] intergrate k8s
 
 ## License
 ```
