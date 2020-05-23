@@ -54,7 +54,7 @@ curl xxx.get_cli.sh #TODO
 
 ModelCI offers a user-friendly interface for you to manage your model related workflows. 
 
-### Register a Model 
+### Register a Saved Model 
 
 Assume you have a ResNet50 model trained by PyTorch, you can easily add it to the database like this
 
@@ -72,7 +72,7 @@ register_model(
 )
 ```
 
-### Convert Model Type
+### Convert Model
 
 You can use ModelCI to convert your registered model to another platform, such as ONNX runtime.
 
@@ -117,18 +117,20 @@ from modelci.hub.profiler import Profiler
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
 
 # init the profiler
-profiler = Profiler(model_info=mode_info, server_name='your serving container\'s name', inspector=torch_client)
+profiler = Profiler(model_info=mode_info, server_name='name of your server', inspector=torch_client)
 
 # start profiling model
 profiler.diagnose()
 ```
 
-We can get several metrics after profiling, including serving throughputs, latency, GPU utilization and memory usage For more information please take a look at our tutorials.
+We can get several metrics after profiling, including serving throughputs, latency, GPU utilization and memory usage.
+
+For more information please take a look at our tutorials.
 
 
 ## Tutorial
 
-Atfer the quick start, we have some tutorials here for detailed usages
+Atfer the Quick Start, we have some tutorials here for detailed usages
 
 - [Register Model in the Model Database]()
 - [Converting Model to Different Frameworks]()
