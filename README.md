@@ -100,7 +100,7 @@ from modelci.hub.manager import retrieve_model_by_name
 mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
 
 # deploy the model to cuda device 0.
-serve(save_path=model_info.saved_path, device='cuda:0', name='onnx-serving') 
+serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving') 
 ```
 
 Now your model is running for inference!
