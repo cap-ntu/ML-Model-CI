@@ -8,4 +8,4 @@ inputs:
 outputs:
   - shape: [-1, 1000]
     dtype: TYPE_FP32
-no_generate: True
+no_generate: False
