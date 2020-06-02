@@ -149,7 +149,7 @@ const data = [
     key: 1,
     modelId: '734d623fd24',
     modelName: 'ResNet-50',
-    modelFramework: 'TensorFlow',
+    modelFramework: 'TensorFlow-SavedModel',
     modelAcc: '75.3%',
     modelEngine: 'TensorFlow-Serving',
     modelTask: 'image classification',
@@ -260,7 +260,7 @@ const Dashboard = () => {
             <div style={{ backgroundColor: '#F5F5F5', padding: '10px' }}>
               <Descriptions
                 style={{ width: '92%', margin: '0 auto' }}
-                column={4}
+                column={3}
                 size="middle"
                 title={
                   <a
@@ -347,6 +347,7 @@ const Dashboard = () => {
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item
+                  span={2}
                   label={
                     <a
                       style={{
@@ -355,7 +356,58 @@ const Dashboard = () => {
                         color: 'black',
                       }}
                     >
-                      Serving Device
+                      Conversion State
+                    </a>
+                  }
+                >
+                  <a
+                    style={{
+                      fontSize: 20,
+                      whiteSpace: 'nowrap',
+                      color: 'green',
+                    }}
+                  >
+                    Success
+                  </a>
+                  <Divider type="vertical" />
+                  <Radio.Group size="large">
+                    <Radio.Button
+                      value="large"
+                      onClick={() => {
+                        console.log('You clicked Deploy');
+                      }}
+                    >
+                      Deploy this Model
+                    </Radio.Button>
+                  </Radio.Group>
+                </Descriptions.Item>
+              </Descriptions>
+              <Descriptions
+                style={{ width: '92%', margin: '0 auto' }}
+                column={3}
+                size="small"
+                title={
+                  <a
+                    style={{
+                      whiteSpace: 'nowrap',
+                      fontSize: 23,
+                      color: 'black',
+                    }}
+                  >
+                    Profiling Results
+                  </a>
+                }
+              >
+                <Descriptions.Item
+                  label={
+                    <a
+                      style={{
+                        whiteSpace: 'nowrap',
+                        fontSize: 20,
+                        color: 'black',
+                      }}
+                    >
+                      Profiling Device
                     </a>
                   }
                 >
@@ -379,7 +431,7 @@ const Dashboard = () => {
                         color: 'black',
                       }}
                     >
-                      Tested Batch Size
+                      Profiling Batch Size
                     </a>
                   }
                 >
@@ -419,58 +471,6 @@ const Dashboard = () => {
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item
-                  span={2}
-                  label={
-                    <a
-                      style={{
-                        whiteSpace: 'nowrap',
-                        fontSize: 20,
-                        color: 'black',
-                      }}
-                    >
-                      Tested Status
-                    </a>
-                  }
-                >
-                  <a
-                    style={{
-                      fontSize: 20,
-                      whiteSpace: 'nowrap',
-                      color: 'green',
-                    }}
-                  >
-                    Success
-                  </a>
-                  <Divider type="vertical" />
-                  <Radio.Group size="large">
-                    <Radio.Button
-                      value="large"
-                      onClick={() => {
-                        console.log('You clicked Deploy');
-                      }}
-                    >
-                      Deploy this Model
-                    </Radio.Button>
-                  </Radio.Group>
-                </Descriptions.Item>
-              </Descriptions>
-              <Descriptions
-                style={{ width: '92%', margin: '0 auto', marginTop: '20px' }}
-                column={3}
-                size="small"
-                title={
-                  <a
-                    style={{
-                      whiteSpace: 'nowrap',
-                      fontSize: 23,
-                      color: 'black',
-                    }}
-                  >
-                    Testing Metrics
-                  </a>
-                }
-              >
-                <Descriptions.Item
                   label={
                     <a
                       style={{
@@ -495,6 +495,7 @@ const Dashboard = () => {
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item
+                  span={2}
                   label={
                     <a
                       style={{
