@@ -8,9 +8,9 @@ import {
   Input,
   Radio,
   Descriptions,
-  Badge,
   Tag,
 } from 'antd';
+
 import './index.css';
 
 const { Search } = Input;
@@ -121,7 +121,7 @@ const columns = [
     className: 'column',
     render: () => (
       <div>
-        <Radio.Group size="large">
+        {/* <Radio.Group size="large">
           <Radio.Button
             value="large"
             onClick={() => {
@@ -138,7 +138,13 @@ const columns = [
           >
             Profile
           </Radio.Button>
-        </Radio.Group>
+        </Radio.Group> */}
+        <Button type="primary" size="large">
+          Edit
+        </Button>
+        <Button style={{ marginLeft: '3px' }} type="primary" size="large">
+          Profile
+        </Button>
       </div>
     ),
   },
@@ -149,7 +155,8 @@ const data = [
     key: 1,
     modelId: '734d623fd24',
     modelName: 'ResNet-50',
-    modelFramework: 'TensorFlow-SavedModel',
+    modelFramework: 'TensorFlow',
+    convertVersion: 'TensorFlow-SavedModel',
     modelAcc: '75.3%',
     modelEngine: 'TensorFlow-Serving',
     modelTask: 'image classification',
@@ -163,17 +170,18 @@ const data = [
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
-    memPer: '97.26%',
-    gpuUtil: '69.8710%',
-    latency50: '78.90689 ms',
-    latency95: '84.17011 ms',
-    latency99: '86.79733 ms',
+    memPer: '97.263%',
+    gpuUtil: '69.871%',
+    latency50: '78.906 ms',
+    latency95: '84.170 ms',
+    latency99: '86.797 ms',
   },
   {
     key: 2,
     modelId: '7e2562srd24',
     modelName: 'BERT-Medium',
-    modelFramework: 'Pytorch',
+    modelFramework: 'PyTorch',
+    convertVersion: 'TensorFlow-SavedModel',
     modelAcc: '71.0%',
     modelEngine: 'ONNX Runtime',
     modelTask: 'text classification',
@@ -182,22 +190,23 @@ const data = [
     hasDetail: false,
     servingDevice: 'Nvidia Tesla P4',
     allThroughput: '270.341 req/sec',
-    allLatency: '26.5805974 sec',
+    allLatency: '26.580 sec',
     batchSize: 64,
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
-    memPer: '0.9726',
-    gpuUtil: '75.6538%',
-    latency50: '0.265018582 s',
-    latency95: '0.276141047 s',
-    latency99: '0.279044396 s',
+    memPer: '0.972',
+    gpuUtil: '75.653%',
+    latency50: '0.265 s',
+    latency95: '0.276 s',
+    latency99: '0.279 s',
   },
   {
     key: 1,
     modelId: '734d623fd24',
     modelName: 'ResNet-50',
-    modelFramework: 'Pytorch',
+    modelFramework: 'PyTorch',
+    convertVersion: 'TensorFlow-SavedModel',
     modelAcc: '70.1%',
     modelEngine: 'TorchScript',
     modelTask: 'image classification',
@@ -211,11 +220,11 @@ const data = [
     batchNum: 100,
     totalMem: '7981694976.0 bytes',
     usedMem: '7763132416.0 bytes',
-    memPer: '97.26%',
-    gpuUtil: '69.8710%',
-    latency50: '78.90689 ms',
-    latency95: '84.17011 ms',
-    latency99: '86.79733 ms',
+    memPer: '97.263%',
+    gpuUtil: '69.871%',
+    latency50: '78.906 ms',
+    latency95: '84.170 ms',
+    latency99: '86.797 ms',
   },
 ];
 
@@ -266,7 +275,7 @@ const Dashboard = () => {
                   <a
                     style={{
                       whiteSpace: 'nowrap',
-                      fontSize: 23,
+                      fontSize: 25,
                       color: 'black',
                     }}
                   >
@@ -279,7 +288,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -292,7 +301,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.modelName}
@@ -303,23 +312,23 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
-                      Model Framework
+                      Converted Version
                     </a>
                   }
                 >
                   <Tag
-                    color="green"
+                    color="blue"
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
-                    {record.modelFramework}
+                    {record.convertVersion}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item
@@ -327,7 +336,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -340,7 +349,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.modelEngine}
@@ -352,7 +361,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -362,7 +371,7 @@ const Dashboard = () => {
                 >
                   <a
                     style={{
-                      fontSize: 20,
+                      fontSize: 25,
                       whiteSpace: 'nowrap',
                       color: 'green',
                     }}
@@ -370,7 +379,7 @@ const Dashboard = () => {
                     Success
                   </a>
                   <Divider type="vertical" />
-                  <Radio.Group size="large">
+                  {/* <Radio.Group size="large">
                     <Radio.Button
                       value="large"
                       onClick={() => {
@@ -379,7 +388,11 @@ const Dashboard = () => {
                     >
                       Deploy this Model
                     </Radio.Button>
-                  </Radio.Group>
+                  </Radio.Group> */}
+
+                  <Button type="primary" size="large">
+                    Deploy this Model
+                  </Button>
                 </Descriptions.Item>
               </Descriptions>
               <Descriptions
@@ -390,7 +403,7 @@ const Dashboard = () => {
                   <a
                     style={{
                       whiteSpace: 'nowrap',
-                      fontSize: 23,
+                      fontSize: 25,
                       color: 'black',
                     }}
                   >
@@ -403,7 +416,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -416,7 +429,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.servingDevice}
@@ -427,7 +440,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -440,7 +453,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.batchSize}
@@ -451,7 +464,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -464,7 +477,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.batchNum}
@@ -475,7 +488,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -488,7 +501,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.allLatency}
@@ -500,7 +513,7 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
@@ -513,7 +526,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.allThroughput}
@@ -524,11 +537,11 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
-                      50th Percentile Latency
+                      P50 Latency
                     </a>
                   }
                 >
@@ -537,7 +550,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.latency50}
@@ -548,11 +561,11 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
-                      95th Percentile Latency
+                      P95 Latency
                     </a>
                   }
                 >
@@ -561,7 +574,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.latency95}
@@ -572,11 +585,11 @@ const Dashboard = () => {
                     <a
                       style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 20,
+                        fontSize: 25,
                         color: 'black',
                       }}
                     >
-                      99th Percentile Latency
+                      P99 Latency
                     </a>
                   }
                 >
@@ -585,7 +598,7 @@ const Dashboard = () => {
                     style={{
                       height: '25px',
                       textAlign: 'center',
-                      fontSize: 20,
+                      fontSize: 25,
                     }}
                   >
                     {record.latency99}
