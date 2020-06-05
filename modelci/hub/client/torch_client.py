@@ -36,6 +36,7 @@ class CVTorchClient(BaseModelInspector):
             batches.append(self.transform_image(images=batch))
         return batches
 
+    # TODO: this will be moved to data_preprocessor function
     def transform_image(self, images):
         t = transforms.Compose(
             [transforms.ToPILImage(), transforms.Resize(255), transforms.CenterCrop(224), transforms.ToTensor(),
