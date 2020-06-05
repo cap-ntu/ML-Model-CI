@@ -29,7 +29,7 @@ class GPUNodeExporter(object):
         info = requests.get(self.service_url)
 
         info_dict = defaultdict(list)
-        
+
         info_list = self.__parse_text(info)
 
         for k, v in info_list:
@@ -66,14 +66,13 @@ class GPUNodeExporter(object):
         for k, v in info_dict.items():
             # for temp in v:
             #     print(list(temp.values()))
-            gpu_stat = { list(temp.keys())[0]: float(list(temp.values())[0]) for temp in v }
+            gpu_stat = {list(temp.keys())[0]: float(list(temp.values())[0]) for temp in v}
             total_memory = gpu_stat['dcgm_fb_used'] + gpu_stat['dcgm_fb_free']
             if gpu_stat['dcgm_gpu_utilization'] > util_level or gpu_stat['dcgm_fb_used'] / total_memory > memeory_level:
                 pass
             else:
                 idle_gpus.append(k)
         return idle_gpus
-
 
     def get_single_gpu_usage(self, gpu_num=1):
         raise NotImplementedError

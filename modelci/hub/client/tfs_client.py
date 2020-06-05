@@ -36,7 +36,3 @@ class CVTFSClient(BaseModelInspector):
     def infer(self, input_batch):
         self.request.inputs['image_bytes'].CopyFrom(tf.make_tensor_proto(input_batch, shape=[len(input_batch)]))
         self.stub.Predict(self.request, 10.0)
-
-
-
-

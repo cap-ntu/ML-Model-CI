@@ -5,14 +5,12 @@ Dec: Abstract class for data preprocessing, implement this class and try to meet
 Date: 26/04/2020
 """
 
-import csv
 import datetime
-import requests
-import numpy as np
 import time
-from dateutil import parser
-from threading import Thread
 from abc import ABCMeta, abstractmethod
+from threading import Thread
+
+import numpy as np
 
 from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
@@ -32,10 +30,11 @@ class BaseModelInspector(metaclass=ABCMeta):
     @param sla: SLA, default is 1 sec.
     @param percentile: The SLA percentile. Default is 95.
     """
+
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=False, percentile=95, sla=1.0):
         self.throughputs = []
         self.latencies = []
-    
+
         self.asynchronous = asynchronous
         self.percentile = percentile
         self.sla = sla
@@ -48,7 +47,6 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         self.data_preprocess()
         self.batches = self.__client_batch_request()
-
 
     @abstractmethod
     def data_preprocess(self):
@@ -107,10 +105,12 @@ class BaseModelInspector(metaclass=ABCMeta):
             else:
                 a_batch_latency = self.start_infer_with_time(batch)
                 self.latencies.append(a_batch_latency)
-                a_batch_throughput =  self.batch_size / a_batch_latency
+                a_batch_throughput = self.batch_size / a_batch_latency
                 self.throughputs.append(a_batch_throughput)
                 # TODO: replace printing with logging
-                print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
+                print(
+                    " latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput),
+                    ' req/sec')
 
         while len(self.latencies) != len(self.batches):
             pass
@@ -121,7 +121,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         custom_percentile = np.percentile(self.latencies, self.percentile)
 
         # init CAdvisor 
-        #FIXME: if the number of batch is really small, the GPU utilization will get a smaller value. 
+        # FIXME: if the number of batch is really small, the GPU utilization will get a smaller value.
         # Usually, in order to increase accuracy, we need to increase the testing number of batchs, try to make sure 
         # the testing program can run over 1 minutes.
         cadvisor = CAdvisor()
@@ -130,7 +130,8 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_information = cadvisor.request_by_name(server_name)
         model_info = cadvisor.get_model_info(all_information)
         stats = model_info[list(model_info.keys())[0]]['stats']
-        val_stats = [x for x in stats[-int(SLEEP_TIME + all_data_latency):] if x['accelerators'][0]['duty_cycle'] is not 0]
+        val_stats = [x for x in stats[-int(SLEEP_TIME + all_data_latency):] if
+                     x['accelerators'][0]['duty_cycle'] is not 0]
         all_batch_avg_memory_total = sum([i['accelerators'][0]['memory_total'] for i in val_stats]) / len(val_stats)
         all_batch_avg_memory_used = sum([i['accelerators'][0]['memory_used'] for i in val_stats]) / len(val_stats)
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
@@ -147,11 +148,10 @@ class BaseModelInspector(metaclass=ABCMeta):
         ----------        
         @param a_batch_latency: The amount of required for the inference request to complete
         """
-        self.latencies.append(a_batch_latency) 
-        a_batch_throughput =  self.batch_size / a_batch_latency
+        self.latencies.append(a_batch_latency)
+        a_batch_throughput = self.batch_size / a_batch_latency
         self.throughputs.append(a_batch_throughput)
         # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
-
 
     def start_infer_with_time(self, batch_input):
         """
@@ -197,8 +197,8 @@ class BaseModelInspector(metaclass=ABCMeta):
         pass
 
     # TODO: replace printing with saving code in mongodb, or logging.
-    def print_results(self, throughput, latency, custom_percentile, all_batch_avg_memory_total, 
-                        all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per):
+    def print_results(self, throughput, latency, custom_percentile, all_batch_avg_memory_total,
+                      all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per):
         '''
         Export the testing results to local JSON file.
 
@@ -235,12 +235,13 @@ class ReqThread(Thread):
     """
     Thread class for sending a request.
     """
+
     def __init__(self, callback, infer_mothod, batch_data):
         Thread.__init__(self)
         self.callback = callback
         self.batch_data = batch_data
         self.infer = infer_mothod
-        
+
     def run(self):
         self.infer(self.batch_data)
         self.callback(time.thread_time())

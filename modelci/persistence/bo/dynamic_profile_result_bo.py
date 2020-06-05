@@ -37,6 +37,7 @@ class ProfileLatency(object):
     This class records the end-to-end latency in four stages: data engine initialization, pre-processing, inference, and
     post-processing.
     """
+
     def __init__(self,
                  init_latency: Union[InfoTuple, Iterable],
                  preprocess_latency: Union[InfoTuple, Iterable],
@@ -81,6 +82,7 @@ class ProfileThroughput(object):
     This class records the end-to-end throughput in four categories: data to batched data, pre-processing, inference,
     and post-processing.
     """
+
     def __init__(self,
                  batch_formation_throughput: Union[InfoTuple, Iterable],
                  preprocess_throughput: Union[InfoTuple, Iterable],
@@ -123,6 +125,7 @@ class ProfileThroughput(object):
 class DynamicProfileResultBO(object):
     """Dynamic profiling result business object.
     """
+
     def __init__(self,
                  device_id: str,
                  device_name: str,

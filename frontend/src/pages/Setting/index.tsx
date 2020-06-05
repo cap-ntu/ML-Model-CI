@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'ice';
+import {Link} from 'ice';
 
 const Setting = () => {
   return (

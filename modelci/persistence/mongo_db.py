@@ -7,6 +7,7 @@ class MongoDB(object):
     This class manages the connections made to MongoDB once the connection settings are given. Connections are held
     and could be closed given connection alias.
     """
+
     def __init__(self, db: str = None, *, host: str = None, port: int = None, username: str = None,
                  password: str = None,
                  auth_source: str = 'admin', **kwargs):

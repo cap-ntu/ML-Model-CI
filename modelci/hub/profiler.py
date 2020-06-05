@@ -3,7 +3,7 @@ Author: huangyz0918
 Dec: prolifing models.
 Date: 03/05/2020
 """
-import docker 
+import docker
 
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.trt_client import CVTRTClient
@@ -15,14 +15,15 @@ from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
 from modelci.hub.deployer import serve
 
+DEFAULT_BATCH_NUM = 100
 
-DEFAULT_BATCH_NUM = 100 # in the client class, default is 1, but 1 is to small to test, so here we set a 100 as default value.
 
 class Profiler(object):
     """
     Profiler class, call this to test model performance.
     """
-    def __init__(self, model_info, server_name, inspector:BaseModelInspector=None):
+
+    def __init__(self, model_info, server_name, inspector: BaseModelInspector = None):
         """
         Init a profiler object
 
@@ -31,7 +32,7 @@ class Profiler(object):
         @param model_info: information about the model, can get from init_model_info method.
         """
         if inspector is None:
-            self.inspector = self.__auto_select_client() #TODO: To Improve
+            self.inspector = self.__auto_select_client()  # TODO: To Improve
         else:
             if isinstance(inspector, BaseModelInspector):
                 self.inspector = inspector
@@ -43,7 +44,6 @@ class Profiler(object):
         self.docker_client = docker.from_env()
         self.available_devices = []
 
-
     def diagnose(self, batch_size=None):
         """
         start diagnosing and profiling model.
@@ -51,19 +51,16 @@ class Profiler(object):
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        self.inspector.run_model(self.server_name) 
+        self.inspector.run_model(self.server_name)
 
-
-    def diagnose_all_batches(self, arr:list):
+    def diagnose_all_batches(self, arr: list):
         """
         run model tests in batch size from list input.
         """
         for size in arr:
-            self.inspector.set_batch_size(size)
-            self.inspector.run_model(self.server_name)
+            self.diagnose(size)
 
-
-    def auto_diagnose(self, batch_list:list=None):
+    def auto_diagnose(self, batch_list: list = None):
         """
         select the free machine and deploy automatically to test the model using availibe platforms.
         """
@@ -83,15 +80,16 @@ class Profiler(object):
         print('model framework: ', model_framework)
         print('model serving engine: ', serving_engine)
 
-        for device in self.available_devices: # deploy the model automatically in all available devices.
+        for device in self.available_devices:  # deploy the model automatically in all available devices.
             print(f'deploying model in device: {device} ...')
 
-            serve(saved_path, 'gpu') # FIXME: related path in serving.py to get the bash scripts.
+            serve(save_path=saved_path, device=f'cuda:{device}', name=self.server_name)
 
-            try: # to check the container has started successfully or not.
+            try:  # to check the container has started successfully or not.
                 self.docker_client.containers.get(self.server_name)
             except Exception:
-                print('\n ModelCI Error: starting the serving engine failed, please start the Docker container manually. \n')
+                print(
+                    '\n ModelCI Error: starting the serving engine failed, please start the Docker container manually. \n')
 
             # start testing.
             if batch_list is not None:
@@ -107,7 +105,8 @@ class Profiler(object):
         # TODO: replace the input None data in each client with self-generated data.
         serving_engine = self.model_info.engine
         if serving_engine == Framework.NONE:
-            raise Exception('please choose a serving engine for the model') #TODO How can we deploy to all available platforms if we don't know the engine?
+            raise Exception(
+                'please choose a serving engine for the model')  # TODO How can we deploy to all available platforms if we don't know the engine?
         elif serving_engine == Framework.TFS:
             return CVTFSClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
         elif serving_engine == Framework.TORCHSCRIPT:
@@ -119,7 +118,7 @@ class Profiler(object):
         elif serving_engine == Framework.TVM:
             raise NotImplementedError
         elif serving_engine == Framework.CUSTOMIZED:
-             raise Exception('please pass a custom client to the Profiler.__init__.')
+            raise Exception('please pass a custom client to the Profiler.__init__.')
         else:
             return None
 

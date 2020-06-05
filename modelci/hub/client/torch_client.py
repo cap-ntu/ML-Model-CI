@@ -22,7 +22,7 @@ from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
 class CVTorchClient(BaseModelInspector):
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
-        self.batches = self.__client_batch_request() # FIXME: creating batches twice will increase the data preprocessing time
+        self.batches = self.__client_batch_request()  # FIXME: creating batches twice will increase the data preprocessing time
         self.stub = PredictStub(grpc.insecure_channel(f"localhost:{TORCHSCRIPT_GRPC_PORT}"))
 
     def data_preprocess(self):
@@ -39,7 +39,7 @@ class CVTorchClient(BaseModelInspector):
     def transform_image(self, images):
         t = transforms.Compose(
             [transforms.ToPILImage(), transforms.Resize(255), transforms.CenterCrop(224), transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
         return list(map(t, images))
 
     def infer(self, input_batch):

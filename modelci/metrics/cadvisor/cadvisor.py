@@ -48,14 +48,12 @@ class CAdvisor(object):
 
         self.api_link = self.base_link + self.version + '/'
 
-
     def machine_info(self):
         """
         Getting the machine information
         """
 
         return self.request_all('machine')
-
 
     def request_all(self, t_object=None):
         """
@@ -76,8 +74,7 @@ class CAdvisor(object):
         raw_json = r.json()
         name = [raw_json[x]['name'] for x in raw_json]
         info = [raw_json[x] for x in raw_json]
-        return dict(zip(name, info)) # return dict
-
+        return dict(zip(name, info))  # return dict
 
     def request_without_cadvisor(self):
         """
@@ -87,9 +84,8 @@ class CAdvisor(object):
         raw_json = self.request_all()
         name = [raw_json[x]['name'] for x in raw_json]
         info = [raw_json[x]
-                       for x in raw_json if 'cadvisor' not in raw_json[x]['aliases']]
-        return dict(zip(name, info)) # return dict
-
+                for x in raw_json if 'cadvisor' not in raw_json[x]['aliases']]
+        return dict(zip(name, info))  # return dict
 
     def request_by_name(self, name):
         """
@@ -104,9 +100,8 @@ class CAdvisor(object):
         raw_json = self.request_all()
         names = [raw_json[x]['name'] for x in raw_json]
         info = [raw_json[x]
-                       for x in raw_json if name in raw_json[x]['aliases']]
-        return dict(zip(names, info)) # return dict
-
+                for x in raw_json if name in raw_json[x]['aliases']]
+        return dict(zip(names, info))  # return dict
 
     def request_by_id(self, id):
         """
@@ -121,9 +116,8 @@ class CAdvisor(object):
         raw_json = self.request_all()
         name = [raw_json[x]['name'] for x in raw_json]
         info = [raw_json[x]
-                       for x in raw_json if id == raw_json[x]['id']]
-        return dict(zip(name, info)) # return dict
-
+                for x in raw_json if id == raw_json[x]['id']]
+        return dict(zip(name, info))  # return dict
 
     def request_by_image(self, image):
         """
@@ -138,9 +132,8 @@ class CAdvisor(object):
         raw_json = self.request_all()
         name = [raw_json[x]['name'] for x in raw_json]
         info = [raw_json[x]
-                       for x in raw_json if image == raw_json[x]['spec']['image']]
-        return dict(zip(name, info)) # return dict
-
+                for x in raw_json if image == raw_json[x]['spec']['image']]
+        return dict(zip(name, info))  # return dict
 
     def get_running_container(self, input_dict=None):
         """
@@ -159,7 +152,6 @@ class CAdvisor(object):
         specs = [input_dict[x]['spec'] for x in input_dict]
         return dict(zip(name, specs))
 
-    
     def get_stats(self, input_dict=None):
         """
         Return the stats infomation about running containers. Include metric like CPU, memory, etc.
@@ -175,8 +167,7 @@ class CAdvisor(object):
             input_dict = self.request_all()
         name = [input_dict[x]['name'] for x in input_dict]
         specs = [input_dict[x]['stats'] for x in input_dict]
-        return dict(zip(name, specs))     
-
+        return dict(zip(name, specs))
 
     def get_specific_metrics(self, input_dict=None, metric=None):
         """
@@ -204,7 +195,6 @@ class CAdvisor(object):
             io_dicts.append(io_dict)
         return dict(zip(input_dict.keys(), io_dicts))
 
-
     def get_model_info(self, input_dict=None):
         """
         This function is getting the required data from cAdvisor for Model CI project.
@@ -228,17 +218,17 @@ class CAdvisor(object):
                             stats=self._prepare_stat_dict(input_dict[x]['stats'])) for x in input_dict]
         _out_dict = dict(zip(_names, _value_dict))
         return _out_dict
-    
+
     def _prepare_stat_dict(self, _stat_list):
         _stat_filter_list = []
         if 'accelerators' in _stat_list[0]:
             _stat_filter_list = [dict(timestamp=t['timestamp'],
-                                    cpu=t['cpu'],
-                                    memory=t['memory'],
-                                    accelerators=t['accelerators']) for t in _stat_list]
+                                      cpu=t['cpu'],
+                                      memory=t['memory'],
+                                      accelerators=t['accelerators']) for t in _stat_list]
         else:
             _stat_filter_list = [dict(timestamp=t['timestamp'],
-                                    cpu=t['cpu'],
-                                    memory=t['memory'],
-                                    accelerators={}) for t in _stat_list]             
+                                      cpu=t['cpu'],
+                                      memory=t['memory'],
+                                      accelerators={}) for t in _stat_list]
         return _stat_filter_list
