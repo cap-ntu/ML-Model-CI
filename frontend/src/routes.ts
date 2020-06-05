@@ -25,8 +25,8 @@ const routerConfig = [
       {
         path: '/setting',
         component: Setting,
-      }
-    ]
-  }
+      },
+    ],
+  },
 ];
 export default routerConfig;

@@ -1,82 +1,91 @@
 import React from 'react';
-import {Badge, Button, Card, Descriptions, Divider, Input, Modal, Radio, Table,} from 'antd';
+import {
+  Badge,
+  Button,
+  Card,
+  Descriptions,
+  Divider,
+  Input,
+  Modal,
+  Radio,
+  Table,
+} from 'antd';
 
-const {Search} = Input;
+const { Search } = Input;
 
 function showModelDetails(record) {
   console.log(record);
   Modal.info({
-    title: record.modelName + "'s Profile",
+    title: `${record.modelName  }'s Profile`,
     width: '50%',
     content: (
-      <div style={{marginTop: 40}}>
+      <div style={{ marginTop: 40 }}>
         <div>
           <Divider orientation="left">Serving Information</Divider>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Model Name: </b> {record.modelName}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Model Id: </b>
             {record.modelId}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Model Framework: </b> {record.modelFramework}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Serving Engine: </b> {record.modelEngine}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Serving Device: </b> Nvidia Tesla P4
           </div>
-          <br/>
+          <br />
         </div>
         <div>
           <Divider orientation="left">Testing Information (finished)</Divider>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Testing Batch Size: </b> 64
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Testing Batch Number: </b> 100
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>All Batch Throughput: </b> 240.77713166220317 req/sec
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>All Batch Latency: </b> 26.580597400665283 sec
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Total GPU Memory: </b> 7981694976.0 bytes
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Average GPU Memory Usage: </b> 0.9726
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Average GPU Memory Used: </b> 7763132416.0 bytes
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Average GPU Utilization: </b> 75.6538%
           </div>
-          <br/>
+          <br />
         </div>
       </div>
     ),
-    onOk() {
-    },
+    onOk() {},
   });
 }
 
 const columns = [
-  {title: 'Model Id', dataIndex: 'modelId', key: 'modelId'},
-  {title: 'Model Name', dataIndex: 'modelName', key: 'modelName'},
-  {title: 'Framework', dataIndex: 'modelFramework', key: 'modelFramework'},
+  { title: 'Model Id', dataIndex: 'modelId', key: 'modelId' },
+  { title: 'Model Name', dataIndex: 'modelName', key: 'modelName' },
+  { title: 'Framework', dataIndex: 'modelFramework', key: 'modelFramework' },
   {
     title: 'Pretrained Dataset',
     dataIndex: 'modelDataset',
     key: 'modelDataset',
   },
-  {title: 'Accuracy', dataIndex: 'modelAcc', key: 'modelAcc'},
-  {title: 'Task', dataIndex: 'modelTask', key: 'modelTask'},
-  {title: 'Model User', dataIndex: 'modelUser', key: 'modelUser'},
+  { title: 'Accuracy', dataIndex: 'modelAcc', key: 'modelAcc' },
+  { title: 'Task', dataIndex: 'modelTask', key: 'modelTask' },
+  { title: 'Model User', dataIndex: 'modelUser', key: 'modelUser' },
   {
     title: 'Action',
     dataIndex: '',
@@ -257,7 +266,7 @@ const Dashboard = () => {
   return (
     <Card>
       <div
-        style={{marginBottom: '20px', display: 'flex', flexDirection: 'row'}}
+        style={{ marginBottom: '20px', display: 'flex', flexDirection: 'row' }}
       >
         <Button
           type="primary"
@@ -268,7 +277,7 @@ const Dashboard = () => {
           Register Model
         </Button>
         <Button
-          style={{marginLeft: '5px'}}
+          style={{ marginLeft: '5px' }}
           onClick={() => {
             console.log('You clicked Download Table');
           }}
@@ -276,14 +285,14 @@ const Dashboard = () => {
           Download Table
         </Button>
         <Search
-          style={{marginLeft: '10px'}}
+          style={{ marginLeft: '10px' }}
           placeholder="search model record by key words"
           enterButton="Search"
           size="samll"
           onSearch={(value) => console.log(value)}
         />
       </div>
-      <Divider dashed/>
+      <Divider dashed />
       <Table
         columns={columns}
         dataSource={data}
@@ -291,7 +300,7 @@ const Dashboard = () => {
           expandedRowRender: (record) => (
             <div>
               <Descriptions
-                style={{width: '92%', margin: '0 auto'}}
+                style={{ width: '92%', margin: '0 auto' }}
                 column={4}
                 size="small"
                 title="Serving Info"
@@ -315,8 +324,8 @@ const Dashboard = () => {
                   {record.batchNum}
                 </Descriptions.Item>
                 <Descriptions.Item label="Tested Status" span={2}>
-                  <Badge status="success" text="Tested with Success"/>{' '}
-                  <Divider type="vertical"/>
+                  <Badge status="success" text="Tested with Success" />{' '}
+                  <Divider type="vertical" />
                   <Radio.Group size="small">
                     <Radio.Button
                       size="small"
@@ -330,7 +339,7 @@ const Dashboard = () => {
                 </Descriptions.Item>
               </Descriptions>
               <Descriptions
-                style={{width: '92%', margin: '0 auto', marginTop: '20px'}}
+                style={{ width: '92%', margin: '0 auto', marginTop: '20px' }}
                 column={3}
                 size="small"
                 title="Testing Metrics"

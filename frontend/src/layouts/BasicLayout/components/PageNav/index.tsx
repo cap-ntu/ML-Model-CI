@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Link, withRouter} from 'ice';
-import {Nav} from '@alifd/next';
-import {asideMenuConfig} from '../../menuConfig';
+import { Link, withRouter } from 'ice';
+import { Nav } from '@alifd/next';
+import { asideMenuConfig } from '../../menuConfig';
 
 const SubNav = Nav.SubNav;
 const NavItem = Nav.Item;
@@ -20,22 +20,18 @@ function getNavMenuItems(menusData: any[]) {
   }
 
   return menusData
-    .filter(item => item.name && !item.hideInMenu)
+    .filter((item) => item.name && !item.hideInMenu)
     .map((item, index) => {
       return getSubMenuOrItem(item, index);
     });
 }
 
 function getSubMenuOrItem(item: IMenuItem, index: number) {
-  if (item.children && item.children.some(child => child.name)) {
+  if (item.children && item.children.some((child) => child.name)) {
     const childrenItems = getNavMenuItems(item.children);
     if (childrenItems && childrenItems.length > 0) {
       const subNav = (
-        <SubNav
-          key={index}
-          icon={item.icon}
-          label={item.name}
-        >
+        <SubNav key={index} icon={item.icon} label={item.name}>
           {childrenItems}
         </SubNav>
       );
@@ -46,9 +42,7 @@ function getSubMenuOrItem(item: IMenuItem, index: number) {
   }
   const navItem = (
     <NavItem key={item.path} icon={item.icon}>
-      <Link to={item.path}>
-        {item.name}
-      </Link>
+      <Link to={item.path}>{item.name}</Link>
     </NavItem>
   );
 
@@ -56,9 +50,9 @@ function getSubMenuOrItem(item: IMenuItem, index: number) {
 }
 
 const Navigation = (props, context) => {
-  const {location} = props;
-  const {pathname} = location;
-  const {isCollapse} = context;
+  const { location } = props;
+  const { pathname } = location;
+  const { isCollapse } = context;
 
   return (
     <Nav

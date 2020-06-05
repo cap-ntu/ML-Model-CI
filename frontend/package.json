@@ -17,6 +17,7 @@
     "build-plugin-moment-locales": "^0.1.0",
     "eslint": "^6.0.1",
     "ice.js": "^1.0.0",
+    "prettier": "^2.0.5",
     "stylelint": "^13.2.0"
   },
   "scripts": {

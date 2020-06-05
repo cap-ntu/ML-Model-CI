@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {ConfigProvider, Shell} from '@alifd/next';
+import React, { useState } from 'react';
+import { ConfigProvider, Shell } from '@alifd/next';
 import enUS from '@alifd/next/lib/locale/en-us';
 import PageNav from './components/PageNav';
 import Logo from './components/Logo';
@@ -28,8 +28,8 @@ import Footer from './components/Footer';
 })();
 
 export default function BasicLayout({
-                                      children,
-                                    }: {
+  children,
+}: {
   children: React.ReactNode;
 }) {
   const getDevice = (width: number) => {
@@ -48,7 +48,7 @@ export default function BasicLayout({
   };
 
   const [device, setDevice] = useState(getDevice(NaN));
-  window.addEventListener('optimizedResize', e => {
+  window.addEventListener('optimizedResize', (e) => {
     setDevice(getDevice(e && e.target && e.target.innerWidth));
   });
   return (
@@ -70,15 +70,15 @@ export default function BasicLayout({
           style={{
             marginRight: 10,
           }}
-        ></Shell.Navigation>
-        <Shell.Action></Shell.Action>
+        />
+        <Shell.Action />
         <Shell.Navigation>
-          <PageNav/>
+          <PageNav />
         </Shell.Navigation>
 
         <Shell.Content>{children}</Shell.Content>
         <Shell.Footer>
-          <Footer/>
+          <Footer />
         </Shell.Footer>
       </Shell>
     </ConfigProvider>
