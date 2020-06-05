@@ -17,15 +17,14 @@ from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 class BaseModelInspector(metaclass=ABCMeta):
     """
-    A class for running the model inference with metrics testing. User can 
-    call the the method to run and test the model and return the tested 
-    latency and throughput. 
-
+    A class for running the model inference with metrics testing. User can
+    call the the method to run and test the model and return the tested
+    latency and throughput.
     Parameters
     ----------
     @param batch_num: the number of batches you want to run
     @param batch_size: batch size you want
-    @param asynchronous: runnning asynchronously, default is False.
+    @param repeat_data: data unit to repeat.
     @param asynchronous: runnning asynchronously, default is False.
     @param sla: SLA, default is 1 sec.
     @param percentile: The SLA percentile. Default is 95.
@@ -108,8 +107,7 @@ class BaseModelInspector(metaclass=ABCMeta):
                 a_batch_throughput = self.batch_size / a_batch_latency
                 self.throughputs.append(a_batch_throughput)
                 # TODO: replace printing with logging
-                print(" latency: {:.4f}".format(a_batch_latency), 'sec',
-                      " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
+                print(f' latency: {a_batch_latency:.4f} sec throughput: {a_batch_throughput:.4f} req/sec')
 
         while len(self.latencies) != len(self.batches):
             pass
