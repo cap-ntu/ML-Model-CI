@@ -132,8 +132,8 @@ Atfer the Quick Start, we have some tutorials here for detailed usages
 
 - [Register Model in the Model Database](./docs/tutorial/register.md)
 - [Converting Model to Different Frameworks](./docs/tutorial/convert.md)
-- [Retrieve and Deploy Model to Specific Device](./docs/tutorial/retrieve-and-deploy.md)
 - [Profiling Model Automatically](./docs/tutorial/profile.md)
+- [Retrieve and Deploy Model to Specific Device](./docs/tutorial/retrieve-and-deploy.md)
 
 ## Contributing
 

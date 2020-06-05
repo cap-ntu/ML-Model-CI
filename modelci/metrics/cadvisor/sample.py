@@ -1,5 +1,5 @@
 from cadvisor import CAdvisor
-import json 
+import json
 
 # Tests
 if __name__ == "__main__":
@@ -7,7 +7,7 @@ if __name__ == "__main__":
     cAdvisor = CAdvisor()
 
     # base_link=None, version=None, query_object=None
-    cAdvisor_version12 = CAdvisor(version='v1.2') # default is v1.3
+    cAdvisor_version12 = CAdvisor(version='v1.2')  # default is v1.3
     raw_all_data_12 = cAdvisor_version12.request_all()
     # print("All raw data from v1.2 API: \n", raw_all_data_12)
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     # You can also using JSON filter if you only want some specific container information
     all_information_ubuntu = cAdvisor.request_by_image("ubuntu:16.04")
-    data_cpu_ubuntu =  cAdvisor.get_specific_metrics(input_dict=all_information_ubuntu, metric='cpu')
+    data_cpu_ubuntu = cAdvisor.get_specific_metrics(input_dict=all_information_ubuntu, metric='cpu')
     # print('All CPU data related to containers from ubuntu 16.04 Docker image: \n', data_cpu_ubuntu)
 
     # You can also get the basic information from all the running containers
@@ -51,8 +51,8 @@ if __name__ == "__main__":
     #     json.dump(all_data, f)
 
     # Tests about getting required format data
-    client = CAdvisor(base_link='') # link to your remote 
+    client = CAdvisor(base_link='')  # link to your remote
     tensorflow_resnet_latest = client.request_by_image('bitnami/tensorflow-serving:latest')
     out = client.get_model_info(tensorflow_resnet_latest)
     # with open('example_tf_resnet.json', 'w') as f:
-    #     json.dump(out, f)    
+    #     json.dump(out, f)
