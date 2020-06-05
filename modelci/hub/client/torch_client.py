@@ -4,9 +4,8 @@ Desc: template client for TorchScript of ResNet-50
 Date: 26/04/2020
 """
 
-import json
-
 import grpc
+import json
 import numpy as np
 import torch
 from proto.service_pb2 import InferRequest
@@ -14,6 +13,7 @@ from proto.service_pb2_grpc import PredictStub
 from toolz import compose
 from torchvision import transforms
 
+from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.bo.type_conversion import type_to_data_type
 from modelci.utils.misc import json_update
@@ -23,7 +23,7 @@ class CVTorchClient(BaseModelInspector):
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
         self.batches = self.__client_batch_request()  # FIXME: creating batches twice will increase the data preprocessing time
-        self.stub = PredictStub(grpc.insecure_channel("localhost:8001"))
+        self.stub = PredictStub(grpc.insecure_channel(f"localhost:{TORCHSCRIPT_GRPC_PORT}"))
 
     def data_preprocess(self):
         pass
@@ -36,6 +36,7 @@ class CVTorchClient(BaseModelInspector):
             batches.append(self.transform_image(images=batch))
         return batches
 
+    # TODO: this will be moved to data_preprocessor function
     def transform_image(self, images):
         t = transforms.Compose(
             [transforms.ToPILImage(), transforms.Resize(255), transforms.CenterCrop(224), transforms.ToTensor(),
