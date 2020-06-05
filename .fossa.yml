@@ -8,15 +8,15 @@ cli:
   project: https://github.com/cap-ntu/ML-Model-CI.git
 analyze:
   modules:
-  - name: frontend
-    type: npm
-    target: frontend
-    path: frontend
-  - name: frontend
-    type: npm
-    target: frontend
-    path: frontend
-  - name: .
-    type: pip
-    target: .
-    path: .
+    - name: frontend
+      type: npm
+      target: frontend
+      path: frontend
+    - name: frontend
+      type: npm
+      target: frontend
+      path: frontend
+    - name: .
+      type: pip
+      target: .
+      path: .

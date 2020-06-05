@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link, withRouter } from 'ice';
-import { Nav } from '@alifd/next';
-import { asideMenuConfig } from '../../menuConfig';
+import {Link, withRouter} from 'ice';
+import {Nav} from '@alifd/next';
+import {asideMenuConfig} from '../../menuConfig';
 
 const SubNav = Nav.SubNav;
 const NavItem = Nav.Item;
@@ -56,9 +56,9 @@ function getSubMenuOrItem(item: IMenuItem, index: number) {
 }
 
 const Navigation = (props, context) => {
-  const { location } = props;
-  const { pathname } = location;
-  const { isCollapse } = context;
+  const {location} = props;
+  const {pathname} = location;
+  const {isCollapse} = context;
 
   return (
     <Nav

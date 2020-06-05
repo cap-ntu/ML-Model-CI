@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Shell, ConfigProvider } from '@alifd/next';
+import React, {useState} from 'react';
+import {ConfigProvider, Shell} from '@alifd/next';
 import enUS from '@alifd/next/lib/locale/en-us';
 import PageNav from './components/PageNav';
 import Logo from './components/Logo';
 import Footer from './components/Footer';
 
-(function() {
-  const throttle = function(type: string, name: string, obj: Window = window) {
+(function () {
+  const throttle = function (type: string, name: string, obj: Window = window) {
     let running = false;
 
     const func = () => {
@@ -28,8 +28,8 @@ import Footer from './components/Footer';
 })();
 
 export default function BasicLayout({
-  children,
-}: {
+                                      children,
+                                    }: {
   children: React.ReactNode;
 }) {
   const getDevice = (width: number) => {
@@ -73,12 +73,12 @@ export default function BasicLayout({
         ></Shell.Navigation>
         <Shell.Action></Shell.Action>
         <Shell.Navigation>
-          <PageNav />
+          <PageNav/>
         </Shell.Navigation>
 
         <Shell.Content>{children}</Shell.Content>
         <Shell.Footer>
-          <Footer />
+          <Footer/>
         </Shell.Footer>
       </Shell>
     </ConfigProvider>

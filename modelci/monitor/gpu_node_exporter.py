@@ -1,8 +1,7 @@
-import json
-import requests
 import re
-
 from collections import defaultdict
+
+import requests
 
 DEFAULT_GPU_MONITOR_PORT = "http://localhost:9400/gpu/metrics"
 

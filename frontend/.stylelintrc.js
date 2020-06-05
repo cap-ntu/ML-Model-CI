@@ -1,3 +1,3 @@
-const { stylelint } = require('@ice/spec');
+const {stylelint} = require('@ice/spec');
 
 module.exports = stylelint;

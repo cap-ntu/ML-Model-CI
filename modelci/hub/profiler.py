@@ -5,27 +5,26 @@ Date: 03/05/2020
 """
 import docker
 
-from modelci.hub.client.tfs_client import CVTFSClient
-from modelci.hub.client.trt_client import CVTRTClient
-from modelci.hub.client.torch_client import CVTorchClient
-from modelci.hub.client.onnx_client import CVONNXClient
-
-from modelci.persistence.bo import Framework
+from example.diagnoser.onnx_client import CVONNXClient
+from example.diagnoser.tfs_client import CVTFSClient
+from example.diagnoser.torch_client import CVTorchClient
+from example.diagnoser.trt_client import CVTRTClient
+from modelci.hub.deployer import serve
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
-from modelci.hub.deployer import serve
+from modelci.persistence.bo import Framework
 
-DEFAULT_BATCH_NUM = 100
+DEFAULT_BATCH_NUM = 100  # in the client class, default is 1, but 1 is to small to test, so here we set a 100 as default value.
 
 
-class Profiler(object):
+class Diagnoser(object):
     """
-    Profiler class, call this to test model performance.
+    Diagnoser class, call this to test model performance.
     """
 
     def __init__(self, model_info, server_name, inspector: BaseModelInspector = None):
         """
-        Init a profiler object
+        Init a diagnoser object
 
         @param inspector: client implemented from BaseModelInspector
         @param server_name: serving platform's docker conatiner's name.
@@ -58,7 +57,8 @@ class Profiler(object):
         run model tests in batch size from list input.
         """
         for size in arr:
-            self.diagnose(size)
+            self.inspector.set_batch_size(size)
+            self.inspector.run_model(self.server_name)
 
     def auto_diagnose(self, batch_list: list = None):
         """
@@ -83,7 +83,7 @@ class Profiler(object):
         for device in self.available_devices:  # deploy the model automatically in all available devices.
             print(f'deploying model in device: {device} ...')
 
-            serve(save_path=saved_path, device=f'cuda:{device}', name=self.server_name)
+            serve(saved_path, 'gpu')  # FIXME: related path in serving.py to get the bash scripts.
 
             try:  # to check the container has started successfully or not.
                 self.docker_client.containers.get(self.server_name)
@@ -116,9 +116,9 @@ class Profiler(object):
         elif serving_engine == Framework.TRT:
             return CVTRTClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
         elif serving_engine == Framework.TVM:
-            raise NotImplementedError
+            return None
         elif serving_engine == Framework.CUSTOMIZED:
-            raise Exception('please pass a custom client to the Profiler.__init__.')
+            raise Exception('please pass a custom client to the Diagnoser.__init__.')
         else:
             return None
 

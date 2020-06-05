@@ -1,14 +1,14 @@
 import re
-import numpy as np
 from enum import unique, Enum
 from pathlib import Path
 from typing import Union
 
-from tensorrtserver.api import ServerStatusContext
+import numpy as np
 import tensorrtserver.api.model_config_pb2 as model_config
+from tensorrtserver.api import ServerStatusContext
 
 from modelci.persistence.bo import Framework, Engine, ModelVersion
-from modelci.utils.trtis_objects import ModelInputFormat, DataType, ModelInputFormat
+from modelci.utils.trtis_objects import DataType, ModelInputFormat
 
 
 def parse_path(path: Path):

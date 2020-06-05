@@ -9,7 +9,7 @@ const Pannel = () => {
       <p className={styles.description}>This is a awesome project, enjoy it!</p>
 
       <div className={styles.action}>
-        
+
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     ----------
     @param batch_num: the number of batches you want to run
     @param batch_size: batch size you want
-    @param repeat_data: data unit to repeat.
+    @param asynchronous: runnning asynchronously, default is False.
     @param asynchronous: runnning asynchronously, default is False.
     @param sla: SLA, default is 1 sec.
     @param percentile: The SLA percentile. Default is 95.
@@ -108,9 +108,8 @@ class BaseModelInspector(metaclass=ABCMeta):
                 a_batch_throughput = self.batch_size / a_batch_latency
                 self.throughputs.append(a_batch_throughput)
                 # TODO: replace printing with logging
-                print(
-                    " latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput),
-                    ' req/sec')
+                print(" latency: {:.4f}".format(a_batch_latency), 'sec',
+                      " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
         while len(self.latencies) != len(self.batches):
             pass
@@ -152,6 +151,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         a_batch_throughput = self.batch_size / a_batch_latency
         self.throughputs.append(a_batch_throughput)
         # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
+
 
     def start_infer_with_time(self, batch_input):
         """
@@ -235,13 +235,12 @@ class ReqThread(Thread):
     """
     Thread class for sending a request.
     """
-
     def __init__(self, callback, infer_mothod, batch_data):
         Thread.__init__(self)
         self.callback = callback
         self.batch_data = batch_data
         self.infer = infer_mothod
-
+        
     def run(self):
         self.infer(self.batch_data)
         self.callback(time.thread_time())
