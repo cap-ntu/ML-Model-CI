@@ -88,7 +88,9 @@ class Profiler(object):
                 self.docker_client.containers.get(self.server_name)
             except Exception:
                 print(
-                    '\n ModelCI Error: starting the serving engine failed, please start the Docker container manually. \n')
+                    '\n'
+                    'ModelCI Error: starting the serving engine failed, please start the Docker container manually. \n'
+                )
 
             # start testing.
             if batch_list is not None:
@@ -105,7 +107,8 @@ class Profiler(object):
         serving_engine = self.model_info.engine
         if serving_engine == Framework.NONE:
             raise Exception(
-                'please choose a serving engine for the model')  # TODO How can we deploy to all available platforms if we don't know the engine?
+                'please choose a serving engine for the model')
+            # TODO How can we deploy to all available platforms if we don't know the engine?
         elif serving_engine == Framework.TFS:
             return CVTFSClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
         elif serving_engine == Framework.TORCHSCRIPT:
