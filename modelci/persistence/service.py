@@ -1,3 +1,6 @@
+from ipaddress import IPv4Address, IPv6Address
+from typing import Union
+
 from bson import ObjectId
 
 from . import mongo
@@ -98,7 +101,8 @@ class ModelService(object):
     @classmethod
     def update_model(cls, model: ModelBO, force_insert=False):
         """Update a model to ModelDB and GridFS. The function will check the existence of the provided model. It will
-            invoke the update.
+        invoke the update. Note that this function will have not effect for static profiling result and dynamic
+        profiling result. Please see `register_static_profiling_result` and `
 
         Args:
             model (ModelBO): model business object to be updated. The model must exist in the ModelDB based on its
@@ -120,9 +124,6 @@ class ModelService(object):
             # if weight changes, save all without patch
             if model_po_new.weight is not None and model_po_new.weight != model_po.weight:
                 return bool(cls.__model_DAO.save_model(model_po_new))
-
-            # if list field changes
-            # TODO update dynamic list
 
             # build arguments
             valid_keys = [
@@ -230,18 +231,55 @@ class ModelService(object):
         """
         id_ = ObjectId(id_)
         dpr_po = dynamic_result.to_dynamic_profile_result_po()
+        pks = {'ip': dpr_po.ip, 'device_id': dpr_po.device_id}
         # if model ID exists
         if cls.__model_DAO.exists_by_id(id_):
             # if the dynamic profiling result to be updated exists
-            if cls.__model_DAO.is_dynamic_profiling_result_exist(id_, dpr_po):
+            if cls.__model_DAO.exists_dynamic_profiling_result_by_pks(id_, **pks):
                 return cls.__model_DAO.update_dynamic_profiling_result(id_, dpr_po)
             # force insert is set
             elif force_insert:
                 return cls.__model_DAO.register_dynamic_profiling_result(id_, dpr_po)
             else:
                 raise ValueError(
-                    f'Dynamic profiling result to be updated with ip={dpr_po.ip}, device_id={dpr_po.device_id} does \n'
-                    f'not exist. Either set `force_insert` or change the ip and device_id'
+                    f'Dynamic profiling result to be updated with ip={dpr_po.ip}, '
+                    f'device_id={dpr_po.device_id} does not exist. Either set `force_insert` or change the ip '
+                    f'and device_id.'
+                )
+        # if model ID does not exist
+        else:
+            raise ValueError('Model ID {} does not exist.'.format(id_))
+
+    @classmethod
+    def delete_dynamic_profiling_result(
+            cls,
+            id_: str,
+            dynamic_result_ip: Union[IPv4Address, IPv6Address],
+            dynamic_result_device_id: str
+    ):
+        """Delete one dynamic profiling result to a model.
+
+        Args:
+            id_ (str): ID of the object.
+            dynamic_result_ip (Union[IPv4Address, IPv6Address]): Host IP address of dynamic profiling result.
+            dynamic_result_device_id (str): Device ID of dynamic profiling result.
+
+        Raise:
+            ValueError: Model ID does not exist in ModelDB; or
+                dynamic profiling result to be updated does not exist and `force_insert` is not set
+        """
+        id_ = ObjectId(id_)
+        pks = {'ip': str(dynamic_result_ip), 'device_id': dynamic_result_device_id}
+        # if model ID exists
+        if cls.__model_DAO.exists_by_id(id_):
+            # if the dynamic profiling result to be delete exists
+            if cls.__model_DAO.exists_dynamic_profiling_result_by_pks(id_, **pks):
+                return cls.__model_DAO.delete_dynamic_profiling_result(id_, **pks)
+            else:
+                raise ValueError(
+                    f'Dynamic profiling result to be updated with ip={dynamic_result_ip}, '
+                    f'device_id={dynamic_result_device_id} does not exist. Either set `force_insert` or change the ip '
+                    f'and device_id.'
                 )
         # if model ID does not exist
         else:

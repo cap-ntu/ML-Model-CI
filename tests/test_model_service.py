@@ -16,6 +16,10 @@ from modelci.persistence.service import ModelService
 from modelci.utils.trtis_objects import ModelInputFormat
 
 
+def test_init():
+    mongo.db.drop_database('test')
+
+
 def test_register_model():
     model = ModelBO(
         'ResNet50', framework=Framework.PYTORCH, engine=Engine.TRT, version=ModelVersion(1),
@@ -97,6 +101,30 @@ def test_update_dynamic_profiling_result():
     assert model.profile_result.dynamic_results[0].memory.cpu_memory == 2000
 
 
+def test_delete_dynamic_profiling_result():
+    model = ModelService.get_models_by_name('ResNet50')[0]
+
+    dpr = DynamicProfileResultBO('gpu:02', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 1000),
+                                 ProfileLatency((1, 1, 2), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
+                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    ModelService.append_dynamic_profiling_result(model.id, dpr)
+
+    # reload
+    model = ModelService.get_models_by_name('ResNet50')[0]
+    dpr_bo = model.profile_result.dynamic_results[0]
+    dpr_bo2 = model.profile_result.dynamic_results[1]
+
+    # check delete
+    assert ModelService.delete_dynamic_profiling_result(model.id, dpr_bo.ip, dpr_bo.device_id)
+
+    # check result
+    model = ModelService.get_models_by_name('ResNet50')[0]
+    assert len(model.profile_result.dynamic_results) == 1
+
+    dpr_left = model.profile_result.dynamic_results[0]
+    assert dpr_bo2.latency.init_latency.avg == dpr_left.latency.init_latency.avg
+
+
 def test_delete_model():
     model = ModelService.get_models_by_name('ResNet50')[0]
     assert ModelService.delete_model_by_id(model.id)
@@ -104,8 +132,3 @@ def test_delete_model():
 
 def test_drop_test_database():
     mongo.db.drop_database('test')
-
-
-if __name__ == '__main__':
-    # test_register_model()
-    test_update_model()
