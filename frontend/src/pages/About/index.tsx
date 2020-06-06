@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'ice';
+import { Link, withRouter } from 'ice';
 
 const About = () => {
   return (
