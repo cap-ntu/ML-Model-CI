@@ -1,5 +1,5 @@
 """
-Mask R-CNN serve, profile and manage demo using ModelCI.
+Mask R-CNN registering, managing, serving and profiling code demo using ModelCI.
 """
 
 from modelci.hub.client.tfs_client import CVTFSClient
