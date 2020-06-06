@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Shell, ConfigProvider } from '@alifd/next';
+import { ConfigProvider, Shell } from '@alifd/next';
 import enUS from '@alifd/next/lib/locale/en-us';
 import PageNav from './components/PageNav';
 import Logo from './components/Logo';
 import Footer from './components/Footer';
 
-(function() {
-  const throttle = function(type: string, name: string, obj: Window = window) {
+(function () {
+  const throttle = function (type: string, name: string, obj: Window = window) {
     let running = false;
 
     const func = () => {
@@ -48,7 +48,7 @@ export default function BasicLayout({
   };
 
   const [device, setDevice] = useState(getDevice(NaN));
-  window.addEventListener('optimizedResize', e => {
+  window.addEventListener('optimizedResize', (e) => {
     setDevice(getDevice(e && e.target && e.target.innerWidth));
   });
   return (
@@ -70,8 +70,8 @@ export default function BasicLayout({
           style={{
             marginRight: 10,
           }}
-        ></Shell.Navigation>
-        <Shell.Action></Shell.Action>
+        />
+        <Shell.Action />
         <Shell.Navigation>
           <PageNav />
         </Shell.Navigation>

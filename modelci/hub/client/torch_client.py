@@ -4,19 +4,19 @@ Desc: template client for TorchScript of ResNet-50
 Date: 26/04/2020
 """
 
-import torch
-import grpc, json
+import grpc
+import json
 import numpy as np
+import torch
+from proto.service_pb2 import InferRequest
+from proto.service_pb2_grpc import PredictStub
 from toolz import compose
 from torchvision import transforms
 
-from proto.service_pb2 import InferRequest
-from proto.service_pb2_grpc import PredictStub
-
-from modelci.utils.misc import json_update
-from modelci.persistence.bo.type_conversion import type_to_data_type
-from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
+from modelci.metrics.benchmark.metric import BaseModelInspector
+from modelci.persistence.bo.type_conversion import type_to_data_type
+from modelci.utils.misc import json_update
 
 
 class CVTorchClient(BaseModelInspector):

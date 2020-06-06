@@ -6,7 +6,9 @@ export default function Footer() {
     <p className={styles.footer}>
       <span className={styles.logo}>CAP @NTU</span>
       <br />
-      <span className={styles.copyright}>© 2019-2020 Nanyang Technological University, Singapore</span>
+      <span className={styles.copyright}>
+        © 2019-2020 Nanyang Technological University, Singapore
+      </span>
     </p>
   );
 }

@@ -5,16 +5,16 @@ An example usage of profiler.py
 import cv2
 import numpy as np
 from PIL import Image
-# import torch
-
 from tfs_client import CVTFSClient
+
+from modelci.hub.manager import retrieve_model_by_name
+from modelci.hub.profiler import Profiler
+from modelci.persistence.bo.model_objects import Engine, Framework
+
+# import torch
 # from trt_client import CVTRTClient
 # from torch_client import CVTorchClient
 # from onnx_client import CVONNXClient
-
-from modelci.hub.profiler import Profiler
-from modelci.hub.manager import retrieve_model_by_name
-from modelci.persistence.bo.model_objects import Engine, Framework
 
 if __name__ == "__main__":
     # Fake data for testing

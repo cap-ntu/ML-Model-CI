@@ -5,7 +5,6 @@ Date: 26/04/2020
 """
 
 import grpc
-
 import tensorflow.compat.v1 as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc

@@ -13,7 +13,7 @@ import {
 
 import './index.css';
 
-const {Search} = Input;
+const { Search } = Input;
 
 function showModelDetails(record) {
   console.log(record);
@@ -21,59 +21,58 @@ function showModelDetails(record) {
     title: `${record.modelName}'s Profile`,
     width: '50%',
     content: (
-      <div style={{marginTop: 40}}>
+      <div style={{ marginTop: 40 }}>
         <div>
           <Divider orientation="left">Serving Information</Divider>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Model Name: </b> {record.modelName}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Model Id: </b>
             {record.modelId}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Model Framework: </b> {record.modelFramework}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Serving Engine: </b> {record.modelEngine}
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Serving Device: </b> Nvidia Tesla P4
           </div>
-          <br/>
+          <br />
         </div>
         <div>
           <Divider orientation="left">Testing Information (finished)</Divider>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Testing Batch Size: </b> 64
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Testing Batch Number: </b> 100
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>All Batch Throughput: </b> 240.77713166220317 req/sec
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>All Batch Latency: </b> 26.580597400665283 sec
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Total GPU Memory: </b> 7981694976.0 bytes
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Average GPU Memory Usage: </b> 0.9726
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Average GPU Memory Used: </b> 7763132416.0 bytes
           </div>
-          <div style={{marginTop: 8}}>
+          <div style={{ marginTop: 8 }}>
             <b>Average GPU Utilization: </b> 75.6538%
           </div>
-          <br/>
+          <br />
         </div>
       </div>
     ),
-    onOk() {
-    },
+    onOk() {},
   });
 }
 
@@ -143,7 +142,7 @@ const columns = [
         <Button type="primary" size="large">
           Edit
         </Button>
-        <Button style={{marginLeft: '3px'}} type="primary" size="large">
+        <Button style={{ marginLeft: '3px' }} type="primary" size="large">
           Profile
         </Button>
       </div>
@@ -233,7 +232,7 @@ const Dashboard = () => {
   return (
     <Card>
       <div
-        style={{marginBottom: '20px', display: 'flex', flexDirection: 'row'}}
+        style={{ marginBottom: '20px', display: 'flex', flexDirection: 'row' }}
       >
         <Button
           size="large"
@@ -246,7 +245,7 @@ const Dashboard = () => {
         </Button>
         <Button
           size="large"
-          style={{marginLeft: '5px'}}
+          style={{ marginLeft: '5px' }}
           onClick={() => {
             console.log('You clicked Download Table');
           }}
@@ -255,21 +254,21 @@ const Dashboard = () => {
         </Button>
         <Search
           size="large"
-          style={{marginLeft: '10px'}}
+          style={{ marginLeft: '10px' }}
           placeholder="search model record by key words"
           enterButton="Search"
           onSearch={(value) => console.log(value)}
         />
       </div>
-      <Divider dashed/>
+      <Divider dashed />
       <Table
         columns={columns}
         dataSource={data}
         expandable={{
           expandedRowRender: (record) => (
-            <div style={{backgroundColor: '#F5F5F5', padding: '10px'}}>
+            <div style={{ backgroundColor: '#F5F5F5', padding: '10px' }}>
               <Descriptions
-                style={{width: '92%', margin: '0 auto'}}
+                style={{ width: '92%', margin: '0 auto' }}
                 column={3}
                 size="middle"
                 title={
@@ -379,7 +378,7 @@ const Dashboard = () => {
                   >
                     Success
                   </a>
-                  <Divider type="vertical"/>
+                  <Divider type="vertical" />
                   {/* <Radio.Group size="large">
                     <Radio.Button
                       value="large"
@@ -397,7 +396,7 @@ const Dashboard = () => {
                 </Descriptions.Item>
               </Descriptions>
               <Descriptions
-                style={{width: '92%', margin: '0 auto'}}
+                style={{ width: '92%', margin: '0 auto' }}
                 column={3}
                 size="small"
                 title={

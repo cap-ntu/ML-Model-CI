@@ -113,8 +113,35 @@ class ModelService(object):
             ValueError: If `model.id` does not exist in ModelDB, and `force_insert` is not set.
         """
         # check for the existence of Model
-        if ModelService.__model_DAO.exists_by_id(model.id):
-            model_po = model.to_model_po()
+        if cls.__model_DAO.exists_by_id(model.id):
+            model_po_new = model.to_model_po()
+            model_po = cls.__model_DAO.get_model_by_id(model.id)
+
+            # if weight changes, save all without patch
+            if model_po_new.weight is not None and model_po_new.weight != model_po.weight:
+                return bool(cls.__model_DAO.save_model(model_po_new))
+
+            # if list field changes
+            # TODO update dynamic list
+
+            # build arguments
+            valid_keys = [
+                'name', 'framework', 'engine', 'version', 'dataset',
+                'accuracy', 'weight', 'task', 'inputs', 'outputs', 'status'
+            ]
+            kwargs = dict()
+
+            for valid_key in valid_keys:
+                new_value = getattr(model_po_new, valid_key)
+                if new_value is not None and new_value != getattr(model_po, valid_key):
+                    kwargs[valid_key] = new_value
+
+            # if kwargs is empty, not update
+            if len(kwargs) == 0:
+                return False
+
+            return bool(cls.__model_DAO.update_model(model.id, **kwargs))
+            # return bool(cls.__model_DAO.update_model(model_po_new))
         else:
             # if `force_insert` is set
             if force_insert:

@@ -9,7 +9,10 @@
     "jsx": "react",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["es6", "dom"],
+    "lib": [
+      "es6",
+      "dom"
+    ],
     "sourceMap": true,
     "allowJs": true,
     "rootDir": "./",
@@ -23,11 +26,24 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "ice": [".ice/index.ts"],
-      "ice/*": [".ice/pages/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "ice": [
+        ".ice/index.ts"
+      ],
+      "ice/*": [
+        ".ice/pages/*"
+      ]
     }
   },
-  "include": ["src/*", ".ice"],
-  "exclude": ["node_modules", "build", "public"]
+  "include": [
+    "src/*",
+    ".ice"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "public"
+  ]
 }

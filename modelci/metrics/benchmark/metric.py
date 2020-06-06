@@ -17,10 +17,9 @@ from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 class BaseModelInspector(metaclass=ABCMeta):
     """
-    A class for running the model inference with metrics testing. User can 
-    call the the method to run and test the model and return the tested 
-    latency and throughput. 
-
+    A class for running the model inference with metrics testing. User can
+    call the the method to run and test the model and return the tested
+    latency and throughput.
     Parameters
     ----------
     @param batch_num: the number of batches you want to run
@@ -108,9 +107,7 @@ class BaseModelInspector(metaclass=ABCMeta):
                 a_batch_throughput = self.batch_size / a_batch_latency
                 self.throughputs.append(a_batch_throughput)
                 # TODO: replace printing with logging
-                print(
-                    " latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput),
-                    ' req/sec')
+                print(f' latency: {a_batch_latency:.4f} sec throughput: {a_batch_throughput:.4f} req/sec')
 
         while len(self.latencies) != len(self.batches):
             pass
@@ -152,6 +149,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         a_batch_throughput = self.batch_size / a_batch_latency
         self.throughputs.append(a_batch_throughput)
         # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
+
 
     def start_infer_with_time(self, batch_input):
         """
@@ -235,13 +233,12 @@ class ReqThread(Thread):
     """
     Thread class for sending a request.
     """
-
     def __init__(self, callback, infer_mothod, batch_data):
         Thread.__init__(self)
         self.callback = callback
         self.batch_data = batch_data
         self.infer = infer_mothod
-
+        
     def run(self):
         self.infer(self.batch_data)
         self.callback(time.thread_time())

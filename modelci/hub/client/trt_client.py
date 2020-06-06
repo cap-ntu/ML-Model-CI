@@ -6,10 +6,10 @@ Date: 26/04/2020
 
 from tensorrtserver.api import InferContext, ProtocolType
 
-from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.hub.utils import parse_trt_model
 from modelci.data_engine.preprocessor import image_classification_preprocessor
 from modelci.hub.deployer.config import TRT_GRPC_PORT
+from modelci.hub.utils import parse_trt_model
+from modelci.metrics.benchmark.metric import BaseModelInspector
 
 
 class CVTRTClient(BaseModelInspector):
