@@ -71,16 +71,24 @@ from modelci.persistence.service import ModelService
 
 model_service = ModelService()
 # Query from Mongo DB, obtain model business object and update
-model = ...
+model_bo = ...
 
-model_service.update_model(model)
+model_service.update_model(model_bo)
 ```
-This API will check if the model exists in Model DB. It will reject the update by raising a `ValueError`. If you would like to force update:
+This API will check if the model exists in Model DB. It will reject the update by raising a `ValueError`. 
+If you would like to force update:
 ```python
-model_service = ...
-model = ...
-model_service.update_model(model, force_insert=True)
+from modelci.persistence.service import ModelService
+
+model_service = ModelService()
+model_bo = ...
+model_service.update_model(model_bo, force_insert=True)
 ```
+However, if there is a change of profiling results, please use profiling result related API for CRUD 
+([add static profiling](#7-add-static-profiling-result-to-a-registered-model), 
+[add dynamic profiling result to a registered](#8-add-dynamic-profiling-result-to-a-registered-model),
+[update dynamic profiling result](#9-update-dynamic-profiling-result), 
+[delete dynamic profiling result](#10-delete-dynamic-profiling-result))). 
 See test `test/test_model_service.test_update_model`.
 
 #### 7. Add static profiling result to a registered model
@@ -104,7 +112,7 @@ The ID must be a valid `ObjectID`.
 See test `test/test_model_service.test_register_static_profiling_result`  
 Update static profiling result may use the same API.
 
-#### 8. Add profiling result to a registered model
+#### 8. Add dynamic profiling result to a registered model
 ```python
 from modelci.persistence.service import ModelService
 from modelci.persistence.bo import DynamicProfileResultBO, ProfileLatency, ProfileMemory, ProfileThroughput
@@ -128,17 +136,33 @@ See test `test/test_model_service.test_register_dynamic_profiling_result`.
 ```python
 from modelci.persistence.service import ModelService
 
-model_service = ModelService()
-
 # the updated dynamic profiling result
 dynamic_result = ...
-model_service.update_dynamic_profiling_result('123456789012', dynamic_result)
+ModelService.update_dynamic_profiling_result('123456789012', dynamic_result)
 ```
 The ID must be a valid `ObjectID`. If a non-existent ID or a non-existent profiling result `ip`, `device_id` pair is supplied, this API will reject the update by raising a `ValueError`.  
 You may set `force_insert` to register a profiling result if the `ip` and `device_id` does not exist.  
 See test `test/test_model_service.test_update_dynamic_profiling_result`.  
 
-#### 10. Delete model
+#### 10. Delete dynamic profiling result
+```python
+import ipaddress
+
+from modelci.persistence.service import ModelService
+
+model_bo = ...
+
+ModelService.delete_dynamic_profiling_result(
+    id_=model_bo.id, 
+    dynamic_result_ip=ipaddress.ip_address('localhost'), 
+    dynamic_result_device_id='gpu:01'
+)
+```
+The ID must be a valid `ObjectID`. This API will raise a `ValueError` if the `id` does not exist, or the `ip` and 
+`device_id` for the given model does not exist.  
+See test `test/test_model_service.test_delete_dynamic_profiling_result`.
+
+#### 11. Delete model
 ```python
 from modelci.persistence.service import ModelService
 

@@ -151,23 +151,26 @@ class ModelDAO(object):
             push__profile_result__dynamic_profile_results=dynamic_profiling_result)
 
     @staticmethod
-    def is_dynamic_profiling_result_exist(
+    def exists_dynamic_profiling_result_by_pks(
             id_: ObjectId,
-            dynamic_profiling_result: DynamicProfileResultPO
+            ip: str,
+            device_id: str,
     ) -> bool:
-        """Check if the dynamic profiling result exist.
+        """Check if the dynamic profiling result exists.
 
         Args:
             id_ (ObjectId): ID of the model.
-            dynamic_profiling_result (DynamicProfileResultPO): Dynamic profiling result to be checked.
+            ip (str): IP address of dynamic profiling result to be deleted.
+            device_id (str): Device ID of dynamic profiling result to be deleted.
 
         Return:
-             bool: True for exist, False otherwise.
+             bool: `True` for existence, `False` otherwise.
         """
         return bool(ModelPO.objects(
             id=id_,
-            profile_result__dynamic_profile_results__ip=dynamic_profiling_result.ip,
-            profile_result__dynamic_profile_results__device_id=dynamic_profiling_result.device_id))
+            profile_result__dynamic_profile_results__ip=ip,
+            profile_result__dynamic_profile_results__device_id=device_id)
+        )
 
     @staticmethod
     def update_dynamic_profiling_result(
@@ -186,7 +189,27 @@ class ModelDAO(object):
         return ModelPO.objects(
             id=id_,
             profile_result__dynamic_profile_results__ip=dynamic_profiling_result.ip,
-            profile_result__dynamic_profile_results__device_id=dynamic_profiling_result.device_id) \
-            .update(
+            profile_result__dynamic_profile_results__device_id=dynamic_profiling_result.device_id
+        ).update(
             set__profile_result__dynamic_profile_results__S=dynamic_profiling_result
+        )
+
+    @staticmethod
+    def delete_dynamic_profiling_result(
+            id_: ObjectId,
+            ip: str,
+            device_id: str,
+    ) -> None:
+        """Delete dynamic profiling result.
+
+        Args:
+            id_ (ObjectId): ID of the model.
+            ip (str): IP address of dynamic profiling result to be deleted.
+            device_id (str): Device ID of dynamic profiling result to be deleted.
+        """
+        return ModelPO.objects(
+            id=id_,
+        ).update_one(
+            pull__profile_result__dynamic_profile_results__ip=ip,
+            pull__profile_result__dynamic_profile_results__device_id=device_id
         )
