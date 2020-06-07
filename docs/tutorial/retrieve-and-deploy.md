@@ -73,6 +73,28 @@ Currently, we only support deleting model by `model.id`.
 
 ## Deploy the Cached Model
 
+### Server Installation
+
+Before serving your models, please make sure for TorchScript and ONNX Runtime, you have installed corresponding Docker images. By default, if you have installed the ModelCI's Docker image, it contains those two parts so you don't need to install them again.
+
+**ModelCI/Pytorch-Serving** 
+
+![](https://img.shields.io/docker/pulls/modelci/pytorch-serving.svg) ![](https://img.shields.io/docker/image-size/modelci/pytorch-serving)
+
+```bash
+docker pull modelci/pytorch-serving
+```
+
+**ModelCI/ONNX-Serving** 
+
+![](https://img.shields.io/docker/pulls/modelci/onnx-serving.svg) ![](https://img.shields.io/docker/image-size/modelci/onnx-serving)
+
+```bash
+docker pull modelci/onnx-serving
+```
+
+### Serving API 
+
 If you have cached models in your local devices, you can deploy them easily, all you need to do is to pass the model information and specify a serving device. 
 
 We use the auto-generated `saved_path` (See [Tricks with Model Saved Path](#-Tricks-with-Model-Saved-Path)) to specify 
@@ -97,3 +119,4 @@ docker stop <name>
 ```
 
 The model will be removed once stoped.
+
