@@ -25,10 +25,6 @@ sh deploy_model.sh ResNet50 8200 8201 8202
 ## Testing
 
 From [TensorRT Client](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-guide/docs/client.html#getting-the-client-libraries).  
-### Install Client
-```shell script
-sh ./install_client.sh
-```
 
 ### Test
 ```shell script

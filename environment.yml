@@ -132,5 +132,6 @@ dependencies:
       - pytest-env==0.6.2
       - setuptools==46.4.0
       - stringcase==1.2.0
+      - tensorflow-serving-api==2.1.0
       - typing-extensions==3.7.4.2
       - websocket-client==0.57.0

@@ -1,8 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env source
 
 # setup env variables
-set -o allexport
-source modelci/env-mongodb.env
-set +o allexport
+# shellcheck disable=SC2046
+export $(grep -v '^#' modelci/env-mongodb.env | xargs -d '\r\n')
 
 export PYTHONPATH="${PWD}"
+
+echo $MONGO_HOST

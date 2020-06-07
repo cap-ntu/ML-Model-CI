@@ -25,7 +25,7 @@ Keras-Preprocessing==1.1.0
 mongoengine==0.19.1
 more-itertools==8.2.0
 multidict==4.7.5
-numpy==1.18.1
+numpy~=1.18.4
 oauthlib==3.1.0
 olefile==0.46
 opt-einsum==3.1.0
@@ -63,3 +63,4 @@ wcwidth==0.1.9
 Werkzeug==1.0.1
 wrapt==1.12.1
 zipp==3.1.0
+docker~=4.2.0
