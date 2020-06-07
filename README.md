@@ -41,8 +41,9 @@
 
 ### Command Line  
 
-![comming soon](https://img.shields.io/badge/comming-soon-green.svg)
-
+```shell script
+bash scripts/install.sh
+```
 
 ## Quick Start
 

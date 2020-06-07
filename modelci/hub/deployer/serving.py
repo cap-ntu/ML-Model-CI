@@ -73,13 +73,13 @@ def serve(save_path: Union[Path, str], device: str = 'cpu', name: str = None) ->
         ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
-            f'pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+            f'mlmodelci/pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.ONNX:
         ports = {'8000': config.ONNX_HTTP_PORT, '8001': config.ONNX_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
-            f'onnx-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+            f'mlmodelci/onnx-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.TRT:
         if not cuda:

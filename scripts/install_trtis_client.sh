@@ -6,7 +6,7 @@ FILENAME=v"${VERSION}"_ubuntu"${UBUNTU_VERSION}".clients.tar.gz
 
 mkdir -p ~/tmp
 cd ~/tmp || return 1
-mkdir tensorrtserver && cd tensorrtserver || return 1
+mkdir -p tensorrtserver && cd tensorrtserver || return 1
 
 # get package
 wget https://github.com/NVIDIA/tensorrt-inference-server/releases/download/v"${VERSION}"/"${FILENAME}"

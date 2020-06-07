@@ -5,5 +5,3 @@
 export $(grep -v '^#' modelci/env-mongodb.env | xargs -d '\r\n')
 
 export PYTHONPATH="${PWD}"
-
-echo $MONGO_HOST
