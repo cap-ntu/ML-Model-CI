@@ -33,20 +33,16 @@
 
 ## Installation
 
-### Docker 
+### Docker
 
-```bash
-docker pull xxx #TODO
-```
+![comming soon](https://img.shields.io/badge/comming-soon-green.svg)
 
-Please refer to [here](/intergration/README.md) for more information.
+<!-- Please refer to [here](/intergration/README.md) for more information. -->
 
 ### Command Line  
 
-```bash
-curl xxx.get_cli.sh #TODO
-# or pip install modelci
-```
+![comming soon](https://img.shields.io/badge/comming-soon-green.svg)
+
 
 ## Quick Start
 
