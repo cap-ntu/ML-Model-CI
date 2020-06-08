@@ -96,7 +96,7 @@ docker pull mlmodelci/onnx-serving
 
 If you have cached models in your local devices, you can deploy them easily, all you need to do is to pass the model information and specify a serving device.
 
-We use the auto-generated `saved_path` (See [Tricks with Model Saved Path](#-Tricks-with-Model-Saved-Path)) to specify
+We use the auto-generated `saved_path` (See [Tricks with Model Saved Path](./register.md#tricks-with-model-saved-path)) to specify
 model local cache. A serving device can also be assigned using device name (i.e. `'cpu'`, `'cuda:0'`, `'cuda:0,1'`)
 
 ```python
