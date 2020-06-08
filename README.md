@@ -72,7 +72,9 @@ register_model(
 
 ### Convert a Model
 
-As the a newly trained model can not be deployed to cloud, you need to convert it to some optimized formats (e.g., TorchScript and ONNX) with our MLModelCI.
+As the a newly trained model can not be deployed to cloud, MLModelCI converts it to some optimized formats (e.g., TorchScript and ONNX).
+
+You can finish this on your own:
 
 ```python 
 from modelci.hub.converter import ONNXConverter
@@ -87,6 +89,8 @@ ONNXConverter.from_torch_module('<path to torch model>',
 ### Profile a Model
 
 Before deploying an optimized model as a cloud service, developers need to understand its runtime performance (e.g., latency and throughput) so to set up a more cost-effectie solution (batch size? device? serving system? etc.). MLModelCI provides a profile to automate the processing.
+
+You can manually profile your models as follows:
 
 ```python 
 from modelci.hub.client.torch_client import CVTorchClient
@@ -107,7 +111,7 @@ profiler.diagnose()
 
 MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispatcher launches a serving system (e.g. Tensorflow-Serving) to load a model in a containerized manner and dispatches the MLaaS to a device.
 
-We can search for a converted model and then dispatch it.
+We search for a converted model and then dispatch it to a device with a specific batch size.
 
 ```python 
 from modelci.hub.deployer import serve
@@ -117,10 +121,10 @@ from modelci.hub.manager import retrieve_model_by_name
 mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
 
 # deploy the model to cuda device 0.
-serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving') 
+serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
 ```
 
-Now your model is a cloud service!
+Now your model is a effient cloud service!
 
 
 For more information please take a look at our tutorials.
