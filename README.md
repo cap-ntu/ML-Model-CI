@@ -29,7 +29,7 @@ MLModelCI is a fully opensource platform that provides a one-stop service for op
 
 - **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
 - **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
-- **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a detailed report about model performance in production environment.
+- **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
 - **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
@@ -64,7 +64,9 @@ register_model(
     acc=0.76,
     task='image classification',
     inputs=[IOShape([-1, 3, 224, 224], float)],
-    outputs=[IOShape([-1, 1000], float)]
+    outputs=[IOShape([-1, 1000], float)],
+    convert=True,
+    profile=True
 )
 ```
 
