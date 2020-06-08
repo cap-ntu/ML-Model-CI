@@ -91,7 +91,7 @@ register_model(
     framework=Framework.PYTORCH,
     version=ModelVersion(1),
     convert=False,
-    profile=True,
+    profile=True
 )
 ```
 
@@ -116,7 +116,7 @@ register_model(
     version=ModelVersion(1),
     no_generate=True,
     convert=False,
-    profile=True,
+    profile=True
 )
 ```
 
