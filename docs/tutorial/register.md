@@ -49,11 +49,13 @@ register_model(
     task='image classification',
     inputs=[IOShape([-1, 3, 224, 224], float)],
     outputs=[IOShape([-1, 1000], float)],
+    convert=False,
+    profile=True,
     no_generate=True
 )
 ```
 
-We have a quick script for you, including automatic model conversion and registration, just run this command in the package root.
+We have a quick script for you, including automatic model registration, conversion, and profiling, just run this command in the package root.
 
 ```shell script
 python modelci/hub/init_data.py export --model {MODEL_NAME} --framework {FRAMEWORK}
@@ -87,7 +89,9 @@ register_model(
     outputs=outputs,
     architecture='ResNet50',
     framework=Framework.PYTORCH,
-    version=ModelVersion(1)
+    version=ModelVersion(1),
+    convert=False,
+    profile=True,
 )
 ```
 
@@ -110,9 +114,13 @@ register_model(
     framework=Framework.PYTORCH,
     engine=Engine.TORCHSCRIPT,
     version=ModelVersion(1),
-    no_generate=True
+    no_generate=True,
+    convert=False,
+    profile=True,
 )
 ```
+
+If you use `convert=True`, ModelCI will help you to convert your model automatically after adding to the database. Similarly, if you use `profile=True`, ModelCI will find a free device to start model benchmarking and profiling automatically.
 
 ## Tricks with Model Saved Path
 
