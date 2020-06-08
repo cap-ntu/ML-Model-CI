@@ -6,11 +6,9 @@ We assume you have setup the MongoDB and all environment variables by [install](
 See `modelci/hub/init_data.py`.  
 Converted TRT model from TensorFlow ResNet50.
 ```shell script
-python modelci/init_data.py --model resnet50 --framework tensorflow
+python modelci/init_data.py --model resnet50 --framework tensorflow --trt
 ```
 Models will be saved at `~/.modelci/ResNet50/tensorflow-trt/` directory.  
-**Note**: You do not need to rerun the above code if you have done so for 
-[TensorFlow Serving](/modelci/hub/deployer/tfs).
 
 
 Deploy with TRTIS Docker:
