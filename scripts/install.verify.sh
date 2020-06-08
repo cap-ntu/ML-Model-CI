@@ -16,6 +16,8 @@ python -m pytest tests/
 
 cd modelci/hub || exit 1
 python init_data.py export --model ResNet50 --framework tensorflow
+# For tensorflow with TFS and TRT
+#python init_data.py export --model ResNet50 --framework tensorflow --trt
 python init_data.py export --model ResNet50 --framework pytorch
 
 cd deployer || exit 1
