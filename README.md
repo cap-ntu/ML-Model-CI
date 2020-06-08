@@ -31,7 +31,7 @@
 
 -   **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
     detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
-    
+
 -   **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
 
 -   **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
