@@ -12,4 +12,4 @@ architecture: ResNet50
 framework: PYTORCH
 engine: TORCHSCRIPT
 version: 1
-no_generate: True
+convert: false
