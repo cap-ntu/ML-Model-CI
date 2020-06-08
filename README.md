@@ -26,10 +26,14 @@
 ## Features
 
 -   **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
+
 -   **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
+
 -   **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
     detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
+    
 -   **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
+
 -   **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 ## Installation
@@ -39,6 +43,7 @@
 ```shell script
 bash scripts/install.sh
 ```
+
 *Conda and Docker are required to run this installation script*
 
 *To use TensorRT, you have to manually installed TensorRT (`sudo` required), see instruction 

@@ -14,7 +14,9 @@ COPY . /content
 RUN find /content/scripts -type f -exec sed -i -e 's/^M$//' {} \;
 
 RUN apt-get update -y \
- && apt-get install -y curl wget zip
+ && apt-get install -y curl wget zip \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
 RUN curl -L https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_64.sh -o /miniconda.sh \
@@ -28,10 +30,12 @@ RUN conda env update --name base -f /content/environment.yml \
  && pip install tensorflow-serving-api==2.1.0
 
 # Install TRTIS
-RUN mkdir -p ~/tmp && cd ~/tmp \
- && wget https://github.com/NVIDIA/triton-inference-server/releases/download/v${TRITONIS_VERSION}/v${TRITONIS_VERSION}_ubuntu1804.clients.tar.gz \
- && tar xzf v${TRITONIS_VERSION}_ubuntu1804.clients.tar.gz
-RUN pip install ~/tmp/python/tensorrtserver-${TRITONIS_VERSION}-py2.py3-none-linux_x86_64.whl
+RUN mkdir -p ~/tmp
+WORKDIR /root/tmp
+RUN curl https://github.com/NVIDIA/triton-inference-server/releases/download/v${TRITONIS_VERSION}/v${TRITONIS_VERSION}_ubuntu1804.clients.tar.gz \
+    -o tritonis.clients.tar.gz \
+ && tar xzf tritonis.clients.tar.gz
+ && pip install ~/tmp/python/tensorrtserver-${TRITONIS_VERSION}-py2.py3-none-linux_x86_64.whl
 
 # Uninstall build dependency
 RUN apt-get remove -y curl wget \
