@@ -14,7 +14,7 @@ COPY . /content
 RUN find /content/scripts -type f -exec sed -i -e 's/^M$//' {} \;
 
 RUN apt-get update -y \
- && apt-get install -y curl wget zip \
+ && apt-get install -y curl=7.58.0-2ubuntu3.8 zip=3.0-11build1 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
