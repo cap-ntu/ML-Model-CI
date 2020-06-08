@@ -38,14 +38,16 @@
 ```shell script
 bash scripts/install.sh
 ```
-*Conda and Docker are required to run this installation script
+*Conda and Docker are required to run this installation script*
 
-To use TensorRT, you have to manually installed TensorRT (`sudo` required), see instruction 
-[here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html).
+*To use TensorRT, you have to manually installed TensorRT (`sudo` required), see instruction 
+[here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html).*
 
 ### Docker
 
-![comming soon](https://img.shields.io/badge/comming-soon-green.svg)
+```bash
+docker pull mlmodelci/mlmodelci
+```
 
 <!-- Please refer to [here](/intergration/README.md) for more information. -->
 
