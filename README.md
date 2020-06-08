@@ -44,6 +44,7 @@
 ```shell script
 bash scripts/install.sh
 ```
+*Conda is required to run this installation script
 
 ## Quick Start
 

@@ -41,6 +41,8 @@ find scripts/ -type f -exec sed -i -e "s/^M$//" {} \;
 
 # Install Conda environment
 info_echo "Installing Conda environment..."
+conda >> /dev/null || exit 1
+
 error_capture scripts/install.conda_env.sh all
 
 # Activate conda
