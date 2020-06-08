@@ -1,10 +1,12 @@
 # Register Model in the Model Database
 
-In this tutorial, we demonstrate modelci, a toolbox providing APIs that fetch, convert diagnose and deploy pre-trained 
+In this tutorial, we demonstrate modelci, a toolbox providing APIs that fetch, convert diagnose and deploy pre-trained
 model in different form of variant.
 
-Firstly, make sure that you have started a MongoDB service and configured the MongoDB environment. See 
+Firstly, make sure that you have started a MongoDB service and configured the MongoDB environment. See
 [installation](../../README.md#installation).
+
+You can reigter a Deep Learning model in the database easily, you can setup the model informations using .yaml file or using Python code.
 
 ## Register a Pre-trained Model
 
@@ -18,13 +20,16 @@ model_yaml = ...
 register_model_from_yaml(model_yaml)
 ```
 
+### With Python API
+
 We can register a pre-trained model using `modelci.hub.manager.register_model(...)`. This API has two modes:
 
-- `auto_generate`:
+-   `auto_generate`:
 
     Enabled by setting `no_generate=False` (default), which converts your model (a PyTorch `nn.Module` or a
     TensorFlow `keras.Model` object) into all possible model family.
-- `no_generate`:
+
+-   `no_generate`:
 
     Enabled by setting `no_generate=True`. This will let user register the given model only.
 
@@ -48,15 +53,19 @@ register_model(
 )
 ```
 
-For quick start (conversion + registration), run
+We have a quick script for you, including automatic model conversion and registration, just run this command in the package root.
+
 ```shell script
-python init_data.py export --model {MODEL_NAME} --framework {FRAMEWORK}
+python modelci/hub/init_data.py export --model {MODEL_NAME} --framework {FRAMEWORK}
 ```
 
-Currently supported (tested) model name:
-- ResNet50
+Currently the supported (tested) model name by `init_data.py`:
 
-### Registration using `auto_generate` mode
+-   ResNet50
+
+#### Registration using `auto_generate` mode
+
+Here is an example about the registration using `auto_generate` mode.
 
 ```python
 import torch.hub
@@ -82,10 +91,9 @@ register_model(
 )
 ```
 
-### Registration using `no_generate` Mode
+#### Registration using `no_generate` mode
 
-Assume we have a saved pre-trained ResNet50 model at current working directory named `1.zip`. It was trained on 
-ImageNet and exported by TorchScript.
+Assume we have a saved pre-trained ResNet50 model at current working directory named `1.zip`. It was trained on ImageNet and exported by TorchScript. You can register it using using `no_generate` mode like this.
 
 ```python
 from modelci.hub.manager import register_model
@@ -109,7 +117,7 @@ register_model(
 ## Tricks with Model Saved Path
 
 The default model local cache path is in the following form:  
-`~/.modelci/<model name>/<framework>-<engine>/<version>.<extension>`  
+`~/.modelci/<model name>/<framework>-<engine>/<version>.<extension>`
 
 We can use `modelci.hub.utils.parse_path(...)` to extract model identification.
 
@@ -126,11 +134,11 @@ The extracted information is a dictionary containing:
 
 ```yaml
 {
-    'architecture': architecture,
-    'framework': framework,
-    'engine': engine,
-    'version': version,
-    'filename': filename
+    "architecture": architecture,
+    "framework": framework,
+    "engine": engine,
+    "version": version,
+    "filename": filename,
 }
 ```
 
