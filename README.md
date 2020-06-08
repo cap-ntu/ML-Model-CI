@@ -128,7 +128,7 @@ For more information please take a look at our tutorials.
 
 After the Quick Start, we provide detailed tutorials for users to understand our system.
 
-- [Register a Model in the Model Database](./docs/tutorial/register.md)
+- [Register a Model in ModelHub](./docs/tutorial/register.md)
 - [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
