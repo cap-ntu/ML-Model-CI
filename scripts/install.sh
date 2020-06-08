@@ -41,7 +41,7 @@ find scripts/ -type f -exec sed -i -e "s/^M$//" {} \;
 
 # Install Conda environment
 info_echo "Installing Conda environment..."
-#error_capture scripts/install.conda_env.sh all
+error_capture scripts/install.conda_env.sh all
 
 # Activate conda
 source "${HOME}/anaconda3/etc/profile.d/conda.sh"
@@ -53,7 +53,7 @@ error_capture scripts/install.trtis_client.sh all
 
 # Pull docker images
 info_echo "Pulling Docker images..."
-#error_capture scripts/install.pull_docker_images.sh none "${log_path}"
+error_capture scripts/install.pull_docker_images.sh none "${log_path}"
 
 # Start service
 info_echo "Starting services..."
