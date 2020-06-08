@@ -59,6 +59,7 @@ Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud ser
 
 ```python
 from modelci.hub.manager import register_model
+from modelci.persistence.bo import IOShape
 
 # Register a Trained ResNet50 Model to ModelHub.
 register_model(
@@ -79,7 +80,8 @@ As the a newly trained model can not be deployed to cloud, MLModelCI converts it
 
 You can finish this on your own:
 
-```python 
+```python
+
 from modelci.hub.converter import ONNXConverter
 from modelci.persistence.bo import IOShape
 
@@ -95,9 +97,15 @@ Before deploying an optimized model as a cloud service, developers need to under
 
 You can manually profile your models as follows:
 
-```python 
+```python
+
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.profiler import Profiler
+
+test_data_item = ...
+batch_num = ...
+batch_size = ...
+mode_info = ...
 
 # create a client
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
@@ -116,9 +124,13 @@ MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispat
 
 We search for a converted model and then dispatch it to a device with a specific batch size.
 
-```python 
+```python
+
 from modelci.hub.deployer import serve
 from modelci.hub.manager import retrieve_model_by_name
+from modelci.persistence.bo import Framework, Engine
+
+model_info = ...
 
 # get saved model information
 mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
