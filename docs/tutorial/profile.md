@@ -1,12 +1,20 @@
-# Profiling Model Automatically
+# Profile a Model for Cost-Effective MLaaS
 
-After conversion, the system will deploy the model to avaliable devices and run diagnose to test their performance, we call this model profiling. 
+After conversion, MLModelCI runs models on the underlying devices in the clusters, and collects, aggregates, and processes running model performance. Specifically, there are six indicators that will be acquired, peak throughput, P50-latency, P95-latency, P99-latency, GPU memory usage, and GPU computation utilization.
 
-Model profiling will start automatically once you have added a new model into the model database, but you can still build a script to control the profiling by yourself. 
+
+To get real model performance in practice, the profiler simulates the real service behavior by invoking a gRPC client and a model service. In particular, the profiler contains many build-in clients and upon it receives a profiling signal, it starts the corresponding client and invokes the dispatcher to deploy a MLaaS. It then sends test data from the client to the service with a variety of batch sizes and serving systems on different devices. Users can have hundreds of combinations available, which is very useful for setting parameters for online services.
+
+We provide many build-in gRPC clients:
+
+- TorchScript
+- ONNX
+- Trion Inference Serving
+- TensorFlow-Serving
 
 ## Start Profiling 
 
-You can use the `Profiler` class to instance a profiler to start your model profiling. 
+You can use the `Profiler` class to instance a profiler to start your model profiling. Before starting the profiler, you need a client. We have some existed client in the `modelci.hub` and according to the task information of a model, the profiler will invoke appropriate clients to finish the profiling.
 
 ```python 
 from modelci.hub.client.torch_client import CVTorchClient
@@ -22,13 +30,13 @@ profiler = Profiler(model_info=mode_info, server_name='name of your server', ins
 profiler.diagnose()
 ```
 
-Before starting the profiler, you need a client. We have some existed client in the `modelci.hub`, if you don't have ideas how to pick the right client, the profiler will search for the hub automatically. 
+
 
 ## Build a Customed Client
 
-For flexible usage, you can build a customed client if necessary. We have a parent class `modelci.metrics.benchmark.metric.BaseModelInspector` for you to implement. 
+For flexible usage, you can build a customed client if necessary. We provide a parent class `modelci.metrics.benchmark.metric.BaseModelInspector` for you to inherit. You have to implement some necessary functions in the child class. Here is an example, a customized client for ResNet50 image classification.
 
-You have to implement some necessary functions in the child class, here is an example, a customed client for ResNet50 image classification. 
+Once you have implemented a customed client, you can pass its instance to `Profiler`, and start profiling like the above shows.
 
 ```python 
 import grpc
@@ -80,7 +88,7 @@ class YourClient(BaseModelInspector):
         pass
 ```
 
-You should use the ModelCI's rules for ports if you are trying to specify a fixed port number of gRPC or HTTP APIs.
+You should use the MLModelCI's rules specify a ports for your custimized clients.
 
 You can import the ports from ModelCI like this
 
@@ -98,13 +106,10 @@ The full table of the default ports are list below:
 | TRT         | 8200      | 8201      | 8202 (Prometeus)| -               |
 | TFS         | 8501      | 8500      | 8510            | 8511            |
 
-Once you have implemented a customed client, you can pass its instance to the `Profiler`, and start profiling like default.
 
 ## Profiling Results 
 
-Once you have added a new model into the database, the profiling process will start automatically while you have some free devices. 
-
-The profiling results will be saved into the database once profiling has finished. And some results will be printed in the logger as well. They look like:
+The profiling results will be sent to the modelhub once profiling is done. And some results will be presented in your terminal as well. They look like:
 
 ```
 batch size: 8
@@ -123,6 +128,4 @@ average GPU memory used: 7763132416.0 bytes
 average GPU utilization: 66.6216%
 ```
 
-You can display the results by querying the database. And display the results in the web application or anything you like. 
-
-If you have many Deep Learning models, you can use this feature to get an overview of the performance of models in difference devices.
+You can display the results by querying the modelhub and export them to a web application or anything you like. 
