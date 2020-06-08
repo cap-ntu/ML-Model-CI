@@ -70,7 +70,7 @@ register_model(
 
 ### Convert a Model
 
-As the a newly trained model can not be deployed to cloud, MLModelCI converts it to some optimized formats (e.g., TorchScript and ONNX).
+As the a newly trained model can not be deployed to cloud, MLModelCI converts it to some optimized formats (e.g., TorchScript and ONNX) automatically.
 
 You can finish this on your own:
 
