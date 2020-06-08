@@ -46,6 +46,9 @@ bash scripts/install.sh
 ```
 *Conda is required to run this installation script
 
+To use TensorRT, you have to manually installed TensorRT (`sudo` required), see instruction 
+[here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html)
+
 ## Quick Start
 
 MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more clear start, we present the whole pipeline step by step as follows.

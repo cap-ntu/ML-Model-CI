@@ -29,12 +29,15 @@ clean_docker modelci.test.resnet50-ts*
 python serving.py name -m ResNet50 -f tensorflow -e tfs --device cpu --name modelci.test._resnet50-tfs
 python serving.py name -m ResNet50 -f tensorflow -e tfs --device cuda --name modelci.test._resnet50-tfs-gpu
 # TODO: client
+clean_docker modelci.test.resnet50-tfs*
 
 # test onnx
 python serving.py name -m ResNet50 -f pytorch -e onnx --device cpu --name modelci.test._resnet50-onnx
-python serving.py name -m ResNet50 -f pytorch -e onnx --device cuda --name modelci.test._resnet50-ts-gpu
+python serving.py name -m ResNet50 -f pytorch -e onnx --device cuda --name modelci.test._resnet50-onnx-gpu
 # TODO: client
+clean_docker modelci.test.resnet50-onnx*
 
 # test trt
-python serving.py name -m ResNet50 -f tensorflow -e trt --device cuda --name modelci.test.resnet50-trt
+#python serving.py name -m ResNet50 -f tensorflow -e trt --device cuda --name modelci.test.resnet50-trt
 # TODO: client
+#clean_docker modelci.test.resnet50-trt
