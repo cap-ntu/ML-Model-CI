@@ -1,7 +1,7 @@
 <p align="center"> <img src="docs/img/iconv1.svg" width="230" alt="..."> </p>
 
 <h1 align="center">
-    Machine Learning Model CI
+    MLModelCI
 </h1>
 
 <p align="center">
@@ -25,11 +25,13 @@
 
 ## Features
 
-- **Housekeeper** provides a refined management for model registration, deletion, update and selection.
-- **Converter** is to convert models between frameworks.
-- **Profiler** can diagnose a model and provide a detailed report about model performance in production environment.
-- **Dispatcher** is to place models to devices and serve them automatically.
-- **Controller** supports elastic test and deployment.
+MLModelCI is a fully opensource platform that provides a one-stop service for optimizing, managing, and deploying MLaaS. The system is informed and motivated by DevOps techniques such as continuous integration (CI) and continuous deployment (CD), which automates software testing and building before they go online.
+
+- **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
+- **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
+- **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a detailed report about model performance in production environment.
+- **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
+- **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 ## Installation
 
@@ -46,16 +48,16 @@
 
 ## Quick Start
 
-ModelCI offers a user-friendly interface for you to manage your model related workflows. 
+MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more clear start, we present the whole pipeline step by step as follows.
 
-### Register a Saved Model 
+### Register a Model 
 
-Assume you have a ResNet50 model trained by PyTorch, you can easily add it to the database like this
+Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud service, the first step is to publish the model to our system.
 
 ```python
 from modelci.hub.manager import register_model
 
-# Register a Trained ResNet50 Model in Database.
+# Register a Trained ResNet50 Model to ModelHub.
 register_model(
     'home/ResNet50/pytorch/1.zip',
     dataset='ImageNet',
@@ -66,9 +68,9 @@ register_model(
 )
 ```
 
-### Convert Model
+### Convert a Model
 
-You can use ModelCI to convert your registered model to another platform, such as ONNX runtime.
+As the a newly trained model can not be deployed to cloud, you need to convert it to some optimized formats (e.g., TorchScript and ONNX) with our MLModelCI.
 
 ```python 
 from modelci.hub.converter import ONNXConverter
@@ -80,28 +82,9 @@ ONNXConverter.from_torch_module('<path to torch model>',
                                 batch_size=16)
 ```
 
-We also support other types of conversion.
+### Profile a Model
 
-### Retrieve Model and Deploy
-
-We can get the model information and deploy it to any specific device using ModelCI.
-
-```python 
-from modelci.hub.deployer import serve
-from modelci.hub.manager import retrieve_model_by_name
-
-# get saved model information
-mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
-
-# deploy the model to cuda device 0.
-serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving') 
-```
-
-Now your model is running for inference!
-
-### Profile Your Model
-
-In order to measure the performance of the model running on different machines, ModelCI will automatically select the appropriate machine for performance testing and export the results to database.
+Before deploying an optimized model as a cloud service, developers need to understand its runtime performance (e.g., latency and throughput) so to set up a more cost-effectie solution (batch size? device? serving system? etc.). MLModelCI provides a profile to automate the processing.
 
 ```python 
 from modelci.hub.client.torch_client import CVTorchClient
@@ -117,23 +100,42 @@ profiler = Profiler(model_info=mode_info, server_name='name of your server', ins
 profiler.diagnose()
 ```
 
-We can get several metrics after profiling, including serving throughputs, latency, GPU utilization and memory usage.
+
+### Dispatch a model
+
+MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispatcher launches a serving system (e.g. Tensorflow-Serving) to load a model in a containerized manner and dispatches the MLaaS to a device.
+
+We can search for a converted model and then dispatch it.
+
+```python 
+from modelci.hub.deployer import serve
+from modelci.hub.manager import retrieve_model_by_name
+
+# get saved model information
+mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
+
+# deploy the model to cuda device 0.
+serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving') 
+```
+
+Now your model is a cloud service!
+
 
 For more information please take a look at our tutorials.
 
 
 ## Tutorial
 
-Atfer the Quick Start, we have some tutorials here for detailed usages
+After the Quick Start, we provide detailed tutorials for users to understand our system.
 
-- [Register Model in the Model Database](./docs/tutorial/register.md)
-- [Converting Model to Different Frameworks](./docs/tutorial/convert.md)
-- [Profiling Model Automatically](./docs/tutorial/profile.md)
-- [Retrieve and Deploy Model to Specific Device](./docs/tutorial/retrieve-and-deploy.md)
+- [Register a Model in the Model Database](./docs/tutorial/register.md)
+- [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
+- [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
+- [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
 
 ## Contributing
 
-ModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) to get start.
+MLModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) to get start.
 
 ## License
 ```
