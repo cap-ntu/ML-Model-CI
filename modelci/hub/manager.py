@@ -22,7 +22,8 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-        no_generate=False
+        convert=True,
+        profile=False,
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
@@ -43,11 +44,12 @@ def register_model(
         inputs (Iterable[IOShape]): Model input tensors.
         outputs (Iterable[IOShape]): Model output tensors.
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
-        no_generate: Flag for not generation of model family. When set, `origin_model` should be a path to model saving
-            file.
+        convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
+            file. Default to `True`.
+        profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
     """
     model_dir_list = list()
-    if no_generate:
+    if not convert:
         # type and existence check
         assert isinstance(origin_model, str)
         model_dir = Path(origin_model).absolute()
@@ -102,7 +104,9 @@ def register_model(
 
             ModelService.post_model(model)
 
-        # TODO(lym): profile
+        if profile:
+            # TODO(lym): profile
+            pass
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):
@@ -164,7 +168,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework=framework,
         engine=engine,
         version=version,
-        no_generate=no_generate,
+        convert=no_generate,
     )
 
 

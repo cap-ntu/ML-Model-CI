@@ -15,13 +15,19 @@ from modelci.persistence.bo import Framework, Engine
 from modelci.utils.misc import remove_dict_null
 
 
-def serve(save_path: Union[Path, str], device: str = 'cpu', name: str = None) -> Container:
+def serve(
+        save_path: Union[Path, str],
+        device: str = 'cpu',
+        name: str = None,
+        batch_size: int = 16,
+) -> Container:
     """Serve the given model save path in a Docker container.
 
     Args:
         save_path (Union[Path, str]): Saved path to the model.
         device (str): Device name. E.g.: cpu, cuda, cuda:1.
         name (str): Container name. Default to None.
+        batch_size (int): Batch size for passing to serving containers.
 
     Returns:
         Container: Docker container object created.
@@ -104,12 +110,12 @@ def serve_by_name(args):
     engine = Engine[args.engine.upper()]
 
     model_bo = retrieve_model_by_name(architecture_name=model, framework=framework, engine=engine)
-    serve(model_bo.saved_path, device=args.device)
+    serve(model_bo.saved_path, device=args.device, batch_size=args.bs)
 
 
 def serve_by_task(args):
     model_bo = retrieve_model_by_task(task=args.task)
-    serve(model_bo.saved_path, device=args.device)
+    serve(model_bo.saved_path, device=args.device, batch_size=args.bs)
 
 
 if __name__ == '__main__':
@@ -121,11 +127,13 @@ if __name__ == '__main__':
     by_name_parser.add_argument('-f', '--framework', type=str, required=True, help='Framework name')
     by_name_parser.add_argument('-e', '--engine', type=str, required=True, help='Engine name')
     by_name_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
+    by_name_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
     by_name_parser.set_defaults(func=serve_by_name)
 
     by_task_parser = subparsers.add_parser('task', help='Serving by task')
     by_task_parser.add_argument('--task', type=str, required=True, help='task name')
     by_task_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
+    by_name_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
     by_task_parser.set_defaults(func=serve_by_task)
 
     # parse argument
