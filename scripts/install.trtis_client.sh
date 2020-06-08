@@ -5,7 +5,7 @@ UBUNTU_VERSION=$(lsb_release -sr | tr -d '.')
 FILENAME=v"${VERSION}"_ubuntu"${UBUNTU_VERSION}".clients.tar.gz
 
 function download_file_and_untar() {
-    wget https://github.com/NVIDIA/tensorrt-inference-server/releases/download/v"${VERSION}"/"${FILENAME}"
+    wget https://github.com/NVIDIA/triton-inference-server/releases/download/v"${VERSION}"/"${FILENAME}"
     tar xzf "${FILENAME}"
 }
 
