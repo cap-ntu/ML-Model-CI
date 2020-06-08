@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-NOW=$(date +'%Y%m%d-%H%M%S')
-LOG_PATH="/tmp/modelci-${NOW}.log"
+now=$(date +'%Y%m%d-%H%M%S')
+log_path="/tmp/modelci-install-${now}.log"
 FLAG_ERROR=false
 
 RED='\033[0;31m'
@@ -10,40 +10,55 @@ YELLOW='\033[0;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-OK_MESSAGE="${GREEN}OK${NC}"
-FAIL_MESSAGE="${RED}FAIL${NC}"
+function script_execution() {
+    if [[ "${redirect}" == all ]] ; then
+      bash "${scripts_path}" "$@" &>> "${log_path}"
+    elif [[ "${redirect}" == stdout ]] ; then
+      bash "${scripts_path}" "$@" >> "${log_path}"
+    else
+      bash "${scripts_path}" "$@"
+    fi
+}
+
+function error_capture() {
+  local scripts_path=$1 && shift
+  local redirect="${1:-all}" && shift
+
+  if script_execution "$@" ; then
+    echo -e "${GREEN}OK${NC}"
+  else
+    echo -e "${RED}FAIL${NC}"
+    FLAG_ERROR=true
+  fi
+}
+
+function info_echo() {
+  printf "${CYAN}%s${NC}" "$1"
+}
+
+# Change all line ending to LF
+find scripts/ -type f -exec sed -i -e "s/^M$//" {} \;
 
 # Install Conda environment
-printf "${CYAN}Installing Conda environment...${NC}"
-if bash scripts/install_conda_env.sh &> "${LOG_PATH}" ; then
-  echo -e "${OK_MESSAGE}"
-else
-  echo -e "${FAIL_MESSAGE}"
-  FLAG_ERROR=true
-fi
+info_echo "Installing Conda environment..."
+#error_capture scripts/install.conda_env.sh all
 
 # Activate conda
-source "${HOME}"/anaconda3/etc/profile.d/conda.sh
+source "${HOME}/anaconda3/etc/profile.d/conda.sh"
 conda activate modelci
 
 # Install TRTIS client APIs
-printf "${CYAN}Installing TRTIS client API...${NC}"
-if bash scripts/install_trtis_client.sh &>> "${LOG_PATH}" ; then
-  echo -e "${OK_MESSAGE}"
-else
-  echo -e "${FAIL_MESSAGE}"
-  FLAG_ERROR=true
-fi
+info_echo "Installing TRTIS client API..."
+error_capture scripts/install.trtis_client.sh all
 
-# Start MongoDB service
-printf "${CYAN}Starting services...${NC}"
-if bash scripts/start_service.sh &>> "${LOG_PATH}" ; then
-  echo -e "${OK_MESSAGE}"
-else
-  echo -e "${FAIL_MESSAGE}"
-  FLAG_ERROR=true
-fi
+# Pull docker images
+info_echo "Pulling Docker images..."
+#error_capture scripts/install.pull_docker_images.sh none "${log_path}"
+
+# Start service
+info_echo "Starting services..."
+error_capture scripts/install.start_service.sh noen "${log_path}"
 
 if "${FLAG_ERROR}" = true ; then
-  echo -e "${YELLOW}Some installation step has failed. Please see full log at ${LOG_PATH}."
+  echo -e "${YELLOW}Some installation step has failed. Please see full log at ${log_path}."
 fi

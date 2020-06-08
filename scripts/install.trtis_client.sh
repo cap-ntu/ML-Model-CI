@@ -9,12 +9,13 @@ cd ~/tmp || return 1
 mkdir -p tensorrtserver && cd tensorrtserver || return 1
 
 # get package
-wget https://github.com/NVIDIA/tensorrt-inference-server/releases/download/v"${VERSION}"/"${FILENAME}"
-tar xzf "${FILENAME}"
+if [ -f "${FILENAME}" ] ; then
+  echo "Already downloaded at ${FILENAME}"
+  tar xzf "${FILENAME}"
+else
+  wget https://github.com/NVIDIA/tensorrt-inference-server/releases/download/v"${VERSION}"/"${FILENAME}"
+  tar xzf "${FILENAME}"
+fi
 
 # install
 pip install python/tensorrtserver-${VERSION}-py2.py3-none-linux_x86_64.whl
-
-# clean
-cd ~/tmp || return 1
-rm -r tensorrtserver
