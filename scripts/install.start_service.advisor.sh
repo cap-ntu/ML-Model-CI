@@ -31,26 +31,27 @@ while test $# -gt 0; do
             name=$1
             shift
             ;;
-        -e|--env)
-            shift
-            env=$1
-            shift
-            ;;
         *)
             >&2 echo "$1 is not a recognized flag!"
             exit 1;
             ;;
     esac
-done  
+done
+
+# find libnvdia-ml.so.1
+echo 'Finding libnvidia...'
+if [ -f 'scripts/libnvidia-ml.cache' ] ; then
+  echo 'Using cached value.'
+  env=$(cat scripts/libnvidia-ml.cache)
+else
+  location=$(locate libnvidia-ml.so.1 | grep -v 'lib32' | head -1)
+  env=$(dirname "${location}")
+  echo "${env}" > scripts/libnvidia-ml.cache
+fi
 
 gpu=${gpu:-false}
 name=${name:-cadvisor}
 port=${port:-8080}
-env=${env:-env-file/advisor.env}
-
-# source environment
-# shellcheck disable=SC2046
-export $(grep -v '^#' "${env}" | xargs -d '\r\n')
 
 printf "parameters: \n\n"
 echo 'is_gpu_support: ' "${gpu}"
@@ -61,8 +62,8 @@ printf "\n\n"
 
 if $gpu ; then
     echo 'starting GPU supported cAdvisor...'
-    docker run -e "${env}" -d --rm --name="${name}" --privileged \
-      -v="${LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}" \
+    docker run -e "LD_LIBRARY_PATH=${env}" -d --rm --name="${name}" --privileged \
+      -v="${env}:${env}" \
       -v=/:/rootfs:ro --volume=/var/run:/var/run:rw \
       -v=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro \
       -p="${port}:${port}" \

@@ -28,8 +28,7 @@ error_caption scripts/install.start_service.mongo.sh
 error_caption scripts/install.start_service.node_exporter.sh
 
 # start cAdvisor
-error_caption scripts/install.start_service.advisor.sh --gpu \
-  --env "env-file/advisor.env" --name modelci.cAdvisor
+error_caption scripts/install.start_service.advisor.sh --gpu --name modelci.cadvisor
 
 if "${flag_error}" = true ; then
     exit 1
