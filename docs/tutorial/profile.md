@@ -5,6 +5,13 @@ After conversion, MLModelCI runs models on the underlying devices in the cluster
 
 To get real model performance in practice, the profiler simulates the real service behavior by invoking a gRPC client and a model service. In particular, the profiler contains many build-in clients and upon it receives a profiling signal, it starts the corresponding client and invokes the dispatcher to deploy a MLaaS. It then sends test data from the client to the service with a variety of batch sizes and serving systems on different devices. Users can have hundreds of combinations available, which is very useful for setting parameters for online services.
 
+We provide many build-in gRPC clients:
+
+- TorchScript
+- ONNX
+- Trion Inference Serving
+- TensorFlow-Serving
+
 ## Start Profiling 
 
 You can use the `Profiler` class to instance a profiler to start your model profiling. Before starting the profiler, you need a client. We have some existed client in the `modelci.hub` and according to the task information of a model, the profiler will invoke appropriate clients to finish the profiling.
