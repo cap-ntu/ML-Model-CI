@@ -143,7 +143,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     framework = model_config.get('framework', None)
     engine = model_config.get('engine', None)
     version = model_config.get('version', None)
-    no_generate = model_config.get('no_generate', False)
+    convert = model_config.get('convert', True)
 
     # convert inputs and outputs
     inputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(inputs_plain)))
@@ -168,7 +168,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework=framework,
         engine=engine,
         version=version,
-        convert=no_generate,
+        convert=convert,
     )
 
 
