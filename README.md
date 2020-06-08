@@ -1,7 +1,7 @@
 <p align="center"> <img src="docs/img/iconv1.svg" width="230" alt="..."> </p>
 
 <h1 align="center">
-    Machine Learning ModelCI
+    Machine Learning Model CI
 </h1>
 
 <p align="center">
