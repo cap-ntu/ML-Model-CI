@@ -92,7 +92,7 @@ register_model(
     framework=Framework.PYTORCH,
     engine=Engine.TORCHSCRIPT,
     version=ModelVersion(1),
-    convert=True,
+    convert=False,
     profile=True
 )
 ```
