@@ -1,15 +1,23 @@
 #!/bin/bash
 
-DIR="node_exporter-0.18.1.linux-amd64"
+VERSION=0.18.1
+DIR_NAME="node_exporter-${VERSION}.linux-amd64"
+FILENAME="${DIR_NAME}.tar.gz"
 
-if [ -d "$DIR" ]; then
-    echo "${DIR} has been dowloaded "
+# create temporary directory
+mkdir -p ~/tmp && cd ~/tmp || exit 1
+mkdir -p node_exporter && cd node_exporter || exit 1
+
+
+# download and unzip
+if [ -d "${DIR_NAME}" ]; then
+    echo "${DIR_NAME} has been downloaded"
 else
-    echo "Start to dowload ${DIR} "
-    wget https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
-    tar xvfz node_exporter-0.18.1.linux-amd64.tar.gz
+    echo "Start to download ${DIR_NAME}"
+    wget "https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/${FILENAME}"
+    tar xvfz "${FILENAME}"
 fi
 
-cd node_exporter-0.18.1.linux-amd64
-
-./node_exporter
+# install
+cd ${DIR_NAME} || exit
+./node_exporter &
