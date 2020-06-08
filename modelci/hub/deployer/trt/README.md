@@ -6,11 +6,9 @@ We assume you have setup the MongoDB and all environment variables by [install](
 See `modelci/hub/init_data.py`.  
 Converted TRT model from TensorFlow ResNet50.
 ```shell script
-python modelci/init_data.py --model resnet50 --framework tensorflow
+python modelci/init_data.py --model resnet50 --framework tensorflow --trt
 ```
 Models will be saved at `~/.modelci/ResNet50/tensorflow-trt/` directory.  
-**Note**: You do not need to rerun the above code if you have done so for 
-[TensorFlow Serving](/modelci/hub/deployer/tfs).
 
 
 Deploy with TRTIS Docker:
@@ -25,10 +23,6 @@ sh deploy_model.sh ResNet50 8200 8201 8202
 ## Testing
 
 From [TensorRT Client](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-guide/docs/client.html#getting-the-client-libraries).  
-### Install Client
-```shell script
-sh ./install_client.sh
-```
 
 ### Test
 ```shell script

@@ -3,8 +3,10 @@ import argparse
 import tensorflow as tf
 from torchvision import models
 
+from modelci.hub.converter import TFSConverter
 from modelci.hub.manager import register_model
-from modelci.persistence.bo import Framework, IOShape, ModelVersion
+from modelci.hub.utils import generate_path
+from modelci.persistence.bo import Framework, IOShape, ModelVersion, Engine
 from modelci.utils.trtis_objects import ModelInputFormat
 
 
@@ -32,16 +34,26 @@ class ModelExporter(object):
         """
         if framework == Framework.TENSORFLOW:
             model = tf.keras.applications.ResNet50()
+            # converting to trt
+
+            if not export_trt:
+                tfs_dir = generate_path(
+                    model_name='ResNet50', framework=framework, engine=Engine.TFS, version=str(version)
+                )
+                TFSConverter.from_tf_model(model, tfs_dir)
+                model = str(tfs_dir.with_suffix('.zip'))
+
             register_model(
                 model,
                 dataset='imagenet',
                 acc=0.76,
                 task='image classification',
-                inputs=[IOShape([-1, 224, 224, 3], dtype=float, name='input_1', format=ModelInputFormat.FORMAT_NCHW)],
+                inputs=[IOShape([-1, 224, 224, 3], dtype=float, name='input_1', format=ModelInputFormat.FORMAT_NHWC)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet50',
                 framework=framework,
-                version=ModelVersion(version)
+                version=ModelVersion(version),
+                convert=export_trt
             )
         elif framework == Framework.PYTORCH:
             model = models.resnet50(pretrained=True)
@@ -50,7 +62,7 @@ class ModelExporter(object):
                 dataset='imagenet',
                 acc=0.76,
                 task='image classification',
-                inputs=[IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NHWC)],
+                inputs=[IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NCHW)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet50',
                 framework=framework,
@@ -68,7 +80,7 @@ class ModelExporter(object):
                 dataset='imagenet',
                 acc=...,  # TODO: to be filled
                 task='image classification',
-                inputs=[IOShape([-1, 224, 224, 3], dtype=float, name='input_1', format=ModelInputFormat.FORMAT_NCHW)],
+                inputs=[IOShape([-1, 224, 224, 3], dtype=float, name='input_1', format=ModelInputFormat.FORMAT_NHWC)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet101',
                 framework=framework,
@@ -143,7 +155,12 @@ if __name__ == '__main__':
     exporter_parser = subparsers.add_parser('export', help='Export a model')
     exporter_parser.add_argument('--model', type=str, required=True, help='model name')
     exporter_parser.add_argument('--framework', type=str, required=True, help='model framework')
+    exporter_parser.add_argument(
+        '--trt', action='store_true',
+        help='Flag for exporting TensorRT. Please make sure you have TensorRT installed in your machine.'
+    )
     exporter_parser.set_defaults(func=export_model)
 
     args = parser.parse_args()
+    export_trt = args.trt
     args.func(args)

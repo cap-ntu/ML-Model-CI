@@ -5,7 +5,7 @@
 start the nvidia node exporter
 
 ```bash
-sh start_node_exporter.sh
+bash ../../scripts/start_node_exporter.sh
 ```
 
 check idle GPU ids

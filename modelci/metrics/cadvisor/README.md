@@ -6,14 +6,14 @@
 
 First, start cAdvisor Docker container:
 
-```bash
-sh ./script/start_advisor.sh 
+```shell script
+sh <project-root>/script/start_advisor.sh 
 ```
 
 if you want to add support for GPU devices:
 
-```bash
-sh ./script/start_advisor.sh -gpu
+```shell script
+sh <project-root>/script/start_advisor.sh -gpu
 ```
 
 You can use `-h` or `--help` to get more information about this script.
@@ -22,7 +22,8 @@ You can use `-h` or `--help` to get more information about this script.
 
 Using following code, you can get the required formated data from [cAdvisor](https://github.com/google/cadvisor/).
 
-```python 
+```python
+ 
 from cadvisor import CAdvisor
 
 client = CAdvisor(base_link='') # link to your remote 
@@ -38,6 +39,7 @@ For detailed information about setting filters, please refer to the [client docu
 Here is an example of data structure:
 
 ```json
+{
     "/docker/29c1743de5a87951dc7689780d40399843fc790efe28327f34eb20710668b661":{
         "id":"29c1743de5a87951dc7689780d40399843fc790efe28327f34eb20710668b661",
         "creation_time":"2020-04-21T11:51:29.331285325Z",
@@ -64,6 +66,7 @@ Here is an example of data structure:
                 "accelerators":Array[1]
             },
             ...
+}
 ```
 
 Note, `stats` is a list includes every second status information up to last 60 seconds.
@@ -77,6 +80,7 @@ Note, `stats` is a list includes every second status information up to last 60 s
 A sample accelerator dict looks like:
 
 ```json
+{
 "accelerators": [{
 		"make": "nvidia",
 		"model": "GeForce RTX 2080 Ti",
@@ -106,6 +110,7 @@ A sample accelerator dict looks like:
 		"memory_used": 64094208,
 		"duty_cycle": 0
 	}]
+}
 ```
 
 if you want more metrics about GPU, please refer to [here](https://github.com/google/cadvisor/issues/2271).
