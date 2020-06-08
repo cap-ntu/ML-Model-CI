@@ -1,7 +1,7 @@
 <p align="center"> <img src="docs/img/iconv1.svg" width="230" alt="..."> </p>
 
 <h1 align="center">
-    MLModelCI
+    Machine Learning ModelCI
 </h1>
 
 <p align="center">
@@ -24,8 +24,6 @@
 </p>
 
 ## Features
-
-MLModelCI is a fully opensource platform that provides a one-stop service for optimizing, managing, and deploying MLaaS. The system is informed and motivated by DevOps techniques such as continuous integration (CI) and continuous deployment (CD), which automates software testing and building before they go online.
 
 - **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
 - **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
@@ -124,7 +122,7 @@ mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Frame
 serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
 ```
 
-Now your model is a effient cloud service!
+Now your model is an effient cloud service!
 
 
 For more information please take a look at our tutorials.
@@ -138,6 +136,7 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 - [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
+- [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
 
 ## Contributing
 
