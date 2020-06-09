@@ -171,7 +171,7 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 
 ## Contributing
 
-MLModelCI welcomes your contributions! Please refer to [here](.github/CONTRIBUTING.md) to get start.
+MLModelCI welcomes your contributions! Please refer to [here](CONTRIBUTING.md) to get start.
 
 ## License
 ```
