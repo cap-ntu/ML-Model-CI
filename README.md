@@ -15,21 +15,26 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#tutorial">Tutorial</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#license">License</a>
+    <a href="#features">Features</a> •
+    <a href="#installation">Installation</a> •
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#tutorial">Tutorial</a> •
+    <a href="#contributing">Contributing</a> •
+    <a href="#license">License</a>
 </p>
 
 ## Features
 
-- **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
-- **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
-- **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
-- **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
-- **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
+-   **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
+
+-   **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
+
+-   **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
+    detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
+
+-   **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
+
+-   **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 ## Installation
 
@@ -38,6 +43,7 @@
 ```shell script
 bash scripts/install.sh
 ```
+
 *Conda and Docker are required to run this installation script*
 
 *To use TensorRT, you have to manually installed TensorRT (`sudo` required), see instruction 
@@ -45,7 +51,7 @@ bash scripts/install.sh
 
 ### Docker
 
-```bash
+```shell script
 docker pull mlmodelci/mlmodelci
 ```
 
@@ -53,11 +59,14 @@ docker pull mlmodelci/mlmodelci
 
 ## Quick Start
 
-MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more clear start, we present the whole pipeline step by step as follows.
+MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services 
+(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
+clear start, we present the whole pipeline step by step as follows.
 
 ### Register a Model 
 
-Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud service, the first step is to publish the model to our system.
+Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud service, the first step is to publish the 
+model to our system.
 
 ```python
 from modelci.hub.manager import register_model
@@ -78,7 +87,8 @@ register_model(
 
 ### Convert a Model
 
-As the a newly trained model can not be deployed to cloud, MLModelCI converts it to some optimized formats (e.g., TorchScript and ONNX) automatically.
+As the a newly trained model can not be deployed to cloud, MLModelCI converts it to some optimized formats (e.g., 
+TorchScript and ONNX) automatically.
 
 You can finish this on your own:
 
@@ -95,7 +105,9 @@ ONNXConverter.from_torch_module('<path to torch model>',
 
 ### Profile a Model
 
-Before deploying an optimized model as a cloud service, developers need to understand its runtime performance (e.g., latency and throughput) so to set up a more cost-effectie solution (batch size? device? serving system? etc.). MLModelCI provides a profile to automate the processing.
+Before deploying an optimized model as a cloud service, developers need to understand its runtime performance 
+(e.g., latency and throughput) so to set up a more cost-effectie solution (batch size? device? serving system? etc.). 
+MLModelCI provides a profile to automate the processing.
 
 You can manually profile your models as follows:
 
@@ -122,7 +134,8 @@ profiler.diagnose()
 
 ### Dispatch a model
 
-MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispatcher launches a serving system (e.g. Tensorflow-Serving) to load a model in a containerized manner and dispatches the MLaaS to a device.
+MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispatcher launches a serving system 
+(e.g. Tensorflow-Serving) to load a model in a containerized manner and dispatches the MLaaS to a device.
 
 We search for a converted model and then dispatch it to a device with a specific batch size.
 
@@ -151,11 +164,11 @@ For more information please take a look at our tutorials.
 
 After the Quick Start, we provide detailed tutorials for users to understand our system.
 
-- [Register a Model in ModelHub](./docs/tutorial/register.md)
-- [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
-- [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
-- [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
-- [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
+-   [Register a Model in ModelHub](./docs/tutorial/register.md)
+-   [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
+-   [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
+-   [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
+-   [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
 
 ## Contributing
 
