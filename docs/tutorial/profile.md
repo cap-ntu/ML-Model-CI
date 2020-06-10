@@ -9,7 +9,7 @@ We provide many build-in gRPC clients:
 
 - TorchScript
 - ONNX
-- Trion Inference Serving
+- Triton Inference Serving
 - TensorFlow-Serving
 
 ## Start Profiling 
@@ -32,11 +32,11 @@ profiler.diagnose()
 
 
 
-## Build a Customed Client
+## Build a Customized Client
 
-For flexible usage, you can build a customed client if necessary. We provide a parent class `modelci.metrics.benchmark.metric.BaseModelInspector` for you to inherit. You have to implement some necessary functions in the child class. Here is an example, a customized client for ResNet50 image classification.
+For flexible usage, you can build a customized client if necessary. We provide a parent class `modelci.metrics.benchmark.metric.BaseModelInspector` for you to inherit. You have to implement some necessary functions in the child class. Here is an example, a customized client for ResNet50 image classification.
 
-Once you have implemented a customed client, you can pass its instance to `Profiler`, and start profiling like the above shows.
+Once you have implemented a customized client, you can pass its instance to `Profiler`, and start profiling like the above shows.
 
 ```python 
 import grpc
@@ -55,7 +55,7 @@ class YourClient(BaseModelInspector):
         @param batch_num: the number of batches you want to run
         @param batch_size: batch size you want
         @param repeat_data: data unit to repeat.
-        @param asynchronous: runnning asynchronously, default is False.
+        @param asynchronous: running asynchronously, default is False.
         @param sla: SLA, default is 1 sec.
         @param percentile: The SLA percentile. Default is 95.
         """
@@ -70,7 +70,7 @@ class YourClient(BaseModelInspector):
 
     def make_request(self, input_batch):
         """
-        function for sub-class to implement before infering, 
+        function for sub-class to implement before inferring, 
         to create the self.request
         can be override if needed.
         """
@@ -88,7 +88,7 @@ class YourClient(BaseModelInspector):
         pass
 ```
 
-You should use the MLModelCI's rules specify a ports for your custimized clients.
+You should use the MLModelCI's rules specify a ports for your to customize clients.
 
 You can import the ports from ModelCI like this
 
@@ -119,9 +119,9 @@ serving engine: TensorFlow Serving
 
 all_batch_latency:  37.82002019882202 sec
 all_batch_throughput:  169.2225431492324  req/sec
-overall 50th-percentile latiency: 0.04665029048919678 s
-overall 95th-percentile latiency: 0.0504256248474121 s
-overall 99th-percentile latiency: 0.052218921184539795 s
+overall 50th-percentile latency: 0.04665029048919678 s
+overall 95th-percentile latency: 0.0504256248474121 s
+overall 99th-percentile latency: 0.052218921184539795 s
 total GPU memory: 7981694976.0 bytes
 average GPU memory usage percentile: 0.9726
 average GPU memory used: 7763132416.0 bytes

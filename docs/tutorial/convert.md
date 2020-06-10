@@ -3,7 +3,7 @@
 The module focuses on automatically converting research models to serialized and optimized models from Python code.
 
 
-We currently support 2 reseach frameworks:
+We currently support 2 research frameworks:
 
 -   TensorFlow
 -   PyTorch

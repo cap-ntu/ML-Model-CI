@@ -8,10 +8,10 @@ Before you start trying these features, please make sure you have installed the 
 
 Our dispatch supports to load models with the following serving systems:
 
-- Trion Inference System
+- Triton Inference System
 - TensorFlow-Serving
 - ONNX Runtime
-- Self-defind TorchScript Container
+- Self-defined TorchScript Container
 
 ### Server Installation
 
@@ -33,7 +33,7 @@ docker pull mlmodelci/pytorch-serving
 docker pull mlmodelci/onnx-serving
 ```
 
-**Trion Serving System**
+**Triton Serving System**
 
 ```bash
 docker pull nvcr.io/nvidia/tensorrtserver:19.10-py3
@@ -47,7 +47,7 @@ docker pull tensorflow/serving
 
 ### Dispatch API
 
-The dispatch API launchs a serving system which loads a model and run it in a containerized manner.
+The dispatch API launches a serving system which loads a model and run it in a containerized manner.
 
 
 You can get the model path by using `retrieve` API and it will returen a `saved_path` (See [Tricks with Model Saved Path](./register.md#tricks-with-model-saved-path)) to specify model local cache. 
@@ -73,4 +73,4 @@ If you want to stop the running container, you can simply stop service in your t
 docker stop <name>
 ```
 
-The model will be removed once stoped.
+The model will be removed once stopped.
