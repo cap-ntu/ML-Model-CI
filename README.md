@@ -26,7 +26,7 @@
 ## Features
 
 -   **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
--   **Converter** is designed to convert models to serilized and optimized formats so that the models can be deployed to cloud.
+-   **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud.
 -   **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
     detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
 -   **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
@@ -105,7 +105,7 @@ ONNXConverter.from_torch_module('<path to torch model>',
 ### Profile a Model
 
 Before deploying an optimized model as a cloud service, developers need to understand its runtime performance 
-(e.g., latency and throughput) so to set up a more cost-effectie solution (batch size? device? serving system? etc.). 
+(e.g., latency and throughput) so to set up a more cost-effective solution (batch size? device? serving system? etc.). 
 MLModelCI provides a profile to automate the processing.
 
 You can manually profile your models as follows:
@@ -153,7 +153,7 @@ mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Frame
 serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
 ```
 
-Now your model is an effient cloud service!
+Now your model is an efficient cloud service!
 
 
 For more information please take a look at our tutorials.
