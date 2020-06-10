@@ -43,7 +43,7 @@ bash scripts/install.sh
 **Note**
 
 - Conda and Docker are required to run this installation script.
-- To use TensorRT, you have to manually installe TensorRT (`sudo` is required). See instruction 
+- To use TensorRT, you have to manually install TensorRT (`sudo` is required). See instruction 
 [here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html).
 
 ### Docker
