@@ -26,7 +26,7 @@
 ## Features
 
 -   **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
--   **Converter** is to convert models to serilized and optimized formats so that the models can be deployed to cloud.
+-   **Converter** is designed to convert models to serilized and optimized formats so that the models can be deployed to cloud.
 -   **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
     detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
 -   **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
@@ -43,7 +43,7 @@ bash scripts/install.sh
 **Note**
 
 - Conda and Docker are required to run this installation script.
-- To use TensorRT, you have to manually installed TensorRT (`sudo` required), see instruction 
+- To use TensorRT, you have to manually installe TensorRT (`sudo` is required). See instruction 
 [here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html).
 
 ### Docker
