@@ -1,8 +1,8 @@
 from typing import Iterable
 
+from modelci.types.do import ProfileResultDO
 from .dynamic_profile_result_bo import DynamicProfileResultBO
 from .static_profile_result_bo import StaticProfileResultBO
-from ..po.profile_result_po import ProfileResultPO
 
 
 class ProfileResultBO(object):
@@ -44,12 +44,12 @@ class ProfileResultBO(object):
             dpr_pos = list()
 
         # create profiling result business object
-        pr_po = ProfileResultPO(static_profile_result=spr_po, dynamic_profile_results=dpr_pos)
+        pr_po = ProfileResultDO(static_profile_result=spr_po, dynamic_profile_results=dpr_pos)
 
         return pr_po
 
     @staticmethod
-    def from_profile_result_po(pr_po: ProfileResultPO):
+    def from_profile_result_po(pr_po: ProfileResultDO):
         """Create business object form plain object.
         """
         spr = StaticProfileResultBO.from_static_profile_result_po(pr_po.static_profile_result)

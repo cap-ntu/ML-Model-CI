@@ -7,8 +7,8 @@ import ipaddress
 from datetime import datetime
 from typing import Union, Iterable
 
+from modelci.types.do import DynamicProfileResultDO
 from .model_objects import InfoTuple
-from ..po.dynamic_profile_result_po import DynamicProfileResultPO
 
 
 class ProfileMemory(object):
@@ -160,23 +160,29 @@ class DynamicProfileResultBO(object):
     def to_dynamic_profile_result_po(self):
         """Convert business object to plain object for persistence.
         """
-        dpr_po = DynamicProfileResultPO(ip=str(self.ip), device_id=self.device_id, device_name=self.device_name,
-                                        batch=self.batch, memory=self.memory.memory, cpu_memory=self.memory.cpu_memory,
-                                        gpu_memory=self.memory.gpu_memory,
-                                        initialization_latency=self.latency.init_latency.tolist(),
-                                        preprocess_latency=self.latency.preprocess_latency.tolist(),
-                                        inference_latency=self.latency.inference_latency.tolist(),
-                                        postprocess_latency=self.latency.postprocess_latency.tolist(),
-                                        batch_formation_throughput=self.throughput.batch_formation_throughput.tolist(),
-                                        preprocess_throughput=self.throughput.preprocess_throughput.tolist(),
-                                        inference_throughput=self.throughput.inference_throughput.tolist(),
-                                        postprocess_throughput=self.throughput.postprocess_throughput.tolist(),
-                                        create_time=self.create_time)
+        dpr_po = DynamicProfileResultDO(
+            ip=str(self.ip),
+            device_id=self.device_id,
+            device_name=self.device_name,
+            batch=self.batch,
+            memory=self.memory.memory,
+            cpu_memory=self.memory.cpu_memory,
+            gpu_memory=self.memory.gpu_memory,
+            initialization_latency=self.latency.init_latency.tolist(),
+            preprocess_latency=self.latency.preprocess_latency.tolist(),
+            inference_latency=self.latency.inference_latency.tolist(),
+            postprocess_latency=self.latency.postprocess_latency.tolist(),
+            batch_formation_throughput=self.throughput.batch_formation_throughput.tolist(),
+            preprocess_throughput=self.throughput.preprocess_throughput.tolist(),
+            inference_throughput=self.throughput.inference_throughput.tolist(),
+            postprocess_throughput=self.throughput.postprocess_throughput.tolist(),
+            create_time=self.create_time
+        )
 
         return dpr_po
 
     @staticmethod
-    def from_dynamic_profile_result_po(dpr_po: DynamicProfileResultPO):
+    def from_dynamic_profile_result_po(dpr_po: DynamicProfileResultDO):
         """Create a business object from plain object.
 
         Args:
@@ -189,23 +195,26 @@ class DynamicProfileResultBO(object):
         if dpr_po is None:
             return None
 
-        dpr = DynamicProfileResultBO(ip=dpr_po.ip, device_id=dpr_po.device_id, device_name=dpr_po.device_name,
-                                     batch=dpr_po.batch,
-                                     memory=ProfileMemory(
-                                         memory=dpr_po.memory,
-                                         cpu_memory=dpr_po.cpu_memory,
-                                         gpu_memory=dpr_po.gpu_memory
-                                     ),
-                                     latency=ProfileLatency(
-                                         init_latency=dpr_po.initialization_latency,
-                                         preprocess_latency=dpr_po.preprocess_latency,
-                                         inference_latency=dpr_po.inference_latency,
-                                         postprocess_latency=dpr_po.postprocess_latency
-                                     ),
-                                     throughput=ProfileThroughput(
-                                         batch_formation_throughput=dpr_po.batch_formation_throughput,
-                                         preprocess_throughput=dpr_po.preprocess_throughput,
-                                         inference_throughput=dpr_po.inference_throughput,
-                                         postprocess_throughput=dpr_po.postprocess_throughput
-                                     ))
+        dpr = DynamicProfileResultBO(
+            ip=dpr_po.ip,
+            device_id=dpr_po.device_id,
+            device_name=dpr_po.device_name,
+            batch=dpr_po.batch,
+            memory=ProfileMemory(
+                memory=dpr_po.memory,
+                cpu_memory=dpr_po.cpu_memory,
+                gpu_memory=dpr_po.gpu_memory
+            ),
+            latency=ProfileLatency(
+                init_latency=dpr_po.initialization_latency,
+                preprocess_latency=dpr_po.preprocess_latency,
+                inference_latency=dpr_po.inference_latency,
+                postprocess_latency=dpr_po.postprocess_latency
+            ),
+            throughput=ProfileThroughput(
+                batch_formation_throughput=dpr_po.batch_formation_throughput,
+                preprocess_throughput=dpr_po.preprocess_throughput,
+                inference_throughput=dpr_po.inference_throughput,
+                postprocess_throughput=dpr_po.postprocess_throughput
+            ))
         return dpr

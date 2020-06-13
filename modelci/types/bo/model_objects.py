@@ -9,9 +9,8 @@ from typing import Tuple, List, Union, Optional, BinaryIO
 
 from mongoengine import GridFSProxy
 
-from modelci.utils.trtis_objects import ModelInputFormat
-from ..po.model_po import IOShapePO
-from ...utils import trtis_objects
+from modelci.types.do import IOShapeDO
+from modelci.types.trtis_objects import ModelInputFormat, DataType as TRTIS_DataType
 
 
 @unique
@@ -45,8 +44,8 @@ class Status(Enum):
     FAIL = 3
 
 
-"""Generic data type (same as TRTIS::DataType"""
-DataType = trtis_objects.DataType
+"""Generic data type (same as TRTIS::DataType)"""
+DataType = TRTIS_DataType
 
 
 class ModelVersion(object):
@@ -96,7 +95,7 @@ class IOShape(object):
             format (ModelInputFormat): Input format, used for TensorRT currently.
                 Default to `ModelInputFormat.FORMAT_NONE`.
         """
-        from .type_conversion import type_to_data_type
+        from modelci.types.type_conversion import type_to_data_type
 
         # input / output name
         self.name = name
@@ -132,10 +131,10 @@ class IOShape(object):
         """Convert IO shape business object to IO shape plain object.
         """
 
-        return IOShapePO(name=self.name, shape=self.shape, dtype=self.dtype.name, format=self.format)
+        return IOShapeDO(name=self.name, shape=self.shape, dtype=self.dtype.name, format=self.format)
 
     @staticmethod
-    def from_io_shape_po(io_shape_po: IOShapePO):
+    def from_io_shape_po(io_shape_po: IOShapeDO):
         """Create IO shape business object from IO shape plain object
         """
 
