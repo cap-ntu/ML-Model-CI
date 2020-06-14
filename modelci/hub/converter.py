@@ -13,9 +13,15 @@ from betterproto import Casing
 from onnx import optimizer
 from torch import nn
 
-from modelci.persistence.bo import IOShape
-from modelci.utils.trtis_objects import ModelConfig, ModelVersionPolicy, ModelOutput, ModelInput, ModelInstanceGroup, \
-    ModelInstanceGroupKind
+from modelci.types.bo import IOShape
+from modelci.types.trtis_objects import (
+    ModelConfig,
+    ModelVersionPolicy,
+    ModelOutput,
+    ModelInput,
+    ModelInstanceGroup,
+    ModelInstanceGroupKind,
+)
 from ..hub.utils import GiB, parse_path, TensorRTPlatform
 
 
@@ -41,7 +47,7 @@ class ONNXConverter(object):
             opset: int = 10,
             optimize: bool = True
     ):
-        """Save a loaded model in ONNX
+        """Save a loaded model in ONNX.
 
         Arguments:
             model (nn.Module): PyTorch model.
@@ -503,4 +509,4 @@ class TRTConverter(object):
 
 
 def to_tvm(*args, **kwargs):
-    raise NotImplementedError()
+    raise NotImplementedError('Method `to_tvm` is not implemented.')

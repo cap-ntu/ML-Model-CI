@@ -8,7 +8,6 @@ Dec: A script to collect the information from cAdvisor monitors the Docker conta
 Date: 17/04/2020
 """
 
-import json
 import requests
 
 # Change default API informations here

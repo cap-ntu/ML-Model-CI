@@ -16,8 +16,8 @@ If you are using an IDE to run the following test, remember to add `modelci/env-
 #### 2. Register a model
 ```python
 from modelci.persistence.service import ModelService
-from modelci.persistence.bo import Framework, Engine, ModelVersion, IOShape, Weight, ModelBO
-from modelci.utils.trtis_objects import ModelInputFormat
+from modelci.types.bo import Framework, Engine, ModelVersion, IOShape, Weight, ModelBO
+from modelci.types.trtis_objects import ModelInputFormat
 
 # create a model business object
 model = ModelBO(
@@ -94,7 +94,7 @@ See test `test/test_model_service.test_update_model`.
 #### 7. Add static profiling result to a registered model
 ```python
 from modelci.persistence.service import ModelService
-from modelci.persistence.bo import StaticProfileResultBO
+from modelci.types.bo import StaticProfileResultBO
 
 model_service = ModelService()
 
@@ -115,7 +115,7 @@ Update static profiling result may use the same API.
 #### 8. Add dynamic profiling result to a registered model
 ```python
 from modelci.persistence.service import ModelService
-from modelci.persistence.bo import DynamicProfileResultBO, ProfileLatency, ProfileMemory, ProfileThroughput
+from modelci.types.bo import DynamicProfileResultBO, ProfileLatency, ProfileMemory, ProfileThroughput
 
 model_service = ModelService()
 

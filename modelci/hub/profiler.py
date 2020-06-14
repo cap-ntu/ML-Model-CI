@@ -12,7 +12,7 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.deployer import serve
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
-from modelci.persistence.bo import Framework
+from modelci.types.bo import Framework
 
 DEFAULT_BATCH_NUM = 100
 

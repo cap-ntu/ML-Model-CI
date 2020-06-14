@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 
 from modelci.hub.utils import TensorRTModelInputFormat
-from modelci.utils.trtis_objects import DataType
+from modelci.types.trtis_objects import DataType
 
 
 def preprocess(

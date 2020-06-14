@@ -11,7 +11,7 @@ from toolz import compose
 from torchvision import transforms
 
 from modelci.hub.deployer.config import ONNX_GRPC_PORT
-from modelci.persistence.bo.type_conversion import type_to_data_type
+from modelci.types.type_conversion import type_to_data_type
 from modelci.utils.misc import json_update
 
 

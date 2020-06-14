@@ -1,4 +1,4 @@
-# Intergration
+# Integration
 
 ## Docker
 

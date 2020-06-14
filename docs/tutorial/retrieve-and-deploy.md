@@ -50,7 +50,7 @@ docker pull tensorflow/serving
 The dispatch API launches a serving system which loads a model and run it in a containerized manner.
 
 
-You can get the model path by using `retrieve` API and it will returen a `saved_path` (See [Tricks with Model Saved Path](./register.md#tricks-with-model-saved-path)) to specify model local cache. 
+You can get the model path by using `retrieve` API and it will return a `saved_path` (See [Tricks with Model Saved Path](./register.md#tricks-with-model-saved-path)) to specify model local cache. 
 
 Now you can assign a device (i.e. `'cpu'`, `'cuda:0'`, `'cuda:0,1'`) and a batch size to serve the model with the profiling results as a guideline.
 
@@ -62,7 +62,8 @@ from modelci.hub.deployer import serve
 
 saved_path = ...
 device = '1'
-server_name = 'name of container
+batch_size = 8
+server_name = 'name of container'
 
 serve(save_path=saved_path, device=f'cuda:{device}', name=server_name, batch_size=batch_size)
 ```

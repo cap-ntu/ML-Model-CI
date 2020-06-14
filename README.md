@@ -70,7 +70,7 @@ model to our system.
 
 ```python
 from modelci.hub.manager import register_model
-from modelci.persistence.bo import IOShape
+from modelci.types.bo import IOShape
 
 # Register a Trained ResNet50 Model to ModelHub.
 register_model(
@@ -93,14 +93,15 @@ TorchScript and ONNX) automatically.
 You can finish this on your own:
 
 ```python
-
 from modelci.hub.converter import ONNXConverter
-from modelci.persistence.bo import IOShape
+from modelci.types.bo import IOShape
 
-ONNXConverter.from_torch_module('<path to torch model>', 
-                                '<path to export onnx model>', 
-                                input_shape=[IOShape([-1, 3, 224, 224], float)], 
-                                batch_size=16)
+ONNXConverter.from_torch_module(
+    '<path to torch model>', 
+    '<path to export onnx model>', 
+    input_shape=[IOShape([-1, 3, 224, 224], float)], 
+    batch_size=16
+)
 ```
 
 ### Profile a Model
@@ -112,20 +113,19 @@ MLModelCI provides a profile to automate the processing.
 You can manually profile your models as follows:
 
 ```python
-
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.profiler import Profiler
 
 test_data_item = ...
 batch_num = ...
 batch_size = ...
-mode_info = ...
+model_info = ...
 
 # create a client
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
 
 # init the profiler
-profiler = Profiler(model_info=mode_info, server_name='name of your server', inspector=torch_client)
+profiler = Profiler(model_info=model_info, server_name='name of your server', inspector=torch_client)
 
 # start profiling model
 profiler.diagnose()
@@ -140,10 +140,9 @@ MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispat
 We search for a converted model and then dispatch it to a device with a specific batch size.
 
 ```python
-
 from modelci.hub.deployer import serve
 from modelci.hub.manager import retrieve_model_by_name
-from modelci.persistence.bo import Framework, Engine
+from modelci.types.bo import Framework, Engine
 
 model_info = ...
 

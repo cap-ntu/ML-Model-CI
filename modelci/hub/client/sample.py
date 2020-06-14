@@ -9,7 +9,7 @@ from tfs_client import CVTFSClient
 
 from modelci.hub.manager import retrieve_model_by_name
 from modelci.hub.profiler import Profiler
-from modelci.persistence.bo.model_objects import Engine, Framework
+from modelci.types.bo import Engine, Framework
 
 # import torch
 # from trt_client import CVTRTClient

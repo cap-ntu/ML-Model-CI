@@ -1,5 +1,4 @@
-from cadvisor import CAdvisor
-import json
+from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 # Tests
 if __name__ == "__main__":
