@@ -36,8 +36,8 @@ from tensorrtserver.api import ServerStatusContext, InferContext, ProtocolType
 
 from modelci.data_engine.postprocessor import image_classification_postprocessor
 from modelci.data_engine.preprocessor import image_classification_preprocessor
-from modelci.persistence.bo.type_conversion import model_data_type_to_np
-from modelci.utils.trtis_objects import ModelStatus, ServerStatus
+from modelci.types.trtis_objects import ModelStatus, ServerStatus
+from modelci.types.type_conversion import model_data_type_to_np
 
 
 class UserData:

@@ -7,8 +7,8 @@ import yaml
 
 from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
-from modelci.persistence.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 from modelci.persistence.service import ModelService
+from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
 
 def register_model(

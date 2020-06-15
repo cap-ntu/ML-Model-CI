@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..po.static_profile_result_po import StaticProfileResultPO
+from modelci.types.do import StaticProfileResultDO
 
 
 class StaticProfileResultBO(object):
@@ -25,14 +25,14 @@ class StaticProfileResultBO(object):
     def to_static_profile_result_po(self):
         """Convert business object to plain object.
         """
-        static_profile_result_po = StaticProfileResultPO(
+        static_profile_result_po = StaticProfileResultDO(
             parameters=self.parameters, flops=self.flops,
             memory=self.memory, mread=self.mread, mwrite=self.mwrite,
             mrw=self.mrw)
         return static_profile_result_po
 
     @staticmethod
-    def from_static_profile_result_po(spr_po: Optional[StaticProfileResultPO]):
+    def from_static_profile_result_po(spr_po: Optional[StaticProfileResultDO]):
         """Create business object from a plain object.
 
         Args:

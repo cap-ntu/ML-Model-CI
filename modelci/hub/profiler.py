@@ -1,6 +1,6 @@
 """
 Author: huangyz0918
-Dec: prolifing models.
+Dec: profiling models.
 Date: 03/05/2020
 """
 import docker
@@ -12,24 +12,22 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.deployer import serve
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
-from modelci.persistence.bo import Framework
+from modelci.types.bo import Framework
 
 DEFAULT_BATCH_NUM = 100
 
 
 class Profiler(object):
-    """
-    Profiler class, call this to test model performance.
+    """Profiler class, call this to test model performance.
+
+    Args:
+        inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
+        server_name (str): Serving platform's docker container's name.
+        model_info: information about the model, can get from `init_model_info` method.
     """
 
-    def __init__(self, model_info, server_name, inspector: BaseModelInspector = None):
-        """
-        Init a profiler object
-
-        @param inspector: client implemented from BaseModelInspector
-        @param server_name: serving platform's docker conatiner's name.
-        @param model_info: information about the model, can get from init_model_info method.
-        """
+    def __init__(self, model_info, server_name: str, inspector: BaseModelInspector = None):
+        """Init a profiler object."""
         if inspector is None:
             self.inspector = self.__auto_select_client()  # TODO: To Improve
         else:
@@ -44,32 +42,26 @@ class Profiler(object):
         self.available_devices = []
 
     def diagnose(self, batch_size=None):
-        """
-        start diagnosing and profiling model.
-        """
+        """Start diagnosing and profiling model."""
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
         self.inspector.run_model(self.server_name)
 
     def diagnose_all_batches(self, arr: list):
-        """
-        run model tests in batch size from list input.
-        """
+        """Run model tests in batch size from list input."""
         for size in arr:
             self.diagnose(size)
 
     def auto_diagnose(self, batch_list: list = None):
-        """
-        select the free machine and deploy automatically to test the model using availibe platforms.
-        """
+        """Select the free machine and deploy automatically to test the model using available platforms."""
         saved_path = self.model_info.saved_path
         model_id = self.model_info.id
         model_name = self.model_info.name
         model_framework = self.model_info.framework
         serving_engine = self.model_info.engine
         exporter = GPUNodeExporter()
-        self.available_devices = exporter.get_idle_gpu(util_level=0.01, memeory_level=0.01)
+        self.available_devices = exporter.get_idle_gpu(util_level=0.01, memory_level=0.01)
 
         # for testing
         print('\n available GPU devices: ', self.available_devices)
@@ -125,9 +117,7 @@ class Profiler(object):
             return None
 
     def __stop_testing_container(self):
-        """
-        After testing, we should release the resources.
-        """
+        """After testing, we should release the resources."""
         running_container = self.docker_client.containers.get(self.server_name)
         running_container.stop()
         print("successfully stop serving container: ", self.server_name)

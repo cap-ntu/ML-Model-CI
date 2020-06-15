@@ -32,7 +32,7 @@ RUN conda env update --name base -f /content/environment.yml \
 # Install TRTIS
 RUN mkdir -p ~/tmp
 WORKDIR /root/tmp
-RUN curl https://github.com/NVIDIA/triton-inference-server/releases/download/v${TRITONIS_VERSION}/v${TRITONIS_VERSION}_ubuntu1804.clients.tar.gz \
+RUN curl -LJ https://github.com/NVIDIA/triton-inference-server/releases/download/v${TRITONIS_VERSION}/v${TRITONIS_VERSION}_ubuntu1804.clients.tar.gz \
     -o tritonis.clients.tar.gz \
  && tar xzf tritonis.clients.tar.gz \
  && pip install ~/tmp/python/tensorrtserver-${TRITONIS_VERSION}-py2.py3-none-linux_x86_64.whl

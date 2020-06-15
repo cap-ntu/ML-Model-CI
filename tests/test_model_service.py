@@ -1,5 +1,6 @@
 from modelci.persistence import mongo
-from modelci.persistence.bo import (
+from modelci.persistence.service import ModelService
+from modelci.types.bo import (
     DynamicProfileResultBO,
     ProfileMemory,
     ProfileLatency,
@@ -12,8 +13,7 @@ from modelci.persistence.bo import (
     Weight,
     StaticProfileResultBO,
 )
-from modelci.persistence.service import ModelService
-from modelci.utils.trtis_objects import ModelInputFormat
+from modelci.types.trtis_objects import ModelInputFormat
 
 
 def test_init():

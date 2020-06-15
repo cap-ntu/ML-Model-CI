@@ -2,7 +2,7 @@ from mongoengine import EmbeddedDocument
 from mongoengine.fields import *
 
 
-class StaticProfileResultPO(EmbeddedDocument):
+class StaticProfileResultDO(EmbeddedDocument):
     """
     Static profiling result plain object
     """

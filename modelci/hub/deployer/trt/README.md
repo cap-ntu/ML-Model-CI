@@ -11,7 +11,7 @@ python modelci/init_data.py --model resnet50 --framework tensorflow --trt
 Models will be saved at `~/.modelci/ResNet50/tensorflow-trt/` directory.  
 
 
-Deploy with TRTIS Docker:
+Deploy with Triton Docker:
 ```shell script
 sh deploy_model.sh {MODEL_NAME} {REST_API_PORT} {GRPC_PORT} {METRICS_PORT}
 ```
@@ -30,12 +30,12 @@ python client.py -m ResNet50 -a -u localhost:8201 -s VGG -i grpc -b 8 img_bigban
 ```
 
 ### (Optional) Regenerate Type Hint
-TRTIS client (tensorrtserver) uses a generated python version proto buffer for gRPC call. The issues lines that the
+Triton client (tensorrtserver) uses a generated python version proto buffer for gRPC call. The issues lines that the
 generated code has no readability and unfriendly to IDE which has a functionality of type hint. Therefore, we 
 generate data objects as utility objects by [betterproto](https://github.com/danielgtaylor/python-betterproto).  
  
 We provide data objects generated from tensorrt-inference-server v19.10. If you are dealing with some compatible issues
-with your TRTIS server library version, you can regenerate the data objects by:    
+with your Triton server library version, you can regenerate the data objects by:    
 ```shell script
 VERSION=19.10  # change to your version
 FILENAME=r"${VERSION}".zip
@@ -92,9 +92,9 @@ pip install 'betterproto[compiler]'
     2. TF 2.0 to TRT  
         TF 2.0 does not support converting frozen graphs. We are using SavedModel to TF-TRT serving.
 3. Generate model configuration  
-    [Model onfiguration sample](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-guide/docs/model_configuration.html#section-model-configuration)
+    [Model Configuration sample](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-guide/docs/model_configuration.html#section-model-configuration)
     ```text
-    name: "mymodel"
+    name: "my_model"
     platform: "tensorrt_plan"
     max_batch_size: 8
     input [
@@ -118,7 +118,7 @@ pip install 'betterproto[compiler]'
     ]
     ```
     `dim` may have some issues: 
-    See [TRTIS#998](https://github.com/NVIDIA/tensorrt-inference-server/issues/998)
+    See [Triton#998](https://github.com/NVIDIA/tensorrt-inference-server/issues/998)
 4. Store the model in a inferencable directory format
     [Model Repository](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-guide/docs/model_repository.html)
     - TRT Model:

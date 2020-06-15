@@ -18,7 +18,7 @@ Users can search for a model and obtain its detailed information.
 
 ```python
 from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
-from modelci.persistence.bo import Framework, Engine
+from modelci.types.bo import Framework, Engine
 
 # By model name and optionally filtered by model framework and(or) model engine
 model_bo = retrieve_model_by_name(
@@ -59,9 +59,11 @@ assert ModelService.update_model(model)
 MLModelCI allows you to get the model object by id, task and name.
 
 ```python
+from modelci.persistence.service import ModelService
+
 model_bo = ModelService.get_models_by_name('ResNet50')[0] # get model by name
 models = ModelService.get_models_by_task('image classification') # get model by task
-model_bo = ModelService.get_models_by_name('ResNet50')[0] # get model by id
+model_bo2 = ModelService.get_models_by_name('ResNet50')[0] # get model by id
 ```
 
 Getting by name or task may return more than one model objects.
@@ -71,7 +73,10 @@ Getting by name or task may return more than one model objects.
 You can delete a model record easily using MLModelCI.
 
 ```python
+from modelci.persistence.service import ModelService
+
 model = ModelService.get_models_by_name('ResNet50')[0]
+
 assert ModelService.delete_model_by_id(model.id) # delete the model record
 ```
 

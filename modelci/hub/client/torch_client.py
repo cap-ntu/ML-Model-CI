@@ -4,8 +4,9 @@ Desc: template client for TorchScript of ResNet-50
 Date: 26/04/2020
 """
 
-import grpc
 import json
+
+import grpc
 import numpy as np
 import torch
 from proto.service_pb2 import InferRequest
@@ -15,7 +16,7 @@ from torchvision import transforms
 
 from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.persistence.bo.type_conversion import type_to_data_type
+from modelci.types.type_conversion import type_to_data_type
 from modelci.utils.misc import json_update
 
 
