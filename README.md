@@ -54,7 +54,7 @@ bash scripts/install.sh
 docker pull mlmodelci/mlmodelci
 ```
 
-<!-- Please refer to [here](/intergration/README.md) for more information. -->
+<!-- Please refer to [here](/integration/README.md) for more information. -->
 
 ## Quick Start
 *The system is still under active development. Welcome to join us!*

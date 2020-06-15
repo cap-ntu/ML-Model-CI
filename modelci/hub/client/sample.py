@@ -1,12 +1,12 @@
-'''
+"""
 An example usage of profiler.py
-@authour huangyz0918
-'''
+@author huangyz0918
+"""
 import cv2
 import numpy as np
 from PIL import Image
-from tfs_client import CVTFSClient
 
+from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.manager import retrieve_model_by_name
 from modelci.hub.profiler import Profiler
 from modelci.types.bo import Engine, Framework
@@ -21,7 +21,6 @@ if __name__ == "__main__":
     data_path = './data/cat.jpg'
 
     # for TensorFlow Serving
-    test_img_bytes = None
     with open(data_path, 'rb') as f:
         test_img_bytes = f.read()
 

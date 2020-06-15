@@ -39,17 +39,14 @@ python serving.py task --task {TASK_NAME} --device {DEVICE}
 ```
 
 Supported model name:
-
-- ResNet50
+-   ResNet50
 
 Supported production model formats associated with serving systems:
+-   TorchScript -> Self-defined gRPC docker
+-   TensorFlow SavedModel -> Tensorflow-Serving
+-   ONNX -> ONNX runtime
+-   TensorRT -> TensorRT inference Server (can also support all above formats)
 
-- TorchScript -> Self-defined gRPC docker
-- TensorFlow SavedModel -> Tensorflow-Serving
-- ONNX -> ONNX runtime
-- TensorRT -> TensorRT inference Server (can also support all above formats)
-
-Support production communication protocal
-
-- HTTP
-- gRPC
+Support production communication protocol
+-   HTTP
+-   gRPC

@@ -109,7 +109,7 @@ The full table of the default ports are list below:
 
 ## Profiling Results 
 
-The profiling results will be sent to the modelhub once profiling is done. And some results will be presented in your terminal as well. They look like:
+The profiling results will be sent to the ModelHub once profiling is done. And some results will be presented in your terminal as well. They look like:
 
 ```
 batch size: 8
@@ -128,4 +128,4 @@ average GPU memory used: 7763132416.0 bytes
 average GPU utilization: 66.6216%
 ```
 
-You can display the results by querying the modelhub and export them to a web application or anything you like. 
+You can display the results by querying the ModelHub and export them to a web application or anything you like. 

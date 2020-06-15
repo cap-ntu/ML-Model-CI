@@ -23,7 +23,7 @@ if __name__ == "__main__":
     all_stat_cadvisor = cAdvisor.get_stats(all_data_cadvisor)
     # print("All the stats from cadvisor: \n", all_data_cadvisor)
 
-    # You can also request all the container informations without cAdvisor
+    # You can also request all the container information without cAdvisor
     data_all_without_cadvisor = cAdvisor.request_without_cadvisor()
     # print("All the container's data expect cAdvisor: \n", data_all_without_cadvisor)
 

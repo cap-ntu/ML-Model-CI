@@ -1,5 +1,5 @@
 from mongoengine import EmbeddedDocument
-from mongoengine.fields import *
+from mongoengine.fields import EmbeddedDocumentField, ListField
 
 from .dynamic_profile_result_do import DynamicProfileResultDO
 from .static_profile_result_do import StaticProfileResultDO

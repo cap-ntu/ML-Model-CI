@@ -20,7 +20,7 @@ You can use `-h` or `--help` to get more information about this script.
 
 ### Request Information
 
-Using following code, you can get the required formated data from [cAdvisor](https://github.com/google/cadvisor/).
+Using following code, you can get the required formatted data from [cAdvisor](https://github.com/google/cadvisor/).
 
 ```python
  

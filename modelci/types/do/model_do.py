@@ -2,7 +2,16 @@
 """Module for model plain object."""
 
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import *
+from mongoengine.fields import (
+    DateTimeField,
+    EmbeddedDocumentField,
+    EmbeddedDocumentListField,
+    FileField,
+    FloatField,
+    IntField,
+    ListField,
+    StringField,
+)
 
 from .profile_result_do import ProfileResultDO
 
@@ -15,8 +24,7 @@ class IOShapeDO(EmbeddedDocument):
 
 
 class ModelDO(Document):
-    """
-    Model Plain Object.
+    """Model Plain Object.
 
     The primary key of the model plain object is (engine, name, version) pair.
     """

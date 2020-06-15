@@ -25,10 +25,8 @@ def preprocess(
         c (int): Channel size.
         h (int): Height size.
         w (int): Weight size.
-        scaling (str): Image scaling algorithm. Supported one of `'INCELTION'`, `'VGG'` and `None`.
+        scaling (str): Image scaling algorithm. Supported one of `'INCEPTION'`, `'VGG'` and `None`.
     """
-    # np.set_printoptions(threshold='nan')
-
     if c == 1:
         sample_img = img.convert('L')
     else:

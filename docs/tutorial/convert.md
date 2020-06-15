@@ -64,7 +64,7 @@ Different from the above converters, TRT accepts both TensorFlow SavedModel and 
 In practice, if you use this pipeline: PyTorch -> ONNX -> TRT, you can get the best performance. However, in most 
 cases, PyTorch model can not be further converted.
 
-#### From TF Savedmodel to TF-TRT
+#### From TF SavedModel to TF-TRT
 
 ```python
 from modelci.hub.converter import TRTConverter

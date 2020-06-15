@@ -49,8 +49,8 @@ error_capture scripts/install.conda_env.sh all
 source "${HOME}/anaconda3/etc/profile.d/conda.sh"
 conda activate modelci
 
-# Install TRTIS client APIs
-info_echo "Installing TRTIS client API..."
+# Install Triton client APIs
+info_echo "Installing Triton client API..."
 error_capture scripts/install.trtis_client.sh all
 
 # Pull docker images

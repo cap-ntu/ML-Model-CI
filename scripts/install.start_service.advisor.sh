@@ -38,7 +38,7 @@ while test $# -gt 0; do
     esac
 done
 
-# find libnvdia-ml.so.1
+# find libnvidia-ml.so.1
 echo 'Finding libnvidia...'
 if [ -f 'scripts/libnvidia-ml.cache' ] ; then
   echo 'Using cached value.'
