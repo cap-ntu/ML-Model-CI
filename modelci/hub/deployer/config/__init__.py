@@ -1,12 +1,12 @@
 """Default settings for deployer
 
 1. Port
-    | Engine Name | HTTP Port | gRPC Port | HTTP Port (GPU) | gRPC Port (GPU) |
-    |-------------|:---------:|:---------:|:---------------:|:---------------:|
-    | ONNX        | 8001      | 8002      | 8010            | 8011            |
-    | TorchScript | 8100      | 8101      | 8110            | 8111            |
-    | TRT         | 8200      | 8201      | 8202 (Prometeus)| -               |
-    | TFS         | 8501      | 8500      | 8510            | 8511            |
+    | Engine Name | HTTP Port | gRPC Port | HTTP Port (GPU)  | gRPC Port (GPU) |
+    |-------------|:---------:|:---------:|:----------------:|:---------------:|
+    | ONNX        | 8001      | 8002      | 8010             | 8011            |
+    | TorchScript | 8100      | 8101      | 8110             | 8111            |
+    | TRT         | 8200      | 8201      | 8202 (Prometheus)| -               |
+    | TFS         | 8501      | 8500      | 8510             | 8511            |
 """
 
 ONNX_HTTP_PORT = 8001

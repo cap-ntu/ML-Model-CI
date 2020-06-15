@@ -51,8 +51,8 @@ Here is an example of the registration using `convert` mode.
 import torch.hub
 
 from modelci.hub.manager import register_model
-from modelci.persistence.bo.model_objects import IOShape, Framework, ModelVersion
-from modelci.utils.trtis_objects import ModelInputFormat
+from modelci.types.bo.model_objects import IOShape, Framework, ModelVersion
+from modelci.types.trtis_objects import ModelInputFormat
 
 model = torch.hub.load('pytorch/torchvision:v0.5.0', model='resnet50', pretrained=True)
 inputs = [IOShape(shape=[-1, 3, 224, 224], dtype=float, format=ModelInputFormat.FORMAT_NCHW)]
@@ -79,7 +79,7 @@ Assume we have a saved pre-trained ResNet50 model at the current working directo
 
 ```python
 from modelci.hub.manager import register_model
-from modelci.persistence.bo import Framework, IOShape, Engine, ModelVersion
+from modelci.types.bo import Framework, IOShape, Engine, ModelVersion
 
 register_model(
     'path/to/model/1.zip',
@@ -104,7 +104,7 @@ In this case, we are only able to specify the path, without architecture, framew
 
 ```python
 from modelci.hub.manager import register_model
-from modelci.persistence.bo.model_objects import IOShape
+from modelci.types.bo.model_objects import IOShape
 
 register_model(
     '~/.modelci/ResNet50/pytorch-torchscript/1.zip',
@@ -150,7 +150,7 @@ Vice versa, we can generate a default path by `modelci.hub.utils.generate_path(.
 
 ```python
 from modelci.hub.utils import generate_path
-from modelci.persistence.bo import Framework, Engine
+from modelci.types.bo import Framework, Engine
 
 saved_path = generate_path(
     model_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT, version=1

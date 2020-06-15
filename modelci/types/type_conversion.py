@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 import torch
 
-from .model_objects import DataType
+from modelci.types.bo import DataType
 
 
 def type_to_data_type(tensor_type: type):

@@ -4,7 +4,7 @@ import numpy as np
 
 
 class DataType(Enum):
-    """A simplified version of TRTIS DataType"""
+    """A simplified version of Triton DataType"""
     TYPE_INVALID = 0
     TYPE_BOOL = 1
     TYPE_UINT8 = 2

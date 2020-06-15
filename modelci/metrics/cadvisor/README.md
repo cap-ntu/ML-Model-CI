@@ -20,11 +20,11 @@ You can use `-h` or `--help` to get more information about this script.
 
 ### Request Information
 
-Using following code, you can get the required formated data from [cAdvisor](https://github.com/google/cadvisor/).
+Using following code, you can get the required formatted data from [cAdvisor](https://github.com/google/cadvisor/).
 
 ```python
  
-from cadvisor import CAdvisor
+from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 client = CAdvisor(base_link='') # link to your remote 
 tensorflow_resnet_latest = client.request_by_image('bitnami/tensorflow-serving:latest') # set filters

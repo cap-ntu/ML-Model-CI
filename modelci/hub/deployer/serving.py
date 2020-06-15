@@ -11,7 +11,7 @@ from docker.types import Mount, Ulimit
 from modelci.hub.deployer import config
 from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
 from modelci.hub.utils import parse_path
-from modelci.persistence.bo import Framework, Engine
+from modelci.types.bo import Framework, Engine
 from modelci.utils.misc import remove_dict_null
 
 

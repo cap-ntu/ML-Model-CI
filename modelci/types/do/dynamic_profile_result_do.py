@@ -2,7 +2,7 @@ from mongoengine import EmbeddedDocument
 from mongoengine.fields import *
 
 
-class DynamicProfileResultPO(EmbeddedDocument):
+class DynamicProfileResultDO(EmbeddedDocument):
     """
     Dynamic profiling result plain object.
 

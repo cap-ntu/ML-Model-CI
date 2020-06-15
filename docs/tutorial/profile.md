@@ -99,17 +99,17 @@ from modelci.hub.deployer.config import TFS_GRPC_PORT
 The full table of the default ports are list below:
 
 
-| Engine Name | HTTP Port | gRPC Port | HTTP Port (GPU) | gRPC Port (GPU) |
-|-------------|:---------:|:---------:|:---------------:|:---------------:|
-| ONNX        | 8001      | 8002      | 8010            | 8011            |
-| TorchScript | 8100      | 8101      | 8110            | 8111            |
-| TRT         | 8200      | 8201      | 8202 (Prometeus)| -               |
-| TFS         | 8501      | 8500      | 8510            | 8511            |
+| Engine Name | HTTP Port | gRPC Port | HTTP Port (GPU)  | gRPC Port (GPU) |
+|-------------|:---------:|:---------:|:----------------:|:---------------:|
+| ONNX        | 8001      | 8002      | 8010             | 8011            |
+| TorchScript | 8100      | 8101      | 8110             | 8111            |
+| TRT         | 8200      | 8201      | 8202 (Prometheus)| -               |
+| TFS         | 8501      | 8500      | 8510             | 8511            |
 
 
 ## Profiling Results 
 
-The profiling results will be sent to the modelhub once profiling is done. And some results will be presented in your terminal as well. They look like:
+The profiling results will be sent to the ModelHub once profiling is done. And some results will be presented in your terminal as well. They look like:
 
 ```
 batch size: 8
@@ -128,4 +128,4 @@ average GPU memory used: 7763132416.0 bytes
 average GPU utilization: 66.6216%
 ```
 
-You can display the results by querying the modelhub and export them to a web application or anything you like. 
+You can display the results by querying the ModelHub and export them to a web application or anything you like. 

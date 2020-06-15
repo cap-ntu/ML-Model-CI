@@ -6,8 +6,8 @@ from torchvision import models
 from modelci.hub.converter import TFSConverter
 from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
-from modelci.persistence.bo import Framework, IOShape, ModelVersion, Engine
-from modelci.utils.trtis_objects import ModelInputFormat
+from modelci.types.bo import Framework, IOShape, ModelVersion, Engine
+from modelci.types.trtis_objects import ModelInputFormat
 
 
 class ModelExporter(object):

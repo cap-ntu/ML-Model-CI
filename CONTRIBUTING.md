@@ -38,7 +38,7 @@ source scripts/setup_env.sh
 2. Set project root as source root.
 
 
-After these steps, try runing ModelCI locally and start making a difference!
+After these steps, try running ModelCI locally and start making a difference!
 
 
 ## Coding Standards

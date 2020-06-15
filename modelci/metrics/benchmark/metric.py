@@ -16,22 +16,21 @@ from modelci.metrics.cadvisor.cadvisor import CAdvisor
 
 
 class BaseModelInspector(metaclass=ABCMeta):
-    """
-    A class for running the model inference with metrics testing. User can
+    """A class for running the model inference with metrics testing. User can
     call the the method to run and test the model and return the tested
     latency and throughput.
-    Parameters
-    ----------
-    @param batch_num: the number of batches you want to run
-    @param batch_size: batch size you want
-    @param repeat_data: data unit to repeat.
-    @param asynchronous: runnning asynchronously, default is False.
-    @param sla: SLA, default is 1 sec.
-    @param percentile: The SLA percentile. Default is 95.
+
+    Args:
+        batch_num: the number of batches you want to run
+        batch_size: batch size you want
+        repeat_data: data unit to repeat.
+        asynchronous: running asynchronously, default is False.
+        sla: SLA, default is 1 sec.
+        percentile: The SLA percentile. Default is 95.
     """
 
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=False, percentile=95, sla=1.0):
-        self.throughputs = []
+        self.throughput_list = []
         self.latencies = []
 
         self.asynchronous = asynchronous
@@ -49,26 +48,20 @@ class BaseModelInspector(metaclass=ABCMeta):
 
     @abstractmethod
     def data_preprocess(self):
-        """
-        Handle raw data, after preprocessing we can get the processed_data, which is using for benchmarking.
-        """
+        """Handle raw data, after preprocessing we can get the processed_data, which is using for benchmarking."""
         pass
 
     def set_batch_size(self, new_bs):
-        """
-        update the batch size here.
+        """update the batch size here.
 
-        Parameters
-        ----------
-        @param new_bs: new batch size you want to use.
+        Args:
+            new_bs: new batch size you want to use.
         """
         self.batch_size = new_bs
         self.batches = self.__client_batch_request()
 
     def __client_batch_request(self):
-        '''
-        Batching input data according to the specific batch size
-        '''
+        """Batching input data according to the specific batch size."""
         batches = []
         for i in range(self.batch_num):
             batch = []
@@ -78,15 +71,13 @@ class BaseModelInspector(metaclass=ABCMeta):
         return batches
 
     def run_model(self, server_name):
-        '''
-        Runing the benchmarking for the specific model on the specific server.
+        """Running the benchmarking for the specific model on the specific server.
 
-        Parameters
-        ----------
-        @param server_name: the container's name of Docker that serves the Deep Learning model.
-        '''
+        Args:
+            server_name: the container's name of Docker that serves the Deep Learning model.
+        """
         # reset the results
-        self.throughputs = []
+        self.throughput_list = []
         self.latencies = []
 
         # warm-up
@@ -105,7 +96,7 @@ class BaseModelInspector(metaclass=ABCMeta):
                 a_batch_latency = self.start_infer_with_time(batch)
                 self.latencies.append(a_batch_latency)
                 a_batch_throughput = self.batch_size / a_batch_latency
-                self.throughputs.append(a_batch_throughput)
+                self.throughput_list.append(a_batch_throughput)
                 # TODO: replace printing with logging
                 print(f' latency: {a_batch_latency:.4f} sec throughput: {a_batch_throughput:.4f} req/sec')
 
@@ -119,7 +110,7 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         # init CAdvisor 
         # FIXME: if the number of batch is really small, the GPU utilization will get a smaller value.
-        # Usually, in order to increase accuracy, we need to increase the testing number of batchs, try to make sure 
+        # Usually, in order to increase accuracy, we need to increase the testing number of batches, try to make sure
         # the testing program can run over 1 minutes.
         cadvisor = CAdvisor()
         SLEEP_TIME = 15
@@ -138,26 +129,21 @@ class BaseModelInspector(metaclass=ABCMeta):
                            all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per)
 
     def __inference_callback(self, a_batch_latency):
-        """
-        A callback function which handles the results of a asynchronous inference request
+        """A callback function which handles the results of a asynchronous inference request.
 
-        Parameters
-        ----------        
-        @param a_batch_latency: The amount of required for the inference request to complete
+        Args:
+            a_batch_latency: The amount of required for the inference request to complete.
         """
         self.latencies.append(a_batch_latency)
         a_batch_throughput = self.batch_size / a_batch_latency
-        self.throughputs.append(a_batch_throughput)
+        self.throughput_list.append(a_batch_throughput)
         # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
-
     def start_infer_with_time(self, batch_input):
-        """
-        Perform inference non-asynchronosly, and return the total time.
+        """Perform inference non-asynchronously, and return the total time.
 
-        Parameters
-        ----------        
-        @param batch_input: The batch data in the request.
+        Args:
+            batch_input: The batch data in the request.
         """
         self.make_request(batch_input)
         start_time = time.time()
@@ -166,50 +152,51 @@ class BaseModelInspector(metaclass=ABCMeta):
         return end_time - start_time
 
     def make_request(self, input_batch):
-        """
-        function for sub-class to implement before infering, to create the self.request
-        can be override if needed.
+        """Function for sub-class to implement before inferring, to create the `self.request` can be
+            overridden if needed.
         """
         pass
 
     @abstractmethod
     def infer(self, input_batch):
-        """
-        Abstract function for sub-class to implement the detailed infer function.
+        """Abstract function for sub-class to implement the detailed infer function.
 
-        Parameters
-        ----------        
-        @param input_batch: The batch data in the request.
+        Args:
+            input_batch: The batch data in the request.
         """
         pass
 
     # TODO: save result as a dict or something with logger
     def dump_result(self, path=None):
-        '''
-        Export the testing results to local JSON file.
+        """Export the testing results to local JSON file.
 
-        Parameters
-        ----------        
-        @param path: The path to save the results.
-        '''
+        Args:
+            path: The path to save the results.
+        """
         pass
 
     # TODO: replace printing with saving code in mongodb, or logging.
-    def print_results(self, throughput, latency, custom_percentile, all_batch_avg_memory_total,
-                      all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per):
-        '''
-        Export the testing results to local JSON file.
+    def print_results(
+            self,
+            throughput,
+            latency,
+            custom_percentile,
+            all_batch_avg_memory_total,
+            all_batch_avg_memory_used,
+            all_batch_avg_util,
+            memory_avg_usage_per
+    ):
+        """Export the testing results to local JSON file.
 
-        Parameters
-        ----------        
-        @throughput: The tested overall throughput for all batches.
-        @latency: The tested latency for all batches.
-        @custom_percentile: The custom percentile you want to check for latencies.
-        @all_batch_avg_memory_total: The capacity memory usages for the inference container.
-        @all_batch_avg_memory_used: Used memory amount of this inference for all batches.
-        @all_batch_avg_util: The average GPU utilization of inferring all batches.
-        @memory_avg_usage_per: The GPU memory usage percentile.
-        '''
+        Args:
+            throughput: The tested overall throughput for all batches.
+            latency: The tested latency for all batches.
+            custom_percentile: The custom percentile you want to check for latencies.
+            all_batch_avg_memory_total: The capacity memory usages for the inference container.
+            all_batch_avg_memory_used: Used memory amount of this inference for all batches.
+            all_batch_avg_util: The average GPU utilization of inferring all batches.
+            memory_avg_usage_per: The GPU memory usage percentile.
+        """
         percentile_50 = np.percentile(self.latencies, 50)
         percentile_95 = np.percentile(self.latencies, 95)
         percentile_99 = np.percentile(self.latencies, 99)
@@ -230,15 +217,14 @@ class BaseModelInspector(metaclass=ABCMeta):
 
 
 class ReqThread(Thread):
-    """
-    Thread class for sending a request.
-    """
-    def __init__(self, callback, infer_mothod, batch_data):
+    """Thread class for sending a request."""
+
+    def __init__(self, callback, infer_method, batch_data):
         Thread.__init__(self)
         self.callback = callback
         self.batch_data = batch_data
-        self.infer = infer_mothod
-        
+        self.infer = infer_method
+
     def run(self):
         self.infer(self.batch_data)
         self.callback(time.thread_time())

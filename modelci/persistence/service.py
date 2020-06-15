@@ -3,13 +3,10 @@ from typing import Union
 
 from bson import ObjectId
 
+from modelci.types.bo import DynamicProfileResultBO, ModelBO, Framework, Engine, StaticProfileResultBO
 from . import mongo
-from .bo.dynamic_profile_result_bo import DynamicProfileResultBO
-from .bo.model_bo import ModelBO
-from .bo.model_objects import Framework, Engine
-from .bo.static_profile_result_bo import StaticProfileResultBO
-from .dao.model_dao import ModelDAO
 from .exceptions import ServiceException
+from .model_dao import ModelDAO
 
 
 class ModelService(object):
@@ -153,7 +150,7 @@ class ModelService(object):
                                  'when call.'.format(model.id))
 
     @classmethod
-    def delete_model_by_id(cls, id_: str):
+    def delete_model_by_id(cls, id_: str) -> int:
         """Delete a model from ModelDB given ID.
 
         Args:

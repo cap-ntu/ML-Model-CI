@@ -2,21 +2,29 @@
 """Module for model plain object."""
 
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import *
+from mongoengine.fields import (
+    DateTimeField,
+    EmbeddedDocumentField,
+    EmbeddedDocumentListField,
+    FileField,
+    FloatField,
+    IntField,
+    ListField,
+    StringField,
+)
 
-from .profile_result_po import ProfileResultPO
+from .profile_result_do import ProfileResultDO
 
 
-class IOShapePO(EmbeddedDocument):
+class IOShapeDO(EmbeddedDocument):
     name = StringField()
     shape = ListField(IntField(), required=True)
     dtype = StringField(required=True)
     format = IntField(required=True)
 
 
-class ModelPO(Document):
-    """
-    Model Plain Object.
+class ModelDO(Document):
+    """Model Plain Object.
 
     The primary key of the model plain object is (engine, name, version) pair.
     """
@@ -38,11 +46,11 @@ class ModelPO(Document):
     # Model task
     task = StringField(required=True)
     # inputs standard
-    inputs = EmbeddedDocumentListField(IOShapePO)
+    inputs = EmbeddedDocumentListField(IOShapeDO)
     # outputs standard
-    outputs = EmbeddedDocumentListField(IOShapePO)
+    outputs = EmbeddedDocumentListField(IOShapeDO)
     # Profile result
-    profile_result = EmbeddedDocumentField(ProfileResultPO)
+    profile_result = EmbeddedDocumentField(ProfileResultDO)
     # Status enum value
     status = IntField(required=True)
     # Creation time of this record

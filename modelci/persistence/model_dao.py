@@ -9,9 +9,7 @@ from typing import List
 
 from bson import ObjectId
 
-from ..po.dynamic_profile_result_po import DynamicProfileResultPO
-from ..po.model_po import ModelPO
-from ..po.static_profile_result_po import StaticProfileResultPO
+from modelci.types.do import ModelDO, DynamicProfileResultDO, StaticProfileResultDO
 
 
 class ModelDAO(object):
@@ -22,7 +20,7 @@ class ModelDAO(object):
         Args:
             id_ (ObjectId): Model ID.
         """
-        return bool(ModelPO.objects(id=id_))
+        return bool(ModelDO.objects(id=id_))
 
     @staticmethod
     def exists_by_primary_keys(**kwargs):
@@ -38,22 +36,22 @@ class ModelDAO(object):
         Returns:
             bool: Existence of the model.
         """
-        return bool(ModelPO.objects(**kwargs))
+        return bool(ModelDO.objects(**kwargs))
 
     @staticmethod
-    def get_model_by_id(id_: ObjectId) -> ModelPO:
+    def get_model_by_id(id_: ObjectId) -> ModelDO:
         """Get model plain object given model ID.
 
         Args:
             id_ (ObjectId): Model ID.
 
         Return:
-            ModelPO: Model plain object. None for model PO not found.
+            ModelDO: Model plain object. None for model PO not found.
         """
-        return ModelPO.objects(id=id_).first()
+        return ModelDO.objects(id=id_).first()
 
     @staticmethod
-    def get_models_by_name(name: str, **kwargs) -> List[ModelPO]:
+    def get_models_by_name(name: str, **kwargs) -> List[ModelDO]:
         """Get a list of model plain object given model name, framework and engine.
 
         Args:
@@ -62,28 +60,28 @@ class ModelDAO(object):
                 framework: model framework.
                 engine: model engine.
         Return:
-            List[ModelPO]: A list of model plain objects.
+            List[ModelDO]: A list of model plain objects.
         """
-        return ModelPO.objects(name=name, **kwargs)
+        return ModelDO.objects(name=name, **kwargs)
 
     @staticmethod
-    def get_models_by_task(task: str) -> List[ModelPO]:
+    def get_models_by_task(task: str) -> List[ModelDO]:
         """Get a list of model plain objects given task.
 
         Args:
             task (str): Model predictive or descriptive task name
 
         Return:
-            List[ModelPO]: A list of model plain objects. An empty list will be returned if no such model.
+            List[ModelDO]: A list of model plain objects. An empty list will be returned if no such model.
         """
-        return ModelPO.objects(task=task)
+        return ModelDO.objects(task=task)
 
     @staticmethod
-    def save_model(model: ModelPO, force_insert=False) -> ModelPO:
+    def save_model(model: ModelDO, force_insert=False) -> ModelDO:
         """Save a model PO.
 
         Args:
-            model (ModelPO): Model plain object to be saved.
+            model (ModelDO): Model plain object to be saved.
             force_insert (bool): Only try to create a new document. Default to `False`.
 
         Returns:
@@ -92,7 +90,7 @@ class ModelDAO(object):
         return model.save(force_insert=force_insert)
 
     @staticmethod
-    def update_model(id_: ObjectId, **kwargs) -> ModelPO:  # TODO: try ModelPO.objects(...).update()?
+    def update_model(id_: ObjectId, **kwargs) -> ModelDO:  # TODO: try ModelPO.objects(...).update()?
         """
         Update or register model PO.
 
@@ -101,9 +99,9 @@ class ModelDAO(object):
             **kwargs: Keyword arguments to be updated.
 
         Returns:
-            ModelPO:
+            ModelDO:
         """
-        return ModelPO.objects(id=id_).update(**kwargs)
+        return ModelDO.objects(id=id_).update(**kwargs)
 
     @staticmethod
     def delete_model_by_id(id_: ObjectId) -> int:
@@ -115,12 +113,12 @@ class ModelDAO(object):
         Return:
             int: number of affected rows.
         """
-        return ModelPO.objects(id=id_).delete()
+        return ModelDO.objects(id=id_).delete()
 
     @staticmethod
     def register_static_profiling_result(
             id_: ObjectId,
-            static_profiling_result: StaticProfileResultPO
+            static_profiling_result: StaticProfileResultDO
     ) -> int:
         """Register static profiling result.
 
@@ -131,12 +129,12 @@ class ModelDAO(object):
         Return:
             int: number of affected rows.
         """
-        return ModelPO.objects(id=id_).update_one(set__profile_result__static_profile_result=static_profiling_result)
+        return ModelDO.objects(id=id_).update_one(set__profile_result__static_profile_result=static_profiling_result)
 
     @staticmethod
     def register_dynamic_profiling_result(
             id_: ObjectId,
-            dynamic_profiling_result: DynamicProfileResultPO
+            dynamic_profiling_result: DynamicProfileResultDO
     ) -> int:
         """Register dynamic profiling result.
 
@@ -147,7 +145,7 @@ class ModelDAO(object):
         Return:
             int: number of affected rows.
         """
-        return ModelPO.objects(id=id_).update_one(
+        return ModelDO.objects(id=id_).update_one(
             push__profile_result__dynamic_profile_results=dynamic_profiling_result)
 
     @staticmethod
@@ -166,7 +164,7 @@ class ModelDAO(object):
         Return:
              bool: `True` for existence, `False` otherwise.
         """
-        return bool(ModelPO.objects(
+        return bool(ModelDO.objects(
             id=id_,
             profile_result__dynamic_profile_results__ip=ip,
             profile_result__dynamic_profile_results__device_id=device_id)
@@ -175,7 +173,7 @@ class ModelDAO(object):
     @staticmethod
     def update_dynamic_profiling_result(
             id_: ObjectId,
-            dynamic_profiling_result: DynamicProfileResultPO
+            dynamic_profiling_result: DynamicProfileResultDO
     ) -> int:
         """Update dynamic profiling result.
 
@@ -186,7 +184,7 @@ class ModelDAO(object):
         Return:
             int: number of affected rows.
         """
-        return ModelPO.objects(
+        return ModelDO.objects(
             id=id_,
             profile_result__dynamic_profile_results__ip=dynamic_profiling_result.ip,
             profile_result__dynamic_profile_results__device_id=dynamic_profiling_result.device_id
@@ -207,7 +205,7 @@ class ModelDAO(object):
             ip (str): IP address of dynamic profiling result to be deleted.
             device_id (str): Device ID of dynamic profiling result to be deleted.
         """
-        return ModelPO.objects(
+        return ModelDO.objects(
             id=id_,
         ).update_one(
             pull__profile_result__dynamic_profile_results__ip=ip,
