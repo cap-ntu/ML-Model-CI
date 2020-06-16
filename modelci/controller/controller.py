@@ -31,13 +31,13 @@ class UtilMonitor(Thread):
                 'Failed to get GPU relative information from node exporter, please make sure the service has started.')
 
     def run(self):
+        exporter = GPUNodeExporter()
         while not self.stopped:
-            exporter = GPUNodeExporter()
             available_device = exporter.get_idle_gpu(util_level=self.util_level,
                                                      memory_level=self.memory_level)
             if available_device is not None:
-                profiler.auto_diagnose(available_devices=available_device,
-                                       batch_list=[8])  # default profiling batch size 8
+                self.profiler.auto_diagnose(available_devices=available_device,
+                                            batch_list=[8])  # default profiling batch size 8
             time.sleep(self.delay)
 
     def stop(self):
