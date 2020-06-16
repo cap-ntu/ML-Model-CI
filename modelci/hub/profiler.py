@@ -39,7 +39,6 @@ class Profiler(object):
         self.server_name = server_name
         self.model_info = model_info
         self.docker_client = docker.from_env()
-        self.available_devices = []
 
     def diagnose(self, batch_size=None):
         """Start diagnosing and profiling model."""
@@ -53,25 +52,23 @@ class Profiler(object):
         for size in arr:
             self.diagnose(size)
 
-    def auto_diagnose(self, batch_list: list = None):
+    def auto_diagnose(self, available_devices, batch_list: list = None):
         """Select the free machine and deploy automatically to test the model using available platforms."""
         saved_path = self.model_info.saved_path
         model_id = self.model_info.id
         model_name = self.model_info.name
         model_framework = self.model_info.framework
         serving_engine = self.model_info.engine
-        exporter = GPUNodeExporter()
-        self.available_devices = exporter.get_idle_gpu(util_level=0.01, memory_level=0.01)
 
         # for testing
-        print('\n available GPU devices: ', self.available_devices)
+        print('\n available GPU devices: ', available_devices)
         print('model saved path: ', saved_path)
         print('model id: ', model_id)
         print('mode name: ', model_name)
         print('model framework: ', model_framework)
         print('model serving engine: ', serving_engine)
 
-        for device in self.available_devices:  # deploy the model automatically in all available devices.
+        for device in available_devices:  # deploy the model automatically in all available devices.
             print(f'deploying model in device: {device} ...')
 
             serve(save_path=saved_path, device=f'cuda:{device}', name=self.server_name)
