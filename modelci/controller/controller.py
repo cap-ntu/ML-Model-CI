@@ -25,13 +25,13 @@ class UtilMonitor(Thread):
         self.memory_level = memory_level
         self.util_level = util_level
         self.profiler = profiler
+        self.exporter = GPUNodeExporter()
 
         if self.exporter is None:
             raise TypeError(
                 'Failed to get GPU relative information from node exporter, please make sure the service has started.')
 
     def run(self):
-        exporter = GPUNodeExporter()
         while not self.stopped:
             available_device = exporter.get_idle_gpu(util_level=self.util_level,
                                                      memory_level=self.memory_level)
