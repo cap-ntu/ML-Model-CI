@@ -2,7 +2,9 @@ from modelci.hub.profiler import Profiler
 from modelci.monitor.gpu_node_exporter import GPUNodeExporter
 
 from threading import Thread
+import collections
 import time
+import GPUtil
 
 
 class UtilMonitor(Thread):
@@ -10,7 +12,7 @@ class UtilMonitor(Thread):
     Monitor for GPU Utilization
     """
 
-    def __init__(self, profiler: Profiler, delay, util_level, memory_level):
+    def __init__(self, device, profiler: Profiler, delay, util_level, memory_level):
         """
         Init the GPU Utilization Monitor Thread.
 
@@ -18,6 +20,7 @@ class UtilMonitor(Thread):
         :param util_level: The utilization level that trigger profiling.
         :param memory_level: The memory usage level that trigger profiling.
         :param profiler: The instance of model profiler.
+        :param device: GPU device to test.
         """
         super(UtilMonitor, self).__init__()
         self.stopped = False
@@ -26,6 +29,7 @@ class UtilMonitor(Thread):
         self.util_level = util_level
         self.profiler = profiler
         self.exporter = GPUNodeExporter()
+        self.device = device
 
         if self.exporter is None:
             raise TypeError(
@@ -33,11 +37,12 @@ class UtilMonitor(Thread):
 
     def run(self):
         while not self.stopped:
-            available_device = exporter.get_idle_gpu(util_level=self.util_level,
-                                                     memory_level=self.memory_level)
-            if available_device is not None:
-                self.profiler.auto_diagnose(available_devices=available_device,
-                                            batch_list=[8])  # default profiling batch size 8
+            available_devices = self.exporter.get_idle_gpu(util_level=self.util_level,
+                                                           memory_level=self.memory_level)
+
+            if self.device.id in available_devices:
+                self.profiler.auto_diagnose(available_devices=[self.device])
+
             time.sleep(self.delay)
 
     def stop(self):
@@ -55,9 +60,16 @@ def auto_model_profiling(model_info, server_name, device_util_thd=0.01, device_m
     :param period: time period to get the information.
     :return: None
     """
-    profiler = Profiler(model_info=model_info, server_name=server_name)
-    monitor = UtilMonitor(profiler, period, device_util_thd, device_memory_thd)
-    monitor.start()
+
+    different_kind_devices = collections.OrderedDict()
+    for gpu in GPUtil.getGPUs():
+        if gpu.name not in different_kind_devices:
+            different_kind_devices[gpu.name] = gpu
+
+    for device in list(different_kind_devices.values()):
+        profiler = Profiler(model_info=model_info, server_name=server_name)
+        monitor = UtilMonitor(device, profiler, period, device_util_thd, device_memory_thd)
+        monitor.start()
 
 
 def auto_device_placement():

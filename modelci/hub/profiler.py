@@ -39,17 +39,17 @@ class Profiler(object):
         self.model_info = model_info
         self.docker_client = docker.from_env()
 
-    def diagnose(self, batch_size=None):
+    def diagnose(self, device_name, batch_size=None):
         """Start diagnosing and profiling model."""
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        self.inspector.run_model(self.server_name)
+        self.inspector.run_model(device_name=device_name, server_name=self.server_name)
 
-    def diagnose_all_batches(self, arr: list):
+    def diagnose_all_batches(self, device_name, arr: list):
         """Run model tests in batch size from list input."""
         for size in arr:
-            self.diagnose(size)
+            self.diagnose(device_name, size)
 
     def auto_diagnose(self, available_devices, batch_list: list = None):
         """Select the free machine and deploy automatically to test the model using available platforms."""
@@ -60,7 +60,7 @@ class Profiler(object):
         serving_engine = self.model_info.engine
 
         # for testing
-        print('\n available GPU devices: ', available_devices)
+        print('\n available GPU devices: ', [device.name for device in available_devices])
         print('model saved path: ', saved_path)
         print('model id: ', model_id)
         print('mode name: ', model_name)
@@ -68,9 +68,9 @@ class Profiler(object):
         print('model serving engine: ', serving_engine)
 
         for device in available_devices:  # deploy the model automatically in all available devices.
-            print(f'deploying model in device: {device} ...')
+            print(f'deploying model in device: {device.id} ...')
 
-            serve(save_path=saved_path, device=f'cuda:{device}', name=self.server_name)
+            serve(save_path=saved_path, device=f'cuda:{device.id}', name=self.server_name)
 
             try:  # to check the container has started successfully or not.
                 self.docker_client.containers.get(self.server_name)
@@ -82,9 +82,9 @@ class Profiler(object):
 
             # start testing.
             if batch_list is not None:
-                self.diagnose_all_batches(batch_list)
+                self.diagnose_all_batches(device.name, batch_list)
             else:
-                self.diagnose()
+                self.diagnose(device.name)
 
         self.__stop_testing_container()
         print('finished.')

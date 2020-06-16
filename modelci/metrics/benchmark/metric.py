@@ -70,11 +70,12 @@ class BaseModelInspector(metaclass=ABCMeta):
             batches.append(batch)
         return batches
 
-    def run_model(self, server_name):
+    def run_model(self, device_name, server_name):
         """Running the benchmarking for the specific model on the specific server.
 
         Args:
             server_name: the container's name of Docker that serves the Deep Learning model.
+            device_name: The serving device's name, for example, RTX 2080Ti.
         """
         # reset the results
         self.throughput_list = []
@@ -125,7 +126,8 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
         memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
 
-        self.print_results(all_data_throughput, all_data_latency, custom_percentile, all_batch_avg_memory_total,
+        self.print_results(device_name, all_data_throughput, all_data_latency, custom_percentile,
+                           all_batch_avg_memory_total,
                            all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per)
 
     def __inference_callback(self, a_batch_latency):
@@ -178,6 +180,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     # TODO: replace printing with saving code in mongodb, or logging.
     def print_results(
             self,
+            device_name,
             throughput,
             latency,
             custom_percentile,
@@ -196,12 +199,14 @@ class BaseModelInspector(metaclass=ABCMeta):
             all_batch_avg_memory_used: Used memory amount of this inference for all batches.
             all_batch_avg_util: The average GPU utilization of inferring all batches.
             memory_avg_usage_per: The GPU memory usage percentile.
+            device_name: The serving device's name, for example, RTX 2080Ti.
         """
         percentile_50 = np.percentile(self.latencies, 50)
         percentile_95 = np.percentile(self.latencies, 95)
         percentile_99 = np.percentile(self.latencies, 99)
 
         print('\n')
+        print(f'testing device: {device_name}')
         print(f'total batches: {len(self.batches)}, batch_size: {self.batch_size}')
         print(f'total latency: {latency} s')
         print(f'total throughput: {throughput} req/sec')
