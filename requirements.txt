@@ -64,3 +64,4 @@ Werkzeug==1.0.1
 wrapt==1.12.1
 zipp==3.1.0
 docker~=4.2.0
+gputil==1.4.0

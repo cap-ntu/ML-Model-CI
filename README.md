@@ -128,7 +128,7 @@ torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous
 profiler = Profiler(model_info=model_info, server_name='name of your server', inspector=torch_client)
 
 # start profiling model
-profiler.diagnose()
+profiler.diagnose('device name')
 ```
 
 

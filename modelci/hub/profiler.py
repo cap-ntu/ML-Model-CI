@@ -11,7 +11,6 @@ from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.deployer import serve
 from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.monitor.gpu_node_exporter import GPUNodeExporter
 from modelci.types.bo import Framework
 
 DEFAULT_BATCH_NUM = 100
@@ -39,42 +38,39 @@ class Profiler(object):
         self.server_name = server_name
         self.model_info = model_info
         self.docker_client = docker.from_env()
-        self.available_devices = []
 
-    def diagnose(self, batch_size=None):
+    def diagnose(self, device_name, batch_size=None):
         """Start diagnosing and profiling model."""
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        self.inspector.run_model(self.server_name)
+        self.inspector.run_model(device_name=device_name, server_name=self.server_name)
 
-    def diagnose_all_batches(self, arr: list):
+    def diagnose_all_batches(self, device_name, arr: list):
         """Run model tests in batch size from list input."""
         for size in arr:
-            self.diagnose(size)
+            self.diagnose(device_name, size)
 
-    def auto_diagnose(self, batch_list: list = None):
+    def auto_diagnose(self, available_devices, batch_list: list = None):
         """Select the free machine and deploy automatically to test the model using available platforms."""
         saved_path = self.model_info.saved_path
         model_id = self.model_info.id
         model_name = self.model_info.name
         model_framework = self.model_info.framework
         serving_engine = self.model_info.engine
-        exporter = GPUNodeExporter()
-        self.available_devices = exporter.get_idle_gpu(util_level=0.01, memory_level=0.01)
 
         # for testing
-        print('\n available GPU devices: ', self.available_devices)
+        print('\n available GPU devices: ', [device.name for device in available_devices])
         print('model saved path: ', saved_path)
         print('model id: ', model_id)
         print('mode name: ', model_name)
         print('model framework: ', model_framework)
         print('model serving engine: ', serving_engine)
 
-        for device in self.available_devices:  # deploy the model automatically in all available devices.
-            print(f'deploying model in device: {device} ...')
+        for device in available_devices:  # deploy the model automatically in all available devices.
+            print(f'deploying model in device: {device.id} ...')
 
-            serve(save_path=saved_path, device=f'cuda:{device}', name=self.server_name)
+            serve(save_path=saved_path, device=f'cuda:{device.id}', name=self.server_name)
 
             try:  # to check the container has started successfully or not.
                 self.docker_client.containers.get(self.server_name)
@@ -86,9 +82,9 @@ class Profiler(object):
 
             # start testing.
             if batch_list is not None:
-                self.diagnose_all_batches(batch_list)
+                self.diagnose_all_batches(device.name, batch_list)
             else:
-                self.diagnose()
+                self.diagnose(device.name)
 
         self.__stop_testing_container()
         print('finished.')

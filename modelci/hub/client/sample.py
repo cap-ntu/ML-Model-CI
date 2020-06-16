@@ -43,7 +43,7 @@ if __name__ == "__main__":
     mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH,
                                        engine=Engine.TORCHSCRIPT)
     profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
-    profiler.diagnose()
+    profiler.diagnose('RTX 2080Ti')
     # profiler.diagnose(batch_size=1) # you can use a new batch_size to overwrite the client's.
     # profiler.diagnose_all_batches([1, 2, 4, 8, 16, 32]) # run all 1, 2, 4, 8, 16, 32 batch size
 

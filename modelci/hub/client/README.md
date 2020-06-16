@@ -72,7 +72,7 @@ mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Frame
 # init a profiler.
 profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
 # start profiling.
-profiler.diagnose()
+profiler.diagnose('device name')
 ```
 
 The profiling result looks like, 
@@ -107,9 +107,9 @@ model_info = ...
 # init a profiler, the server name must be the same as your serving container's.
 profiler = Profiler(model_info=model_info, server_name='tfs')
 # start profiling automatically.
-profiler.auto_diagnose()
+profiler.auto_diagnose('device name')
 # start profiling automatically with specific batch sizes, here is [2, 4, 16].
-profiler.auto_diagnose([2, 4, 16])
+profiler.auto_diagnose('device name', [2, 4, 16])
 ```
 
 the profiler will search for a suitable client according to the model information, and start the model profiling automatically.

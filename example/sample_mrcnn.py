@@ -21,4 +21,4 @@ if __name__ == "__main__":
     )
 
     profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
-    profiler.diagnose()  # profile batch size 32 in all the available devices
+    profiler.diagnose('RTX 2080Ti')  # profile batch size 32
