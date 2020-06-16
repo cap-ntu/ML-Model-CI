@@ -22,7 +22,6 @@ class UtilMonitor(Thread):
         super(UtilMonitor, self).__init__()
         self.stopped = False
         self.delay = delay
-        self.start()
         self.memory_level = memory_level
         self.util_level = util_level
         self.profiler = profiler
@@ -36,7 +35,7 @@ class UtilMonitor(Thread):
             exporter = GPUNodeExporter()
             available_device = exporter.get_idle_gpu(util_level=self.util_level,
                                                      memory_level=self.memory_level)
-            if not self.available_device:
+            if available_device is not None:
                 profiler.auto_diagnose(available_devices=available_device,
                                        batch_list=[8])  # default profiling batch size 8
             time.sleep(self.delay)
