@@ -83,30 +83,30 @@ def test_register_static_profiling_result():
 
 def test_register_dynamic_profiling_result():
     model = ModelService.get_models_by_name('ResNet50')[0]
-    dpr = DynamicProfileResultBO('gpu:01', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 1000),
-                                 ProfileLatency((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
-                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    dpr = DynamicProfileResultBO('gpu:01', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 0.5),
+                                 ProfileLatency((1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1)),
+                                 ProfileThroughput((1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1)))
     assert ModelService.append_dynamic_profiling_result(model.id, dpr)
 
 
 def test_update_dynamic_profiling_result():
     model = ModelService.get_models_by_name('ResNet50')[0]
-    dpr = DynamicProfileResultBO('gpu:01', 'Tesla K40c', 1, ProfileMemory(1000, 2000, 1000),
-                                 ProfileLatency((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
-                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    dpr = DynamicProfileResultBO('gpu:01', 'Tesla K40c', 1, ProfileMemory(1000, 2000, 0.5),
+                                 ProfileLatency((1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1)),
+                                 ProfileThroughput((1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1)))
     # check update
     assert ModelService.update_dynamic_profiling_result(model.id, dpr)
     # check result
     model = ModelService.get_models_by_name('ResNet50')[0]
-    assert model.profile_result.dynamic_results[0].memory.cpu_memory == 2000
+    assert model.profile_result.dynamic_results[0].memory.memory_usage == 2000
 
 
 def test_delete_dynamic_profiling_result():
     model = ModelService.get_models_by_name('ResNet50')[0]
 
-    dpr = DynamicProfileResultBO('gpu:02', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 1000),
-                                 ProfileLatency((1, 1, 2), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
-                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    dpr = DynamicProfileResultBO('gpu:02', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 0.5),
+                                 ProfileLatency((1, 1, 1, 2), (1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1)),
+                                 ProfileThroughput((1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1), (1, 1, 1, 1)))
     ModelService.append_dynamic_profiling_result(model.id, dpr)
 
     # reload

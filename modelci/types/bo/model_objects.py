@@ -152,10 +152,11 @@ class IOShape(object):
 
 
 class InfoTuple(object):
-    """A triplet tuple containing min, max and average values of a data over a period of time.
+    """A triplet tuple containing overall, 50th percentile, 95th percentile, 99th percentile and average values of a
+    data over a period of time.
     """
 
-    def __init__(self, info: Tuple[float, float, float]):
+    def __init__(self, info: Tuple[float, float, float, float]):
         """Initializer.
 
         Args:
@@ -164,18 +165,27 @@ class InfoTuple(object):
         Raise:
             AssertionError: `info` is not a triplet.
         """
-        assert len(info) == 3
-        self.min = info[0]
-        self.max = info[1]
-        self.avg = info[2]
+        assert len(info) == 4
+        self.info = tuple(info)
 
-    def tolist(self):
-        """Converting InfoTuple to a list of values.
-        """
-        return [self.min, self.max, self.avg]
+    @property
+    def avg(self):
+        return self.info[0]
+
+    @property
+    def percentile50(self):
+        return self.info[1]
+
+    @property
+    def percentile95(self):
+        return self.info[2]
+
+    @property
+    def percentile99(self):
+        return self.info[3]
 
     def __str__(self):
-        return '({}, {}, {})'.format(self.min, self.max, self.avg)
+        return str(self.info)
 
 
 class Weight(object):

@@ -11,17 +11,17 @@ class DynamicProfileResultDO(EmbeddedDocument):
     # IP address of the cluster node
     ip = StringField(required=True)
     # Device ID, e.g. cpu, cuda:0, cuda:1
-    device_id = StringField(required=True)
+    device_id = StringField(required=False)
     # Device name, e.g. Tesla K40c
     device_name = StringField(required=True)
     # Batch size
-    batch = IntField(required=True)
-    # Main or GPU memory consumption in MB for loading and initializing the model
-    memory = FloatField(required=True)
-    # Main memory consumption in MB for processing batch data
-    cpu_memory = FloatField(required=True)
-    # GPU memory consumption in MB for processing batch data
-    gpu_memory = FloatField(required=True)
+    batch = IntField(min_value=1, required=True)
+    # Main or GPU memory consumption in Byte for loading and initializing the model
+    total_memory = IntField(min_value=0, required=True)
+    # GPU memory consumption in Byte for processing batch data
+    memory_usage = IntField(min_value=0, required=True)
+    # GPU utilization rate for processing batch data
+    utilization = FloatField(min_value=0, max_value=1, required=True)
     # Min, max and avg model loading and initialization latencies
     initialization_latency = ListField(FloatField(), required=True)
     # Min, max and avg preprocess latencies
