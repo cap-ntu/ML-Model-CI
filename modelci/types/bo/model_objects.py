@@ -152,15 +152,16 @@ class IOShape(object):
 
 
 class InfoTuple(object):
-    """A triplet tuple containing overall, 50th percentile, 95th percentile, 99th percentile and average values of a
+    """A triplet tuple containing overall, average, 50th percentile, 95th percentile, and 99th percentile values of a
     data over a period of time.
+
+    Args:
+        info (Tuple[float, float, float, float]): a triplet containing average, 50th percentile, 95th percentile,
+        and 99th percentile values,  of a data.
     """
 
     def __init__(self, info: Tuple[float, float, float, float]):
         """Initializer.
-
-        Args:
-            info (Tuple[float, float, float]): a triplet containing min, max and average values of a data.
 
         Raise:
             AssertionError: `info` is not a triplet.
@@ -170,18 +171,22 @@ class InfoTuple(object):
 
     @property
     def avg(self):
+        """Average value."""
         return self.info[0]
 
     @property
-    def percentile50(self):
+    def p50(self):
+        """50th-percentile."""
         return self.info[1]
 
     @property
-    def percentile95(self):
+    def p95(self):
+        """95th-percentile."""
         return self.info[2]
 
     @property
-    def percentile99(self):
+    def p99(self):
+        """99th-percentile."""
         return self.info[3]
 
     def __str__(self):
