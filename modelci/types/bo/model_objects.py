@@ -5,7 +5,7 @@ This class contains utility classes used in model service for building model bus
 """
 
 from enum import Enum, unique
-from typing import Tuple, List, Union, Optional, BinaryIO
+from typing import List, Union, Optional, BinaryIO
 
 from mongoengine import GridFSProxy
 
@@ -156,41 +156,24 @@ class InfoTuple(object):
     data over a period of time.
 
     Args:
-        info (Tuple[float, float, float, float]): a triplet containing average, 50th percentile, 95th percentile,
+        avg (float): the average value
+        p5050th percentile, 95th percentile,
         and 99th percentile values,  of a data.
     """
 
-    def __init__(self, info: Tuple[float, float, float, float]):
-        """Initializer.
+    def __init__(self, avg: float, p50: float, p95: float, p99: float):
+        """Initializer."""
+        self.avg = avg
+        self.p50 = p50
+        self.p95 = p95
+        self.p99 = p99
 
-        Raise:
-            AssertionError: `info` is not a triplet.
-        """
-        assert len(info) == 4
-        self.info = tuple(info)
-
-    @property
-    def avg(self):
-        """Average value."""
-        return self.info[0]
-
-    @property
-    def p50(self):
-        """50th-percentile."""
-        return self.info[1]
-
-    @property
-    def p95(self):
-        """95th-percentile."""
-        return self.info[2]
-
-    @property
-    def p99(self):
-        """99th-percentile."""
-        return self.info[3]
+    def tolist(self):
+        """Convert to a list of values."""
+        return [self.avg, self.p50, self.p95, self.p99]
 
     def __str__(self):
-        return str(self.info)
+        return str(self.tolist())
 
 
 class Weight(object):
@@ -224,7 +207,7 @@ class Weight(object):
             self.content_type = gridfs_file.content_type
             if not lazy_fetch:
                 # lazy fetch
-                self.weight()
+                _ = self.weight
         else:
             self.filename = filename
             self.content_type = content_type

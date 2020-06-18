@@ -36,6 +36,8 @@ class ProfileLatency(object):
     This class records the end-to-end latency in four stages: data engine initialization, pre-processing, inference, and
     post-processing.
 
+    TODO: re-organize
+
     Args:
         init_latency (Union[InfoTuple, Iterable]): initialization latency.
             An `InfoTuple` instance or a iterable instance containing min, max and average throughput.
@@ -57,24 +59,24 @@ class ProfileLatency(object):
         """Initializer."""
         # convert latencies to InfoTuple type
         if init_latency is None:
-            init_latency = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            init_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(init_latency, Iterable):
-            init_latency = InfoTuple(tuple(init_latency))
+            init_latency = InfoTuple(*init_latency)
 
         if preprocess_latency is None:
-            preprocess_latency = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            preprocess_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(preprocess_latency, Iterable):
-            preprocess_latency = InfoTuple(tuple(preprocess_latency))
+            preprocess_latency = InfoTuple(*preprocess_latency)
 
         if inference_latency is None:
-            inference_latency = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            inference_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(inference_latency, Iterable):
-            inference_latency = InfoTuple(tuple(inference_latency))
+            inference_latency = InfoTuple(*inference_latency)
 
         if postprocess_latency is None:
-            postprocess_latency = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            postprocess_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(postprocess_latency, Iterable):
-            postprocess_latency = InfoTuple(tuple(postprocess_latency))
+            postprocess_latency = InfoTuple(*postprocess_latency)
 
         # initialization latency
         self.init_latency = init_latency
@@ -91,6 +93,8 @@ class ProfileThroughput(object):
 
     This class records the end-to-end throughput in four categories: data to batched data, pre-processing, inference,
     and post-processing.
+
+    TODO: re-organize
 
     Args:
         batch_formation_throughput (Union[InfoTuple, Iterable]): data to batched data throughput.
@@ -113,24 +117,24 @@ class ProfileThroughput(object):
         """Initializer."""
         # convert latencies to InfoTuple type
         if batch_formation_throughput is None:
-            batch_formation_throughput = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            batch_formation_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(batch_formation_throughput, Iterable):
-            batch_formation_throughput = InfoTuple(tuple(batch_formation_throughput))
+            batch_formation_throughput = InfoTuple(*batch_formation_throughput)
 
         if preprocess_throughput is None:
-            preprocess_throughput = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            preprocess_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(preprocess_throughput, Iterable):
-            preprocess_throughput = InfoTuple(tuple(preprocess_throughput))
+            preprocess_throughput = InfoTuple(*preprocess_throughput)
 
         if inference_throughput is None:
-            inference_throughput = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            inference_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(inference_throughput, Iterable):
-            inference_throughput = InfoTuple(tuple(inference_throughput))
+            inference_throughput = InfoTuple(*inference_throughput)
 
         if postprocess_throughput is None:
-            postprocess_throughput = InfoTuple((float('inf'), float('inf'), float('inf'), float('inf')))
+            postprocess_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
         elif isinstance(postprocess_throughput, Iterable):
-            postprocess_throughput = InfoTuple(tuple(postprocess_throughput))
+            postprocess_throughput = InfoTuple(*postprocess_throughput)
 
         # data to batched data throughput
         self.batch_formation_throughput = batch_formation_throughput
@@ -150,6 +154,7 @@ class DynamicProfileResultBO(object):
         device_name (str): Device name. e.g. Tesla K40c.
         batch (int): Batch size.
         memory (ProfileMemory): Memory.
+        latency (ProfileLatency): Latency.
         throughput (ProfileThroughput): Throughput.
         ip (Optional[str]): IP address. Default to 'localhost' (i.e. 127.0.0.1).
         create_time (Optional[datetime]): Create time. Default to current datetime.
@@ -187,14 +192,14 @@ class DynamicProfileResultBO(object):
             total_memory=self.memory.total_memory,
             memory_usage=self.memory.memory_usage,
             utilization=self.memory.utilization,
-            initialization_latency=self.latency.init_latency.info,
-            preprocess_latency=self.latency.preprocess_latency.info,
-            inference_latency=self.latency.inference_latency.info,
-            postprocess_latency=self.latency.postprocess_latency.info,
-            batch_formation_throughput=self.throughput.batch_formation_throughput.info,
-            preprocess_throughput=self.throughput.preprocess_throughput.info,
-            inference_throughput=self.throughput.inference_throughput.info,
-            postprocess_throughput=self.throughput.postprocess_throughput.info,
+            initialization_latency=self.latency.init_latency.tolist(),
+            preprocess_latency=self.latency.preprocess_latency.tolist(),
+            inference_latency=self.latency.inference_latency.tolist(),
+            postprocess_latency=self.latency.postprocess_latency.tolist(),
+            batch_formation_throughput=self.throughput.batch_formation_throughput.tolist(),
+            preprocess_throughput=self.throughput.preprocess_throughput.tolist(),
+            inference_throughput=self.throughput.inference_throughput.tolist(),
+            postprocess_throughput=self.throughput.postprocess_throughput.tolist(),
             create_time=self.create_time
         )
 
