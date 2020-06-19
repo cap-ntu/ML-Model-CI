@@ -5,7 +5,7 @@ This class contains utility classes used in model service for building model bus
 """
 
 from enum import Enum, unique
-from typing import Tuple, List, Union, Optional, BinaryIO
+from typing import List, Union, Optional, BinaryIO
 
 from mongoengine import GridFSProxy
 
@@ -152,30 +152,28 @@ class IOShape(object):
 
 
 class InfoTuple(object):
-    """A triplet tuple containing min, max and average values of a data over a period of time.
+    """A triplet tuple containing overall, average, 50th percentile, 95th percentile, and 99th percentile values of a
+    data over a period of time.
+
+    Args:
+        avg (float): the average value
+        p5050th percentile, 95th percentile,
+        and 99th percentile values,  of a data.
     """
 
-    def __init__(self, info: Tuple[float, float, float]):
-        """Initializer.
-
-        Args:
-            info (Tuple[float, float, float]): a triplet containing min, max and average values of a data.
-
-        Raise:
-            AssertionError: `info` is not a triplet.
-        """
-        assert len(info) == 3
-        self.min = info[0]
-        self.max = info[1]
-        self.avg = info[2]
+    def __init__(self, avg: float, p50: float, p95: float, p99: float):
+        """Initializer."""
+        self.avg = avg
+        self.p50 = p50
+        self.p95 = p95
+        self.p99 = p99
 
     def tolist(self):
-        """Converting InfoTuple to a list of values.
-        """
-        return [self.min, self.max, self.avg]
+        """Convert to a list of values."""
+        return [self.avg, self.p50, self.p95, self.p99]
 
     def __str__(self):
-        return '({}, {}, {})'.format(self.min, self.max, self.avg)
+        return str(self.tolist())
 
 
 class Weight(object):
@@ -209,7 +207,7 @@ class Weight(object):
             self.content_type = gridfs_file.content_type
             if not lazy_fetch:
                 # lazy fetch
-                self.weight()
+                _ = self.weight
         else:
             self.filename = filename
             self.content_type = content_type

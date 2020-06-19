@@ -13,22 +13,21 @@ from .model_objects import InfoTuple
 
 class ProfileMemory(object):
     """Memory class in dynamic profiling result business object.
+
+    Args:
+        total_memory (int): Total memory in Byte.
+        memory_usage (int): GPU memory used in Byte.
+        utilization (float): GPU utilization.
     """
 
-    def __init__(self, memory: int, cpu_memory: int, gpu_memory: int):
-        """Initializer.
-
-        Args:
-            memory (int): Total memory in Byte.
-            cpu_memory (int): CPU memory in Byte.
-            gpu_memory (int): GPU memory in Byte.
-        """
-        # total memory
-        self.memory = memory
-        # CPU memory
-        self.cpu_memory = cpu_memory
-        # GPU memory
-        self.gpu_memory = gpu_memory
+    def __init__(self, total_memory: int, memory_usage: int, utilization: float):
+        """Initializer."""
+        # total GPU memory
+        self.total_memory = total_memory
+        # GPU memory usage
+        self.memory_usage = memory_usage
+        # GPU utilization
+        self.utilization = utilization
 
 
 class ProfileLatency(object):
@@ -36,35 +35,48 @@ class ProfileLatency(object):
 
     This class records the end-to-end latency in four stages: data engine initialization, pre-processing, inference, and
     post-processing.
+
+    TODO: re-organize
+
+    Args:
+        init_latency (Union[InfoTuple, Iterable]): initialization latency.
+            An `InfoTuple` instance or a iterable instance containing min, max and average throughput.
+        preprocess_latency (Union[InfoTuple, Iterable]): pre-processing latency.
+            Requirements are the same as `init_latency`.
+        inference_latency (Union[InfoTuple, Iterable]): inference latency.
+            Requirements are the same as `init_latency`.
+        postprocess_latency (Union[InfoTuple, Iterable]): post-processing latency.
+            Requirements are the same as `init_latency`.
     """
 
-    def __init__(self,
-                 init_latency: Union[InfoTuple, Iterable],
-                 preprocess_latency: Union[InfoTuple, Iterable],
-                 inference_latency: Union[InfoTuple, Iterable],
-                 postprocess_latency: Union[InfoTuple, Iterable]):
-        """
-        Initializer.
-
-        Args:
-            init_latency (Union[InfoTuple, Iterable]): initialization latency.
-                An `InfoTuple` instance or a iterable instance containing min, max and average throughput.
-            preprocess_latency (Union[InfoTuple, Iterable]): pre-processing latency.
-                Requirements are the same as `init_latency`.
-            inference_latency (Union[InfoTuple, Iterable]): inference latency.
-                Requirements are the same as `init_latency`.
-            postprocess_latency (Union[InfoTuple, Iterable]): post-processing latency.
-                Requirements are the same as `init_latency`.
-        """
+    def __init__(
+            self,
+            init_latency: Union[InfoTuple, Iterable] = None,
+            preprocess_latency: Union[InfoTuple, Iterable] = None,
+            inference_latency: Union[InfoTuple, Iterable] = None,
+            postprocess_latency: Union[InfoTuple, Iterable] = None,
+    ):
+        """Initializer."""
         # convert latencies to InfoTuple type
-        if isinstance(init_latency, Iterable):
-            init_latency = InfoTuple(tuple(init_latency))
-        if isinstance(preprocess_latency, Iterable):
-            preprocess_latency = InfoTuple(tuple(preprocess_latency))
-        if isinstance(inference_latency, Iterable):
-            inference_latency = InfoTuple(tuple(inference_latency))
-        if isinstance(postprocess_latency, Iterable):
-            postprocess_latency = InfoTuple(tuple(postprocess_latency))
+        if init_latency is None:
+            init_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(init_latency, Iterable):
+            init_latency = InfoTuple(*init_latency)
+
+        if preprocess_latency is None:
+            preprocess_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(preprocess_latency, Iterable):
+            preprocess_latency = InfoTuple(*preprocess_latency)
+
+        if inference_latency is None:
+            inference_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(inference_latency, Iterable):
+            inference_latency = InfoTuple(*inference_latency)
+
+        if postprocess_latency is None:
+            postprocess_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(postprocess_latency, Iterable):
+            postprocess_latency = InfoTuple(*postprocess_latency)
 
         # initialization latency
         self.init_latency = init_latency
@@ -81,36 +93,48 @@ class ProfileThroughput(object):
 
     This class records the end-to-end throughput in four categories: data to batched data, pre-processing, inference,
     and post-processing.
+
+    TODO: re-organize
+
+    Args:
+        batch_formation_throughput (Union[InfoTuple, Iterable]): data to batched data throughput.
+            An `InfoTuple` instance or a iterable instance containing min, max and average throughput.
+        preprocess_throughput (Union[InfoTuple, Iterable]): pre-processing throughput.
+            Requirements are the same as `batch_formation_throughput`.
+        inference_throughput (Union[InfoTuple, Iterable]): inference throughput.
+            Requirements are the same as `batch_formation_throughput`.
+        postprocess_throughput (Union[InfoTuple, Iterable]): post-processing throughput.
+            Requirements are the same as `batch_formation_throughput`.
     """
 
-    def __init__(self,
-                 batch_formation_throughput: Union[InfoTuple, Iterable],
-                 preprocess_throughput: Union[InfoTuple, Iterable],
-                 inference_throughput: Union[InfoTuple, Iterable],
-                 postprocess_throughput: Union[InfoTuple, Iterable]
-                 ):
-        """
-        Initializer.
-
-        Args:
-            batch_formation_throughput (Union[InfoTuple, Iterable]): data to batched data throughput.
-                An `InfoTuple` instance or a iterable instance containing min, max and average throughput.
-            preprocess_throughput (Union[InfoTuple, Iterable]): pre-processing throughput.
-                Requirements are the same as `batch_formation_throughput`.
-            inference_throughput (Union[InfoTuple, Iterable]): inference throughput.
-                Requirements are the same as `batch_formation_throughput`.
-            postprocess_throughput (Union[InfoTuple, Iterable]): post-processing throughput.
-                Requirements are the same as `batch_formation_throughput`.
-        """
+    def __init__(
+            self,
+            batch_formation_throughput: Union[InfoTuple, Iterable] = None,
+            preprocess_throughput: Union[InfoTuple, Iterable] = None,
+            inference_throughput: Union[InfoTuple, Iterable] = None,
+            postprocess_throughput: Union[InfoTuple, Iterable] = None,
+    ):
+        """Initializer."""
         # convert latencies to InfoTuple type
-        if isinstance(batch_formation_throughput, Iterable):
-            batch_formation_throughput = InfoTuple(tuple(batch_formation_throughput))
-        if isinstance(preprocess_throughput, Iterable):
-            preprocess_throughput = InfoTuple(tuple(preprocess_throughput))
-        if isinstance(inference_throughput, Iterable):
-            inference_throughput = InfoTuple(tuple(inference_throughput))
-        if isinstance(postprocess_throughput, Iterable):
-            postprocess_throughput = InfoTuple(tuple(postprocess_throughput))
+        if batch_formation_throughput is None:
+            batch_formation_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(batch_formation_throughput, Iterable):
+            batch_formation_throughput = InfoTuple(*batch_formation_throughput)
+
+        if preprocess_throughput is None:
+            preprocess_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(preprocess_throughput, Iterable):
+            preprocess_throughput = InfoTuple(*preprocess_throughput)
+
+        if inference_throughput is None:
+            inference_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(inference_throughput, Iterable):
+            inference_throughput = InfoTuple(*inference_throughput)
+
+        if postprocess_throughput is None:
+            postprocess_throughput = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+        elif isinstance(postprocess_throughput, Iterable):
+            postprocess_throughput = InfoTuple(*postprocess_throughput)
 
         # data to batched data throughput
         self.batch_formation_throughput = batch_formation_throughput
@@ -124,29 +148,30 @@ class ProfileThroughput(object):
 
 class DynamicProfileResultBO(object):
     """Dynamic profiling result business object.
+
+    Args:
+        device_id (str): Device ID. e.g. cuda:0.
+        device_name (str): Device name. e.g. Tesla K40c.
+        batch (int): Batch size.
+        memory (ProfileMemory): Memory.
+        latency (ProfileLatency): Latency.
+        throughput (ProfileThroughput): Throughput.
+        ip (Optional[str]): IP address. Default to 'localhost' (i.e. 127.0.0.1).
+        create_time (Optional[datetime]): Create time. Default to current datetime.
     """
 
-    def __init__(self,
-                 device_id: str,
-                 device_name: str,
-                 batch: int,
-                 memory: ProfileMemory,
-                 latency: ProfileLatency,
-                 throughput: ProfileThroughput,
-                 ip: str = '127.0.0.1',
-                 create_time: datetime = datetime.now()):
-        """
-        Initializer.
-
-        Args:
-            device_id (str): Device ID. e.g. cuda:0.
-            device_name (str): Device name. e.g. Tesla K40c.
-            batch (int): Batch size.
-            memory (ProfileMemory): Memory.
-            throughput (ProfileThroughput): Throughput.
-            ip (Optional[str]): IP address. Default to 'localhost' (i.e. 127.0.0.1).
-            create_time (Optional[datetime]): Create time. Default to current datetime.
-        """
+    def __init__(
+            self,
+            device_id: str,
+            device_name: str,
+            batch: int,
+            memory: ProfileMemory,
+            latency: ProfileLatency,
+            throughput: ProfileThroughput,
+            ip: str = '127.0.0.1',
+            create_time: datetime = datetime.now()
+    ):
+        """Initializer."""
         # IP address
         self.ip = ipaddress.ip_address(ip)
         self.device_id = device_id
@@ -158,16 +183,15 @@ class DynamicProfileResultBO(object):
         self.create_time = create_time
 
     def to_dynamic_profile_result_po(self):
-        """Convert business object to plain object for persistence.
-        """
+        """Convert business object to plain object for persistence."""
         dpr_po = DynamicProfileResultDO(
             ip=str(self.ip),
             device_id=self.device_id,
             device_name=self.device_name,
             batch=self.batch,
-            memory=self.memory.memory,
-            cpu_memory=self.memory.cpu_memory,
-            gpu_memory=self.memory.gpu_memory,
+            total_memory=self.memory.total_memory,
+            memory_usage=self.memory.memory_usage,
+            utilization=self.memory.utilization,
             initialization_latency=self.latency.init_latency.tolist(),
             preprocess_latency=self.latency.preprocess_latency.tolist(),
             inference_latency=self.latency.inference_latency.tolist(),
@@ -201,9 +225,9 @@ class DynamicProfileResultBO(object):
             device_name=dpr_po.device_name,
             batch=dpr_po.batch,
             memory=ProfileMemory(
-                memory=dpr_po.memory,
-                cpu_memory=dpr_po.cpu_memory,
-                gpu_memory=dpr_po.gpu_memory
+                total_memory=dpr_po.total_memory,
+                memory_usage=dpr_po.memory_usage,
+                utilization=dpr_po.utilization
             ),
             latency=ProfileLatency(
                 init_latency=dpr_po.initialization_latency,

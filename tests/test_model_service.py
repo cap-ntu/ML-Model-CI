@@ -11,7 +11,7 @@ from modelci.types.bo import (
     ModelVersion,
     IOShape,
     Weight,
-    StaticProfileResultBO,
+    StaticProfileResultBO, InfoTuple,
 )
 from modelci.types.trtis_objects import ModelInputFormat
 
@@ -83,30 +83,81 @@ def test_register_static_profiling_result():
 
 def test_register_dynamic_profiling_result():
     model = ModelService.get_models_by_name('ResNet50')[0]
-    dpr = DynamicProfileResultBO('gpu:01', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 1000),
-                                 ProfileLatency((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
-                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    dummy_info_tuple = InfoTuple(avg=1, p50=1, p95=1, p99=1)
+    dpr = DynamicProfileResultBO(
+        device_id='gpu:01',
+        device_name='Tesla K40c',
+        batch=1,
+        memory=ProfileMemory(1000, 1000, 0.5),
+        latency=ProfileLatency(
+            init_latency=dummy_info_tuple,
+            preprocess_latency=dummy_info_tuple,
+            inference_latency=dummy_info_tuple,
+            postprocess_latency=dummy_info_tuple,
+        ),
+        throughput=ProfileThroughput(
+            batch_formation_throughput=dummy_info_tuple,
+            preprocess_throughput=dummy_info_tuple,
+            inference_throughput=dummy_info_tuple,
+            postprocess_throughput=dummy_info_tuple,
+        )
+    )
     assert ModelService.append_dynamic_profiling_result(model.id, dpr)
 
 
 def test_update_dynamic_profiling_result():
     model = ModelService.get_models_by_name('ResNet50')[0]
-    dpr = DynamicProfileResultBO('gpu:01', 'Tesla K40c', 1, ProfileMemory(1000, 2000, 1000),
-                                 ProfileLatency((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
-                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    dummy_info_tuple = InfoTuple(avg=1, p50=1, p95=1, p99=1)
+    updated_info_tuple = InfoTuple(avg=1, p50=2, p95=1, p99=1)
+    dpr = DynamicProfileResultBO(
+        device_id='gpu:01',
+        device_name='Tesla K40c',
+        batch=1,
+        memory=ProfileMemory(1000, 2000, 0.5),
+        latency=ProfileLatency(
+            init_latency=dummy_info_tuple,
+            preprocess_latency=dummy_info_tuple,
+            inference_latency=updated_info_tuple,
+            postprocess_latency=dummy_info_tuple,
+        ),
+        throughput=ProfileThroughput(
+            batch_formation_throughput=dummy_info_tuple,
+            preprocess_throughput=dummy_info_tuple,
+            inference_throughput=dummy_info_tuple,
+            postprocess_throughput=dummy_info_tuple,
+        )
+    )
     # check update
     assert ModelService.update_dynamic_profiling_result(model.id, dpr)
     # check result
     model = ModelService.get_models_by_name('ResNet50')[0]
-    assert model.profile_result.dynamic_results[0].memory.cpu_memory == 2000
+    assert model.profile_result.dynamic_results[0].memory.memory_usage == 2000
+    assert model.profile_result.dynamic_results[0].latency.inference_latency.p50 == 2
 
 
 def test_delete_dynamic_profiling_result():
     model = ModelService.get_models_by_name('ResNet50')[0]
+    dummy_info_tuple1 = InfoTuple(avg=1, p50=1, p95=1, p99=2)
+    dummy_info_tuple2 = InfoTuple(avg=1, p50=1, p95=1, p99=1)
 
-    dpr = DynamicProfileResultBO('gpu:02', 'Tesla K40c', 1, ProfileMemory(1000, 1000, 1000),
-                                 ProfileLatency((1, 1, 2), (1, 1, 1), (1, 1, 1), (1, 1, 1)),
-                                 ProfileThroughput((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1)))
+    dpr = DynamicProfileResultBO(
+        device_id='gpu:02',
+        device_name='Tesla K40c',
+        batch=1,
+        memory=ProfileMemory(1000, 1000, 0.5),
+        latency=ProfileLatency(
+            init_latency=dummy_info_tuple1,
+            preprocess_latency=dummy_info_tuple2,
+            inference_latency=dummy_info_tuple2,
+            postprocess_latency=dummy_info_tuple2,
+        ),
+        throughput=ProfileThroughput(
+            batch_formation_throughput=dummy_info_tuple2,
+            preprocess_throughput=dummy_info_tuple2,
+            inference_throughput=dummy_info_tuple2,
+            postprocess_throughput=dummy_info_tuple2,
+        )
+    )
     ModelService.append_dynamic_profiling_result(model.id, dpr)
 
     # reload

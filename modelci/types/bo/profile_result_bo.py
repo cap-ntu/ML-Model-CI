@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import List
 
 from modelci.types.do import ProfileResultDO
 from .dynamic_profile_result_bo import DynamicProfileResultBO
@@ -12,7 +12,7 @@ class ProfileResultBO(object):
     def __init__(
             self,
             static_result: StaticProfileResultBO,
-            dynamic_results: Iterable[DynamicProfileResultBO] = None
+            dynamic_results: List[DynamicProfileResultBO] = None
     ):
         """
         Initializer.
