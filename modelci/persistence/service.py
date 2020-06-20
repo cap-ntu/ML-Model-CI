@@ -3,7 +3,7 @@ from typing import Union
 
 from bson import ObjectId
 
-from modelci.types.bo import DynamicProfileResultBO, ModelBO, Framework, Engine, StaticProfileResultBO
+from modelci.types.bo import DynamicProfileResultBO, ModelBO, Framework, Engine, StaticProfileResultBO, ModelVersion
 from . import mongo
 from .exceptions import ServiceException
 from .model_dao import ModelDAO
@@ -13,16 +13,23 @@ class ModelService(object):
     __model_DAO = ModelDAO
 
     @classmethod
-    def get_models_by_name(cls, name: str, framework: Framework = None, engine: Engine = None):
-        """Get a list of model BO given name
+    def get_models_by_name(
+            cls,
+            name: str,
+            framework: Framework = None,
+            engine: Engine = None,
+            version: ModelVersion = None
+    ):
+        """Get a list of model BO given primary key(s).
 
         Args:
             name (str): model name for searching
             framework (Framework): model framework. Default to None, having no effect on the searching result.
             engine (Engine): model engine. Default to None, having no effect on the searching result.
+            version (ModelVersion): model version. Default to None, having no effect on the searching result.
 
         Return:
-            A list of `ModelBO`
+            A list of `ModelBO`.
         """
         # build kwargs
         kwargs = dict()
@@ -30,6 +37,8 @@ class ModelService(object):
             kwargs['framework'] = framework.value
         if engine is not None:
             kwargs['engine'] = engine.value
+        if version is not None:
+            kwargs['version'] = version.ver
 
         model_pos = cls.__model_DAO.get_models_by_name(name=name, **kwargs)
         models = list(map(ModelBO.from_model_po, model_pos))
