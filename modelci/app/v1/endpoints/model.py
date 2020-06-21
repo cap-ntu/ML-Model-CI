@@ -7,7 +7,7 @@ Date: 6/20/2020
 """
 from fastapi import APIRouter
 
-from modelci.types.ao.model_ao import ModelOut
+from modelci.types.vo.model_ao import ModelOut
 
 router = APIRouter()
 

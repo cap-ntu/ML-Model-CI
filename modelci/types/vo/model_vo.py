@@ -14,14 +14,14 @@ from modelci.types.bo import Framework, Engine, Status
 from modelci.types.trtis_objects import ModelInputFormat
 
 
-class IOShapeAO(BaseModel):
+class IOShapeVO(BaseModel):
     shape: List[int]
     dtype: str
     name: str = None
     format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
 
 
-class ProfileResultAO(BaseModel):
+class ProfileResultVO(BaseModel):
     pass
 
 
@@ -34,9 +34,9 @@ class ModelOut(BaseModel):
     dataset: str
     acc: float
     task: str
-    inputs: List[IOShapeAO]
-    outputs: List[IOShapeAO]
-    profile_result: ProfileResultAO
+    inputs: List[IOShapeVO]
+    outputs: List[IOShapeVO]
+    profile_result: ProfileResultVO
     status: Status
     create_time: datetime
 
@@ -45,8 +45,8 @@ class ModelIn(BaseModel):
     dataset: str
     acc: float
     task: str
-    inputs: List[IOShapeAO]
-    outputs: List[IOShapeAO]
+    inputs: List[IOShapeVO]
+    outputs: List[IOShapeVO]
     architecture: str
     framework: Framework
     version: int

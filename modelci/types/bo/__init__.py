@@ -15,6 +15,7 @@ __all__ = [
     'IOShape',
     'InfoTuple',
     'StaticProfileResultBO',
+    'Status',
     'ProfileLatency',
     'ProfileMemory',
     'ProfileThroughput',
