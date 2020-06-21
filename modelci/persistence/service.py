@@ -13,7 +13,7 @@ class ModelService(object):
     __model_DAO = ModelDAO
 
     @classmethod
-    def get_models_by_name(
+    def get_models(
             cls,
             name: str,
             framework: Framework = None,

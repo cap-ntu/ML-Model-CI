@@ -59,7 +59,7 @@ Once the testing data and the client are ready, you can instance a ModelCI Profi
 
 ```python
 from modelci.hub.client.tfs_client import CVTFSClient
-from modelci.hub.deployer.serving import retrieve_model_by_name
+from modelci.hub.deployer.serving import retrieve_model
 from modelci.hub.profiler import Profiler
 from modelci.types.bo import Engine, Framework
 
@@ -68,7 +68,7 @@ test_img_bytes = ...
 # init clients for different serving platforms, you can custom a client by implementing the BaseModelInspector class.
 tfs_client = CVTFSClient(test_img_bytes, batch_num=100, batch_size=32, asynchronous=False)
 # get the model info from model manager.
-mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
+mode_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
 # init a profiler.
 profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
 # start profiling.

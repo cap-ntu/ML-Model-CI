@@ -9,7 +9,7 @@ from docker.models.containers import Container
 from docker.types import Mount, Ulimit
 
 from modelci.hub.deployer import config
-from modelci.hub.manager import retrieve_model_by_name, retrieve_model_by_task
+from modelci.hub.manager import retrieve_model, retrieve_model_by_task
 from modelci.hub.utils import parse_path
 from modelci.types.bo import Framework, Engine
 from modelci.utils.misc import remove_dict_null
@@ -109,7 +109,7 @@ def serve_by_name(args):
     framework = Framework[args.framework.upper()]
     engine = Engine[args.engine.upper()]
 
-    model_bo = retrieve_model_by_name(architecture_name=model, framework=framework, engine=engine)
+    model_bo = retrieve_model(architecture_name=model, framework=framework, engine=engine)
     serve(model_bo.saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
 

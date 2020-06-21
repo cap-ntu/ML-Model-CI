@@ -33,7 +33,7 @@ def test_register_model():
 
 
 def test_get_model_by_name():
-    models = ModelService.get_models_by_name('ResNet50')
+    models = ModelService.get_models('ResNet50')
 
     # check length
     assert len(models) == 1
@@ -53,7 +53,7 @@ def test_get_model_by_task():
 
 
 def test_get_model_by_id():
-    model_bo = ModelService.get_models_by_name('ResNet50')[0]
+    model_bo = ModelService.get_models('ResNet50')[0]
     model = ModelService.get_model_by_id(model_bo.id)
 
     # check model id
@@ -61,14 +61,14 @@ def test_get_model_by_id():
 
 
 def test_update_model():
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     model.acc = 0.9
     model.weight.weight = bytes([123, 255])
 
     # check if update success
     assert ModelService.update_model(model)
 
-    model_ = ModelService.get_models_by_name('ResNet50')[0]
+    model_ = ModelService.get_models('ResNet50')[0]
 
     # check updated model
     assert abs(model_.acc - 0.9) < 1e-6
@@ -76,13 +76,13 @@ def test_update_model():
 
 
 def test_register_static_profiling_result():
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     spr = StaticProfileResultBO(5000, 200000, 200000, 10000, 10000, 10000)
     assert ModelService.register_static_profiling_result(model.id, spr)
 
 
 def test_register_dynamic_profiling_result():
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     dummy_info_tuple = InfoTuple(avg=1, p50=1, p95=1, p99=1)
     dpr = DynamicProfileResultBO(
         device_id='gpu:01',
@@ -106,7 +106,7 @@ def test_register_dynamic_profiling_result():
 
 
 def test_update_dynamic_profiling_result():
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     dummy_info_tuple = InfoTuple(avg=1, p50=1, p95=1, p99=1)
     updated_info_tuple = InfoTuple(avg=1, p50=2, p95=1, p99=1)
     dpr = DynamicProfileResultBO(
@@ -130,13 +130,13 @@ def test_update_dynamic_profiling_result():
     # check update
     assert ModelService.update_dynamic_profiling_result(model.id, dpr)
     # check result
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     assert model.profile_result.dynamic_results[0].memory.memory_usage == 2000
     assert model.profile_result.dynamic_results[0].latency.inference_latency.p50 == 2
 
 
 def test_delete_dynamic_profiling_result():
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     dummy_info_tuple1 = InfoTuple(avg=1, p50=1, p95=1, p99=2)
     dummy_info_tuple2 = InfoTuple(avg=1, p50=1, p95=1, p99=1)
 
@@ -161,7 +161,7 @@ def test_delete_dynamic_profiling_result():
     ModelService.append_dynamic_profiling_result(model.id, dpr)
 
     # reload
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     dpr_bo = model.profile_result.dynamic_results[0]
     dpr_bo2 = model.profile_result.dynamic_results[1]
 
@@ -169,7 +169,7 @@ def test_delete_dynamic_profiling_result():
     assert ModelService.delete_dynamic_profiling_result(model.id, dpr_bo.ip, dpr_bo.device_id)
 
     # check result
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     assert len(model.profile_result.dynamic_results) == 1
 
     dpr_left = model.profile_result.dynamic_results[0]
@@ -177,7 +177,7 @@ def test_delete_dynamic_profiling_result():
 
 
 def test_delete_model():
-    model = ModelService.get_models_by_name('ResNet50')[0]
+    model = ModelService.get_models('ResNet50')[0]
     assert ModelService.delete_model_by_id(model.id)
 
 

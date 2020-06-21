@@ -249,18 +249,24 @@ def get_remote_model_weight(model: ModelBO):
     return save_path
 
 
-def retrieve_model_by_name(architecture_name: str = 'ResNet50', framework: Framework = None, engine: Engine = None):
-    """Query a model by name, framework or engine.
+def retrieve_model(
+        architecture_name: str = 'ResNet50',
+        framework: Framework = None,
+        engine: Engine = None,
+        version: ModelVersion = None,
+):
+    """Query a model by name, framework, engine or version.
     Arguments:
         architecture_name (str): Model architecture name.
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
+        version (ModelVersion): Model version. Default to None.
     Returns:
         ModelBO: Model business object.
     """
 
     # retrieve
-    models = ModelService.get_models_by_name(architecture_name, framework=framework, engine=engine)
+    models = ModelService.get_models(architecture_name, framework=framework, engine=engine, version=version)
     # check if found
     if len(models) == 0:
         raise FileNotFoundError('Model not found!')

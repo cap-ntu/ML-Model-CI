@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 from modelci.hub.client.tfs_client import CVTFSClient
-from modelci.hub.manager import retrieve_model_by_name
+from modelci.hub.manager import retrieve_model
 from modelci.hub.profiler import Profiler
 from modelci.types.bo import Engine, Framework
 
@@ -40,8 +40,8 @@ if __name__ == "__main__":
     # model_path = '../resnet50_explicit_path.yml'
     # register_model_from_yaml(model_path)
 
-    mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH,
-                                       engine=Engine.TORCHSCRIPT)
+    mode_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH,
+                               engine=Engine.TORCHSCRIPT)
     profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
     profiler.diagnose()
     # profiler.diagnose(batch_size=1) # you can use a new batch_size to overwrite the client's.
