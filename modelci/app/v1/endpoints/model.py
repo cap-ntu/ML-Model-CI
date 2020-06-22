@@ -5,6 +5,8 @@ Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 6/20/2020
 """
+from typing import List
+
 from fastapi import APIRouter
 
 from modelci.persistence.service import ModelService
@@ -14,11 +16,13 @@ from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut
 router = APIRouter()
 
 
-@router.get('/', response_model=ModelListOut)
+@router.get('/', response_model=List[ModelListOut])
 def get_all_model(name: str = None, framework: Framework = None, engine: Engine = None, version: int = None):
-    return ModelService.get_models(name=name, framework=framework, engine=engine, version=version)
+    models = ModelService.get_models(name=name, framework=framework, engine=engine, version=version)
+    return list(map(ModelListOut.from_bo, models))
 
 
 @router.get('/{id}', response_model=ModelDetailOut)
 def get_model(*, id: str):
-    ModelService.get_model_by_id(id)
+    model = ModelService.get_model_by_id(id)
+    return ModelDetailOut.from_bo(model)

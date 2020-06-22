@@ -152,7 +152,7 @@ class ModelBO(object):
             inputs=inputs, outputs=outputs, task=model_do.task,
             status=Status(model_do.status), create_time=model_do.create_time
         )
-        model._id = model_do.id
+        model._id = str(model_do.id)
 
         model.weight = Weight(gridfs_file=model_do.weight, lazy_fetch=lazy_fetch)
 
