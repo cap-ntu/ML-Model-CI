@@ -21,11 +21,65 @@ class IOShapeVO(BaseModel):
     format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
 
 
+class InfoTupleVO(BaseModel):
+    avg: float
+    p50: float
+    p95: float
+    p99: float
+
+
+class ProfileMemoryVO(BaseModel):
+    total_memory: int
+    memory_usage: int
+    utilization: float
+
+
+class ProfileLatencyVO(BaseModel):
+    init_latency: InfoTupleVO
+    preprocess_latency: InfoTupleVO
+    inference_latency: InfoTupleVO
+    postprocess_latency: InfoTupleVO
+
+
+class ProfileThroughputVO(BaseModel):
+    batch_formation_throughput: InfoTupleVO
+    preprocess_throughput: InfoTupleVO
+    inference_throughput: InfoTupleVO
+    postprocess_throughput: InfoTupleVO
+
+
+class DynamicResultVO(BaseModel):
+    device_id: str
+    device_name: str
+    batch: int
+    memory: ProfileMemoryVO
+    latency: ProfileLatencyVO
+    throughput: ProfileThroughputVO
+    ip: str
+    create_time: datetime
+
+
 class ProfileResultVO(BaseModel):
-    pass
+    static_result: str
+    dynamic_results: List[DynamicResultVO]
 
 
-class ModelOut(BaseModel):
+class ModelListOut(BaseModel):
+    id: str
+    name: str
+    framework: Framework
+    engine: Engine
+    version: int
+    dataset: str
+    acc: float
+    task: str
+    inputs: List[IOShapeVO]
+    outputs: List[IOShapeVO]
+    status: Status
+    create_time: datetime
+
+
+class ModelDetailOut(BaseModel):
     id: str
     name: str
     framework: Framework

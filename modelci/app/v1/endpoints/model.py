@@ -7,11 +7,18 @@ Date: 6/20/2020
 """
 from fastapi import APIRouter
 
-from modelci.types.vo.model_ao import ModelOut
+from modelci.persistence.service import ModelService
+from modelci.types.bo import Framework, Engine
+from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut
 
 router = APIRouter()
 
 
-@router.get('/{id}', response_model=ModelOut)
-def get_model(*, id: int):
-    pass
+@router.get('/', response_model=ModelListOut)
+def get_all_model(name: str = None, framework: Framework = None, engine: Engine = None, version: int = None):
+    return ModelService.get_models(name=name, framework=framework, engine=engine, version=version)
+
+
+@router.get('/{id}', response_model=ModelDetailOut)
+def get_model(*, id: str):
+    ModelService.get_model_by_id(id)
