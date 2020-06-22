@@ -166,7 +166,7 @@ class ModelService(object):
             id_ (str): ID of the object
 
         Return:
-            bool: True for successful, False otherwise
+            int: Number of affected record.
         """
         id_ = ObjectId(id_)
         model_po = cls.__model_DAO.get_model_by_id(id_)
