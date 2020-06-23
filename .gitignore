@@ -137,5 +137,8 @@ dmypy.json
 .DS_Store
 
 # Idea
-
 .idea/
+
+# proto
+**/*_pb2.py
+**/*_pb2_grpc.py
