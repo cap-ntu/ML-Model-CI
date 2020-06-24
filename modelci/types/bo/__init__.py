@@ -19,5 +19,6 @@ __all__ = [
     'ProfileLatency',
     'ProfileMemory',
     'ProfileThroughput',
+    'ProfileResultBO',
     'Weight'
 ]

@@ -6,13 +6,49 @@ Email: yli056@e.ntu.edu.sg
 Date: 6/19/2020
 """
 from datetime import datetime
+from enum import Enum
 from typing import List
 
 from pydantic import BaseModel
 
-from modelci.types.bo import Framework, Engine, Status, ModelBO, IOShape, ProfileResultBO, DynamicProfileResultBO, \
-    InfoTuple, ProfileMemory, ProfileLatency, ProfileThroughput
-from modelci.types.trtis_objects import ModelInputFormat
+from modelci.types.bo import (
+    ModelBO,
+    IOShape,
+    ProfileResultBO,
+    DynamicProfileResultBO,
+    InfoTuple,
+    ProfileMemory,
+    ProfileLatency,
+    ProfileThroughput,
+)
+
+
+class ModelInputFormat(str, Enum):
+    FORMAT_NONE = 'FORMAT_NONE'
+    FORMAT_NHWC = 'FORMAT_NHWC'
+    FORMAT_NCHW = 'FORMAT_NCHW'
+
+
+class Framework(str, Enum):
+    TENSORFLOW = 'TENSORFLOW'
+    PYTORCH = 'PYTORCH'
+
+
+class Engine(str, Enum):
+    NONE = 'NONE'
+    TFS = 'TFS'
+    TORCHSCRIPT = 'TORCHSCRIPT'
+    ONNX = 'ONNX'
+    TRT = 'TRT'
+    TVM = 'TVM'
+    CUSTOMIZED = 'CUSTOMIZED'
+
+
+class Status(str, Enum):
+    UNKNOWN = 'UNKNOWN'
+    PASS = 'PASS'
+    RUNNING = 'RUNNING'
+    FAIL = 'FAIL'
 
 
 class IOShapeVO(BaseModel):
@@ -23,7 +59,9 @@ class IOShapeVO(BaseModel):
 
     @staticmethod
     def from_bo(io_shape: IOShape):
-        return IOShapeVO(**vars(io_shape))
+        io_shape_data = vars(io_shape)
+        io_shape_data['format'] = ModelInputFormat(io_shape.format.name)
+        return IOShapeVO(**io_shape_data)
 
 
 class InfoTupleVO(BaseModel):
@@ -138,15 +176,15 @@ class ModelListOut(BaseModel):
         return ModelListOut(
             id=model_bo.id,
             name=model_bo.name,
-            framework=model_bo.framework,
-            engine=model_bo.engine,
+            framework=Framework(model_bo.framework.name),
+            engine=Engine(model_bo.engine.name),
             version=str(model_bo.version),
             dataset=model_bo.dataset,
             acc=model_bo.acc,
             task=model_bo.task,
             inputs=list(map(IOShapeVO.from_bo, model_bo.inputs)),
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
-            status=model_bo.status,
+            status=Status(model_bo.status.name),
             create_time=model_bo.create_time,
         )
 
@@ -171,8 +209,8 @@ class ModelDetailOut(BaseModel):
         return ModelDetailOut(
             id=model_bo.id,
             name=model_bo.name,
-            framework=model_bo.framework,
-            engine=model_bo.engine,
+            framework=Framework(model_bo.framework.name),
+            engine=Engine(model_bo.engine.name),
             version=str(model_bo.version),
             dataset=model_bo.dataset,
             acc=model_bo.acc,
@@ -180,7 +218,7 @@ class ModelDetailOut(BaseModel):
             inputs=list(map(IOShapeVO.from_bo, model_bo.inputs)),
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
-            status=model_bo.status,
+            status=Status(model_bo.status.name),
             create_time=model_bo.create_time,
         )
 

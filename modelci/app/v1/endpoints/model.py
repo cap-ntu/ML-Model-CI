@@ -11,13 +11,18 @@ from fastapi import APIRouter
 
 from modelci.persistence.service import ModelService
 from modelci.types.bo import Framework, Engine
-from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut
+from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_
 
 router = APIRouter()
 
 
 @router.get('/', response_model=List[ModelListOut])
-def get_all_model(name: str = None, framework: Framework = None, engine: Engine = None, version: int = None):
+def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, version: int = None):
+    if framework is not None:
+        framework = Framework[framework]
+    if engine is not None:
+        engine = Engine[engine]
+
     models = ModelService.get_models(name=name, framework=framework, engine=engine, version=version)
     return list(map(ModelListOut.from_bo, models))
 
