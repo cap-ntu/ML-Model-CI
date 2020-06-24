@@ -110,12 +110,12 @@ def serve_by_name(args):
     engine = Engine[args.engine.upper()]
 
     model_bo = retrieve_model(architecture_name=model, framework=framework, engine=engine)
-    serve(model_bo.saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
 
 def serve_by_task(args):
     model_bo = retrieve_model_by_task(task=args.task)
-    serve(model_bo.saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
 
 if __name__ == '__main__':
@@ -127,15 +127,15 @@ if __name__ == '__main__':
     by_name_parser.add_argument('-f', '--framework', type=str, required=True, help='Framework name')
     by_name_parser.add_argument('-e', '--engine', type=str, required=True, help='Engine name')
     by_name_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
-    by_name_parser.add_argument('--name', type=str, default=None, help='Serving Docker container name.')
+    by_name_parser.add_argument('--name', type=str, help='Serving Docker container name.')
     by_name_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
     by_name_parser.set_defaults(func=serve_by_name)
 
     by_task_parser = subparsers.add_parser('task', help='Serving by task')
     by_task_parser.add_argument('--task', type=str, required=True, help='task name')
     by_task_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
-    by_name_parser.add_argument('--name', type=str, default=None, help='Serving Docker container name.')
-    by_name_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
+    by_task_parser.add_argument('--name', type=str, help='Serving Docker container name.')
+    by_task_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
     by_task_parser.set_defaults(func=serve_by_task)
 
     # parse argument

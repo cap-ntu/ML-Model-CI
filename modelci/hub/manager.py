@@ -4,9 +4,15 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, Union, List
 
+import cv2
 import yaml
 
+from modelci.hub.client.onnx_client import CVONNXClient
+from modelci.hub.client.tfs_client import CVTFSClient
+from modelci.hub.client.torch_client import CVTorchClient
+from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
+from modelci.hub.profiler import Profiler
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
@@ -24,7 +30,7 @@ def register_model(
         engine: Engine = None,
         version: ModelVersion = None,
         convert=True,
-        profile=False,
+        profile=True,
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
@@ -49,6 +55,8 @@ def register_model(
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
     """
+    from modelci.hub.deployer.serving import serve
+
     model_dir_list = list()
     if not convert:
         # type and existence check
@@ -105,9 +113,28 @@ def register_model(
 
             ModelService.post_model(model)
 
+        # profile registered model
         if profile:
-            # TODO(lym): profile
-            pass
+            test_img_bytes = cv2.imread('../../cat.jpg')
+
+            kwargs = {'repeat_data': test_img_bytes, 'batch_size': 32, 'batch_num': 100, 'asynchronous': False}
+            engine_mapper = {
+                Engine.TORCHSCRIPT: CVTorchClient,
+                Engine.TFS: CVTFSClient,
+                Engine.ONNX: CVONNXClient,
+                Engine.TRT: CVTRTClient,
+            }
+            client = engine_mapper[engine](**kwargs)
+            container = serve(save_path=model_dir, device='cuda')
+
+            # todo
+            profiler = Profiler(model_info=model, server_name=container.name, inspector=client)
+
+            result = profiler.diagnose()
+
+            print(result)
+
+            container.stop()
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):
@@ -282,17 +309,18 @@ def retrieve_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-):
+) -> List[ModelBO]:
     """Query a model by name, framework, engine or version.
+
     Arguments:
         architecture_name (str): Model architecture name.
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
         version (ModelVersion): Model version. Default to None.
-    Returns:
-        ModelBO: Model business object.
-    """
 
+    Returns:
+        List[ModelBO]: A list of model business object.
+    """
     # retrieve
     models = ModelService.get_models(architecture_name, framework=framework, engine=engine, version=version)
     # check if found
@@ -304,13 +332,15 @@ def retrieve_model(
     return models
 
 
-def retrieve_model_by_task(task='image classification') -> ModelBO:
+def retrieve_model_by_task(task: str = 'image classification') -> List[ModelBO]:
     """Query a model by task.
     This function will download a cache model from the model DB.
+
     Arguments:
         task (str): Task name. Default to "image classification"
+
     Returns:
-        ModelBo: Model business object.
+        List[ModelBO]: A list of model business object.
     """
     # retrieve
     models = ModelService.get_models_by_task(task)
