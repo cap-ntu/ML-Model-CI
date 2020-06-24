@@ -141,13 +141,13 @@ We search for a converted model and then dispatch it to a device with a specific
 
 ```python
 from modelci.hub.deployer import serve
-from modelci.hub.manager import retrieve_model_by_name
+from modelci.hub.manager import retrieve_model
 from modelci.types.bo import Framework, Engine
 
 model_info = ...
 
 # get saved model information
-mode_info = retrieve_model_by_name(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
+mode_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
 
 # deploy the model to cuda device 0.
 serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 

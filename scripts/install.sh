@@ -53,6 +53,10 @@ conda activate modelci
 info_echo "Installing Triton client API..."
 error_capture scripts/install.trtis_client.sh all
 
+# Generating proto
+info_echo "Generating gRPC code..."
+python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. modelci/types/proto/service.proto
+
 # Pull docker images
 info_echo "Pulling Docker images..."
 error_capture scripts/install.pull_docker_images.sh none "${log_path}"

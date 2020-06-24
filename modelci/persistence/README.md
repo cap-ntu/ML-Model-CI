@@ -42,7 +42,7 @@ See test `test/test_model_service.test_register_model`.
 from modelci.persistence.service import ModelService
 
 model_service = ModelService()
-models = model_service.get_models_by_name('ResNet50')
+models = model_service.get_models_by_pk('ResNet50')
 ```
 See test `test/test_model_service.test_get_model_by_name`.
 

@@ -142,7 +142,7 @@ class IOShape(object):
             name=io_shape_po.name,
             shape=io_shape_po.shape,
             dtype=io_shape_po.dtype,
-            format=io_shape_po.format
+            format=ModelInputFormat(io_shape_po.format)
         )
 
         return io_shape_bo

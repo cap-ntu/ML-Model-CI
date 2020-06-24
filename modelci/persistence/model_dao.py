@@ -51,18 +51,19 @@ class ModelDAO(object):
         return ModelDO.objects(id=id_).first()
 
     @staticmethod
-    def get_models_by_name(name: str, **kwargs) -> List[ModelDO]:
+    def get_models(**kwargs) -> List[ModelDO]:
         """Get a list of model plain object given model name, framework and engine.
 
         Args:
-            name (str): model name.
             kwargs (dict): A dictionary of arguments:
-                framework: model framework.
-                engine: model engine.
+                name (str): model name.
+                framework: Model framework.
+                engine: Model engine.
+                version: Model version.
         Return:
             List[ModelDO]: A list of model plain objects.
         """
-        return ModelDO.objects(name=name, **kwargs)
+        return ModelDO.objects(**kwargs).order_by('name', 'framework', 'engine', '-version')
 
     @staticmethod
     def get_models_by_task(task: str) -> List[ModelDO]:

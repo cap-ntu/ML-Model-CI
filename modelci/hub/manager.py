@@ -1,3 +1,4 @@
+import os
 import subprocess
 from functools import partial
 from pathlib import Path
@@ -235,8 +236,10 @@ def get_remote_model_weight(model: ModelBO):
             f.write(model.weight.weight)
         if model.engine == Engine.TFS:
             subprocess.call(['unzip', save_path, '-d', '/'])
+            os.remove(save_path)
         elif Engine.TRT:
             subprocess.call(['unzip', save_path, '-d', '/'])
+            os.remove(save_path)
 
             TRTConverter.generate_trt_config(
                 save_path.parent,  # ~/.modelci/<model-arch-name>/<framework>-<engine>/
@@ -249,27 +252,56 @@ def get_remote_model_weight(model: ModelBO):
     return save_path
 
 
-def retrieve_model_by_name(architecture_name: str = 'ResNet50', framework: Framework = None, engine: Engine = None):
-    """Query a model by name, framework or engine.
+def _get_remote_model_weights(models: List[ModelBO]):
+    """Get remote model weights from a list of models.
+    Only models with highest version of each unique architecture, framework, and engine pair are download.
+    """
+
+    # group by (architecture, framework, engine) pair
+    pairs = set(map(lambda x: (x.name, x.framework, x.engine), models))
+    model_groups = [
+        [model for model in models if (model.name, model.framework, model.engine) == pair] for pair in pairs
+    ]
+
+    # get weights of newest version of each pair
+    for model_group in model_groups:
+        get_remote_model_weight(model_group[0])
+
+
+def delete_remote_weight(model: ModelBO):
+    save_path = model.saved_path
+
+    if model.engine in [Engine.TORCHSCRIPT, Engine.ONNX]:
+        os.remove(save_path)
+    else:
+        os.removedirs(save_path)
+
+
+def retrieve_model(
+        architecture_name: str = 'ResNet50',
+        framework: Framework = None,
+        engine: Engine = None,
+        version: ModelVersion = None,
+):
+    """Query a model by name, framework, engine or version.
     Arguments:
         architecture_name (str): Model architecture name.
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
+        version (ModelVersion): Model version. Default to None.
     Returns:
         ModelBO: Model business object.
     """
 
     # retrieve
-    models = ModelService.get_models_by_name(architecture_name, framework=framework, engine=engine)
+    models = ModelService.get_models(architecture_name, framework=framework, engine=engine, version=version)
     # check if found
     if len(models) == 0:
         raise FileNotFoundError('Model not found!')
-    # TODO: filter version
-    model = models[0]
 
-    get_remote_model_weight(model)
+    _get_remote_model_weights(models)
 
-    return model
+    return models
 
 
 def retrieve_model_by_task(task='image classification') -> ModelBO:
@@ -285,18 +317,7 @@ def retrieve_model_by_task(task='image classification') -> ModelBO:
     # check if found
     if len(models) == 0:
         raise FileNotFoundError('Model not found!')
-    model = models[0]
 
-    get_remote_model_weight(model)
+    _get_remote_model_weights(models)
 
-    return model
-
-
-def update_model():
-    # TODO: update model
-    raise NotImplementedError()
-
-
-def delete_model():
-    # TODO: delete model
-    raise NotImplementedError()
+    return models

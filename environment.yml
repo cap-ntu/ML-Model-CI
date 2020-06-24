@@ -94,21 +94,34 @@ dependencies:
   - yaml=0.1.7
   - pip:
       - betterproto==1.2.3
+      - colorama==0.4.3
+      - commonmark==0.9.1
       - docker==4.2.0
+      - fastapi==0.58.0
       - future==0.18.2
       - grpclib==0.3.1
+      - h11==0.9.0
       - h2==3.2.0
       - hpack==3.0.0
+      - httptools==0.1.1
       - hyperframe==5.2.0
       - mongoengine==0.19.1
       - multidict==4.7.5
       - numpy==1.18.4
       - onnx==1.6.0
       - pip==20.1.1
+      - pprintpp==0.4.0
       - protobuf==3.12.1
+      - pydantic==1.5.1
+      - pygments==2.6.1
       - pymongo==3.10.1
       - pytest-env==0.6.2
+      - rich==2.2.3
       - setuptools==46.4.0
+      - starlette==0.13.4
       - stringcase==1.2.0
       - typing-extensions==3.7.4.2
+      - uvicorn==0.11.5
+      - uvloop==0.14.0
       - websocket-client==0.57.0
+      - websockets==8.1

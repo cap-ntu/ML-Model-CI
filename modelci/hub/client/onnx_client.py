@@ -9,12 +9,12 @@ import json
 import grpc
 import numpy as np
 import torch
-from proto.service_pb2 import InferRequest
-from proto.service_pb2_grpc import PredictStub
 from torchvision import transforms
 
 from modelci.hub.deployer.config import ONNX_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
+from modelci.types.proto.service_pb2 import InferRequest
+from modelci.types.proto.service_pb2_grpc import PredictStub
 from modelci.types.type_conversion import type_to_data_type
 from modelci.utils.misc import json_update
 
