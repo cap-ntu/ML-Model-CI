@@ -1,155 +1,11 @@
 import React from 'react';
-import {
-  Button,
-  Table,
-  Card,
-  Modal,
-  Divider,
-  Input,
-  Radio,
-  Descriptions,
-  Tag,
-} from 'antd';
-
+import { Button, Table, Card, Divider, Input, Descriptions, Tag } from 'antd';
+import axios from 'axios';
 import './index.css';
 
 const { Search } = Input;
 
-function showModelDetails(record) {
-  console.log(record);
-  Modal.info({
-    title: `${record.modelName}'s Profile`,
-    width: '50%',
-    content: (
-      <div style={{ marginTop: 40 }}>
-        <div>
-          <Divider orientation="left">Serving Information</Divider>
-          <div style={{ marginTop: 8 }}>
-            <b>Model Name: </b> {record.modelName}
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Model Id: </b>
-            {record.modelId}
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Model Framework: </b> {record.modelFramework}
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Serving Engine: </b> {record.modelEngine}
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Serving Device: </b> Nvidia Tesla P4
-          </div>
-          <br />
-        </div>
-        <div>
-          <Divider orientation="left">Testing Information (finished)</Divider>
-          <div style={{ marginTop: 8 }}>
-            <b>Testing Batch Size: </b> 64
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Testing Batch Number: </b> 100
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>All Batch Throughput: </b> 240.77713166220317 req/sec
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>All Batch Latency: </b> 26.580597400665283 sec
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Total GPU Memory: </b> 7981694976.0 bytes
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Average GPU Memory Usage: </b> 0.9726
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Average GPU Memory Used: </b> 7763132416.0 bytes
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <b>Average GPU Utilization: </b> 75.6538%
-          </div>
-          <br />
-        </div>
-      </div>
-    ),
-    onOk() {},
-  });
-}
-
-const columns = [
-  // { title: 'Model Id', dataIndex: 'modelId', key: 'modelId' },
-  {
-    title: 'Model Name',
-    dataIndex: 'modelName',
-    key: 'modelName',
-    className: 'column',
-  },
-  {
-    title: 'Framework',
-    dataIndex: 'modelFramework',
-    key: 'modelFramework',
-    className: 'column',
-  },
-  {
-    title: 'Pretrained Dataset',
-    dataIndex: 'modelDataset',
-    key: 'modelDataset',
-    className: 'column',
-  },
-  {
-    title: 'Accuracy',
-    dataIndex: 'modelAcc',
-    key: 'modelAcc',
-    className: 'column',
-  },
-  {
-    title: 'Task',
-    dataIndex: 'modelTask',
-    key: 'modelTask',
-    className: 'column',
-  },
-  {
-    title: 'Model User',
-    dataIndex: 'modelUser',
-    key: 'modelUser',
-    className: 'column',
-  },
-  {
-    title: 'Action',
-    dataIndex: '',
-    key: 'x',
-    className: 'column',
-    render: () => (
-      <div>
-        {/* <Radio.Group size="large">
-          <Radio.Button
-            value="large"
-            onClick={() => {
-              console.log('You clicked edit');
-            }}
-          >
-            Edit
-          </Radio.Button>
-          <Radio.Button
-            value="large"
-            onClick={() => {
-              console.log('You clicked profile');
-            }}
-          >
-            Profile
-          </Radio.Button>
-        </Radio.Group> */}
-        <Button type="primary" size="large">
-          Edit
-        </Button>
-        <Button style={{ marginLeft: '3px' }} type="primary" size="large">
-          Profile
-        </Button>
-      </div>
-    ),
-  },
-];
-
+// Fake data here
 const data = [
   {
     key: 1,
@@ -228,63 +84,154 @@ const data = [
   },
 ];
 
-const Dashboard = () => {
-  return (
-    <Card>
-      <div
-        style={{ marginBottom: '20px', display: 'flex', flexDirection: 'row' }}
-      >
-        <Button
-          size="large"
-          type="primary"
-          onClick={() => {
-            console.log('You clicked Register Model');
+export default class Dashboard extends React.Component {
+  private columns = [
+    {
+      title: 'Model Name',
+      dataIndex: 'modelName',
+      key: 'modelName',
+      className: 'column',
+    },
+    {
+      title: 'Framework',
+      dataIndex: 'modelFramework',
+      key: 'modelFramework',
+      className: 'column',
+    },
+    {
+      title: 'Pre-trained Dataset',
+      dataIndex: 'modelDataset',
+      key: 'modelDataset',
+      className: 'column',
+    },
+    {
+      title: 'Accuracy',
+      dataIndex: 'modelAcc',
+      key: 'modelAcc',
+      className: 'column',
+    },
+    {
+      title: 'Task',
+      dataIndex: 'modelTask',
+      key: 'modelTask',
+      className: 'column',
+    },
+    {
+      title: 'Model User',
+      dataIndex: 'modelUser',
+      key: 'modelUser',
+      className: 'column',
+    },
+    {
+      title: 'Action',
+      dataIndex: '',
+      key: 'x',
+      className: 'column',
+      render: () => (
+        <div>
+          <Button type="primary" size="large">
+            Edit
+          </Button>
+          <Button style={{ marginLeft: '3px' }} type="primary" size="large">
+            Profile
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      allModelInfo: [],
+    };
+  }
+
+  loadAllModels = () => {
+    const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
+    axios
+      .get(targetUrl)
+      .then((response) => {
+        // handle success
+        console.log(response.data);
+        this.setState({ allModelInfo: response.data });
+      })
+      .catch((error) => {
+        // handle error
+        console.log(error);
+      })
+      .then(() => {
+        // always executed
+      });
+  };
+
+  loadModelById = (id): Array<object> => {
+    const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
+    axios
+      .get(targetUrl + id)
+      .then((response) => {
+        // handle success
+        console.log(response);
+        return response.data;
+      })
+      .catch((error) => {
+        // handle error
+        console.log(error);
+      })
+      .then(() => {
+        // always executed
+      });
+    return [];
+  };
+
+  public render() {
+    return (
+      <Card>
+        <div
+          style={{
+            marginBottom: '20px',
+            display: 'flex',
+            flexDirection: 'row',
           }}
         >
-          Register Model
-        </Button>
-        <Button
-          size="large"
-          style={{ marginLeft: '5px' }}
-          onClick={() => {
-            console.log('You clicked Download Table');
-          }}
-        >
-          Download Table
-        </Button>
-        <Search
-          size="large"
-          style={{ marginLeft: '10px' }}
-          placeholder="search model record by key words"
-          enterButton="Search"
-          onSearch={(value) => console.log(value)}
-        />
-      </div>
-      <Divider dashed />
-      <Table
-        columns={columns}
-        dataSource={data}
-        expandable={{
-          expandedRowRender: (record) => (
-            <div style={{ backgroundColor: '#F5F5F5', padding: '10px' }}>
-              <Descriptions
-                style={{ width: '92%', margin: '0 auto' }}
-                column={3}
-                size="middle"
-                title={
-                  <a
-                    style={{
-                      whiteSpace: 'nowrap',
-                      fontSize: 25,
-                      color: 'black',
-                    }}
-                  >
-                    Converted Model Info
-                  </a>
-                }
-              >
-                <Descriptions.Item
-                  label={
+          <Button
+            size="large"
+            type="primary"
+            onClick={() => {
+              console.log('You clicked Register Model');
+            }}
+          >
+            Register Model
+          </Button>
+          <Button
+            size="large"
+            style={{ marginLeft: '5px' }}
+            onClick={() => {
+              console.log('You clicked Download Table');
+            }}
+          >
+            Download Table
+          </Button>
+          <Search
+            size="large"
+            style={{ marginLeft: '10px' }}
+            placeholder="search model record by key words"
+            enterButton="Search"
+            onSearch={(value) => console.log(value)}
+          />
+        </div>
+        <Divider dashed />
+        <Table
+          columns={this.columns}
+          dataSource={data}
+          expandable={{
+            expandedRowRender: (record) => (
+              <div style={{ backgroundColor: '#F5F5F5', padding: '10px' }}>
+                <Descriptions
+                  style={{ width: '92%', margin: '0 auto' }}
+                  column={3}
+                  size="middle"
+                  title={
                     <a
                       style={{
                         whiteSpace: 'nowrap',
@@ -292,127 +239,116 @@ const Dashboard = () => {
                         color: 'black',
                       }}
                     >
-                      Model Name
+                      Converted Model Info
                     </a>
                   }
                 >
-                  <Tag
-                    color="volcano"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Model Name
+                      </a>
+                    }
                   >
-                    {record.modelName}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
+                    <Tag
+                      color="volcano"
+                      style={{
+                        height: '25px',
+                        textAlign: 'center',
+                        fontSize: 25,
+                      }}
+                    >
+                      {record.modelName}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Converted Version
+                      </a>
+                    }
+                  >
+                    <Tag
+                      color="blue"
+                      style={{
+                        height: '25px',
+                        textAlign: 'center',
+                        fontSize: 25,
+                      }}
+                    >
+                      {record.convertVersion}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Serving Engine
+                      </a>
+                    }
+                  >
+                    <Tag
+                      color="pink"
+                      style={{
+                        height: '25px',
+                        textAlign: 'center',
+                        fontSize: 25,
+                      }}
+                    >
+                      {record.modelEngine}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    span={2}
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Conversion State
+                      </a>
+                    }
+                  >
                     <a
                       style={{
-                        whiteSpace: 'nowrap',
                         fontSize: 25,
-                        color: 'black',
-                      }}
-                    >
-                      Converted Version
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="blue"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
-                  >
-                    {record.convertVersion}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
-                      style={{
                         whiteSpace: 'nowrap',
-                        fontSize: 25,
-                        color: 'black',
+                        color: 'green',
                       }}
                     >
-                      Serving Engine
+                      Success
                     </a>
-                  }
-                >
-                  <Tag
-                    color="pink"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
-                  >
-                    {record.modelEngine}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  span={2}
-                  label={
-                    <a
-                      style={{
-                        whiteSpace: 'nowrap',
-                        fontSize: 25,
-                        color: 'black',
-                      }}
-                    >
-                      Conversion State
-                    </a>
-                  }
-                >
-                  <a
-                    style={{
-                      fontSize: 25,
-                      whiteSpace: 'nowrap',
-                      color: 'green',
-                    }}
-                  >
-                    Success
-                  </a>
-                  <Divider type="vertical" />
-                  {/* <Radio.Group size="large">
-                    <Radio.Button
-                      value="large"
-                      onClick={() => {
-                        console.log('You clicked Deploy');
-                      }}
-                    >
+                    <Divider type="vertical" />
+                    <Button type="primary" size="large">
                       Deploy this Model
-                    </Radio.Button>
-                  </Radio.Group> */}
-
-                  <Button type="primary" size="large">
-                    Deploy this Model
-                  </Button>
-                </Descriptions.Item>
-              </Descriptions>
-              <Descriptions
-                style={{ width: '92%', margin: '0 auto' }}
-                column={3}
-                size="small"
-                title={
-                  <a
-                    style={{
-                      whiteSpace: 'nowrap',
-                      fontSize: 25,
-                      color: 'black',
-                    }}
-                  >
-                    Profiling Results
-                  </a>
-                }
-              >
-                <Descriptions.Item
-                  label={
+                    </Button>
+                  </Descriptions.Item>
+                </Descriptions>
+                <Descriptions
+                  style={{ width: '92%', margin: '0 auto' }}
+                  column={3}
+                  size="small"
+                  title={
                     <a
                       style={{
                         whiteSpace: 'nowrap',
@@ -420,203 +356,217 @@ const Dashboard = () => {
                         color: 'black',
                       }}
                     >
-                      Profiling Device
+                      Profiling Results
                     </a>
                   }
                 >
-                  <Tag
-                    color="geekblue"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Profiling Device
+                      </a>
+                    }
                   >
-                    {record.servingDevice}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
+                    <Tag
+                      color="geekblue"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      Profiling Batch Size
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="gold"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.servingDevice}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Profiling Batch Size
+                      </a>
+                    }
                   >
-                    {record.batchSize}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
+                    <Tag
+                      color="gold"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      Profiling Number of Batches
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="blue"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.batchSize}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        Profiling Number of Batches
+                      </a>
+                    }
                   >
-                    {record.batchNum}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
+                    <Tag
+                      color="blue"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      All Batch Latency
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="cyan"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.batchNum}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        All Batch Latency
+                      </a>
+                    }
                   >
-                    {record.allLatency}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  span={2}
-                  label={
-                    <a
+                    <Tag
+                      color="cyan"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      All Batch Throughput
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="geekblue"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.allLatency}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    span={2}
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        All Batch Throughput
+                      </a>
+                    }
                   >
-                    {record.allThroughput}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
+                    <Tag
+                      color="geekblue"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      P50 Latency
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="gold"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.allThroughput}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        P50 Latency
+                      </a>
+                    }
                   >
-                    {record.latency50}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
+                    <Tag
+                      color="gold"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      P95 Latency
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="green"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.latency50}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        P95 Latency
+                      </a>
+                    }
                   >
-                    {record.latency95}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <a
+                    <Tag
+                      color="green"
                       style={{
-                        whiteSpace: 'nowrap',
+                        height: '25px',
+                        textAlign: 'center',
                         fontSize: 25,
-                        color: 'black',
                       }}
                     >
-                      P99 Latency
-                    </a>
-                  }
-                >
-                  <Tag
-                    color="pink"
-                    style={{
-                      height: '25px',
-                      textAlign: 'center',
-                      fontSize: 25,
-                    }}
+                      {record.latency95}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <a
+                        style={{
+                          whiteSpace: 'nowrap',
+                          fontSize: 25,
+                          color: 'black',
+                        }}
+                      >
+                        P99 Latency
+                      </a>
+                    }
                   >
-                    {record.latency99}
-                  </Tag>
-                </Descriptions.Item>
-              </Descriptions>
-            </div>
-          ),
-          rowExpandable: (record) => record.hasDetail,
-        }}
-        // onRow={(record) => ({
-        //   onClick: () => {
-        //     showModelDetails(record);
-        //   },
-        // })}
-      />
-    </Card>
-  );
-};
-
-export default Dashboard;
+                    <Tag
+                      color="pink"
+                      style={{
+                        height: '25px',
+                        textAlign: 'center',
+                        fontSize: 25,
+                      }}
+                    >
+                      {record.latency99}
+                    </Tag>
+                  </Descriptions.Item>
+                </Descriptions>
+              </div>
+            ),
+            rowExpandable: (record) => record.hasDetail,
+          }}
+          onRow={(record) => ({
+            onClick: () => {
+              // showModelDetails(record);
+              // this.loadAllModels();
+              this.loadModelById('5ef32c08f04a5d7c01addace');
+            },
+          })}
+        />
+      </Card>
+    );
+  }
+}
