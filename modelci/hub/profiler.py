@@ -41,6 +41,15 @@ class Profiler(object):
 
     def diagnose(self, device_name, batch_size=None):
         """Start diagnosing and profiling model."""
+        
+        try:  # to check the container has started successfully or not.
+            self.docker_client.containers.get(self.server_name)
+        except Exception:
+            print(
+                '\n'
+                'ModelCI Error: starting the serving engine failed, please start the Docker container manually. \n'
+            )
+
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
