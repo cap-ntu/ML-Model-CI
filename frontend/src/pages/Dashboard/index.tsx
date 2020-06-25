@@ -1,151 +1,125 @@
 import React from 'react';
 import { Button, Table, Card, Divider, Input, Descriptions, Tag } from 'antd';
 import axios from 'axios';
+import reqwest from 'reqwest';
 import './index.css';
 
 const { Search } = Input;
-
-// Fake data here
-const data = [
+const columns = [
   {
-    key: 1,
-    modelId: '734d623fd24',
-    modelName: 'ResNet-50',
-    modelFramework: 'TensorFlow',
-    convertVersion: 'TensorFlow-SavedModel',
-    modelAcc: '75.3%',
-    modelEngine: 'TensorFlow-Serving',
-    modelTask: 'image classification',
-    modelUser: 'Yizheng Huang',
-    modelDataset: 'ImageNet',
-    hasDetail: true,
-    servingDevice: 'Nvidia Tesla P4',
-    allThroughput: '200.333 req/sec',
-    allLatency: '31.946 sec',
-    batchSize: 16,
-    batchNum: 100,
-    totalMem: '7981694976.0 bytes',
-    usedMem: '7763132416.0 bytes',
-    memPer: '97.263%',
-    gpuUtil: '69.871%',
-    latency50: '78.906 ms',
-    latency95: '84.170 ms',
-    latency99: '86.797 ms',
+    title: 'Model Name',
+    dataIndex: 'name',
+    key: 'name',
+    className: 'column',
   },
   {
-    key: 2,
-    modelId: '7e2562srd24',
-    modelName: 'BERT-Medium',
-    modelFramework: 'PyTorch',
-    convertVersion: 'TensorFlow-SavedModel',
-    modelAcc: '71.0%',
-    modelEngine: 'ONNX Runtime',
-    modelTask: 'text classification',
-    modelUser: 'Yuanming Lee',
-    modelDataset: 'GLUE',
-    hasDetail: false,
-    servingDevice: 'Nvidia Tesla P4',
-    allThroughput: '270.341 req/sec',
-    allLatency: '26.580 sec',
-    batchSize: 64,
-    batchNum: 100,
-    totalMem: '7981694976.0 bytes',
-    usedMem: '7763132416.0 bytes',
-    memPer: '0.972',
-    gpuUtil: '75.653%',
-    latency50: '0.265 s',
-    latency95: '0.276 s',
-    latency99: '0.279 s',
+    title: 'Framework',
+    dataIndex: 'framework',
+    key: 'framework',
+    className: 'column',
   },
   {
-    key: 1,
-    modelId: '734d623fd24',
-    modelName: 'ResNet-50',
-    modelFramework: 'PyTorch',
-    convertVersion: 'TensorFlow-SavedModel',
-    modelAcc: '70.1%',
-    modelEngine: 'TorchScript',
-    modelTask: 'image classification',
-    modelUser: 'Yizheng Huang',
-    modelDataset: 'ImageNet',
-    hasDetail: false,
-    servingDevice: 'Nvidia Tesla P4',
-    allThroughput: '200.333 req/sec',
-    allLatency: '31.946 sec',
-    batchSize: 16,
-    batchNum: 100,
-    totalMem: '7981694976.0 bytes',
-    usedMem: '7763132416.0 bytes',
-    memPer: '97.263%',
-    gpuUtil: '69.871%',
-    latency50: '78.906 ms',
-    latency95: '84.170 ms',
-    latency99: '86.797 ms',
+    title: 'Pre-trained Dataset',
+    dataIndex: 'dataset',
+    key: 'dataset',
+    className: 'column',
+  },
+  {
+    title: 'Accuracy',
+    dataIndex: 'acc',
+    key: 'acc',
+    className: 'column',
+  },
+  {
+    title: 'Task',
+    dataIndex: 'task',
+    key: 'task',
+    className: 'column',
+  },
+  // {
+  //   title: 'Model User',
+  //   dataIndex: 'modelUser',
+  //   key: 'modelUser',
+  //   className: 'column',
+  // },
+  {
+    title: 'Status',
+    dataIndex: 'status',
+    key: 'status',
+    className: 'column',
+  },
+  {
+    title: 'Action',
+    dataIndex: '',
+    key: 'x',
+    className: 'column',
+    render: () => (
+      <div>
+        <Button type="primary" size="large">
+          Edit
+        </Button>
+        <Button style={{ marginLeft: '3px' }} type="primary" size="large">
+          Profile
+        </Button>
+      </div>
+    ),
   },
 ];
 
-export default class Dashboard extends React.Component {
-  private columns = [
-    {
-      title: 'Model Name',
-      dataIndex: 'modelName',
-      key: 'modelName',
-      className: 'column',
-    },
-    {
-      title: 'Framework',
-      dataIndex: 'modelFramework',
-      key: 'modelFramework',
-      className: 'column',
-    },
-    {
-      title: 'Pre-trained Dataset',
-      dataIndex: 'modelDataset',
-      key: 'modelDataset',
-      className: 'column',
-    },
-    {
-      title: 'Accuracy',
-      dataIndex: 'modelAcc',
-      key: 'modelAcc',
-      className: 'column',
-    },
-    {
-      title: 'Task',
-      dataIndex: 'modelTask',
-      key: 'modelTask',
-      className: 'column',
-    },
-    {
-      title: 'Model User',
-      dataIndex: 'modelUser',
-      key: 'modelUser',
-      className: 'column',
-    },
-    {
-      title: 'Action',
-      dataIndex: '',
-      key: 'x',
-      className: 'column',
-      render: () => (
-        <div>
-          <Button type="primary" size="large">
-            Edit
-          </Button>
-          <Button style={{ marginLeft: '3px' }} type="primary" size="large">
-            Profile
-          </Button>
-        </div>
-      ),
-    },
-  ];
+const getRandomuserParams = (params) => {
+  return {
+    results: params.pagination.pageSize,
+    page: params.pagination.current,
+    ...params,
+  };
+};
 
+export default class Dashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       allModelInfo: [],
+      pagination: {
+        current: 1,
+        pageSize: 10,
+      },
+      loading: false,
     };
+    this.loadAllModels();
   }
+
+  componentDidMount() {
+    const { pagination } = this.state;
+    this.fetch({ pagination });
+  }
+
+  handleTableChange = (pagination, filters, sorter) => {
+    this.fetch({
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      pagination,
+      ...filters,
+    });
+  };
+
+  fetch = (params = {}) => {
+    this.setState({ loading: true });
+    reqwest({
+      url: 'http://155.69.146.35:8000/api/v1/model/',
+      method: 'get',
+      type: 'json',
+      data: getRandomuserParams(params),
+    }).then((allModelInfo) => {
+      this.setState({
+        loading: false,
+        data: allModelInfo.data,
+        pagination: {
+          ...params.pagination,
+          total: this.state.allModelInfo.length,
+        },
+      });
+    });
+  };
 
   loadAllModels = () => {
     const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
@@ -153,30 +127,29 @@ export default class Dashboard extends React.Component {
       .get(targetUrl)
       .then((response) => {
         // handle success
-        console.log(response.data);
+        // console.log(response.data);
         this.setState({ allModelInfo: response.data });
       })
       .catch((error) => {
         // handle error
-        console.log(error);
+        // console.log(error);
       })
       .then(() => {
         // always executed
       });
   };
 
-  loadModelById = (id): Array<object> => {
+  loadModelById = (id) => {
     const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
     axios
       .get(targetUrl + id)
       .then((response) => {
         // handle success
-        console.log(response);
-        return response.data;
+        return response;
       })
       .catch((error) => {
         // handle error
-        console.log(error);
+        // console.log(error);
       })
       .then(() => {
         // always executed
@@ -222,8 +195,12 @@ export default class Dashboard extends React.Component {
         </div>
         <Divider dashed />
         <Table
-          columns={this.columns}
-          dataSource={data}
+          rowKey={(record) => record.id}
+          columns={columns}
+          pagination={this.state.pagination}
+          loading={this.state.loading}
+          onChange={this.handleTableChange}
+          dataSource={this.state.allModelInfo}
           expandable={{
             expandedRowRender: (record) => (
               <div style={{ backgroundColor: '#F5F5F5', padding: '10px' }}>
@@ -264,7 +241,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.modelName}
+                      {record.name}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -288,7 +265,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.convertVersion}
+                      {record.framework}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -312,7 +289,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.modelEngine}
+                      {record.engine}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -336,7 +313,7 @@ export default class Dashboard extends React.Component {
                         color: 'green',
                       }}
                     >
-                      Success
+                      {record.status}
                     </a>
                     <Divider type="vertical" />
                     <Button type="primary" size="large">
@@ -556,15 +533,8 @@ export default class Dashboard extends React.Component {
                 </Descriptions>
               </div>
             ),
-            rowExpandable: (record) => record.hasDetail,
+            rowExpandable: (record) => true,
           }}
-          onRow={(record) => ({
-            onClick: () => {
-              // showModelDetails(record);
-              // this.loadAllModels();
-              this.loadModelById('5ef32c08f04a5d7c01addace');
-            },
-          })}
         />
       </Card>
     );
