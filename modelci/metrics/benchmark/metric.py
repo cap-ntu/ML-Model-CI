@@ -126,9 +126,11 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
         memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
 
-        self.print_results(device_name, all_data_throughput, all_data_latency, custom_percentile,
-                           all_batch_avg_memory_total,
-                           all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per)
+        return self.print_results(
+            device_name, all_data_throughput, all_data_latency, custom_percentile,
+            all_batch_avg_memory_total,
+            all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per
+        )
 
     def __inference_callback(self, a_batch_latency):
         """A callback function which handles the results of a asynchronous inference request.
@@ -204,6 +206,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         percentile_50 = np.percentile(self.latencies, 50)
         percentile_95 = np.percentile(self.latencies, 95)
         percentile_99 = np.percentile(self.latencies, 99)
+        complete_time = datetime.datetime.now()
 
         print('\n')
         print(f'testing device: {device_name}')
@@ -215,10 +218,27 @@ class BaseModelInspector(metaclass=ABCMeta):
         print(f'99th-percentile latency: {percentile_99} s')
         # print(f'{self.percentile}th-percentile latency: {custom_percentile} s')
         print(f'total GPU memory: {all_batch_avg_memory_total} bytes')
-        print('average GPU memory usage percentile: {:.4f}'.format(memory_avg_usage_per))
+        print(f'average GPU memory usage percentage: {memory_avg_usage_per:.4f}')
         print(f'average GPU memory used: {all_batch_avg_memory_used} bytes')
-        print('average GPU utilization: {:.4f}%'.format(all_batch_avg_util))
-        print(f'completed at {datetime.datetime.now()}')
+        print(f'average GPU utilization: {all_batch_avg_util:.4f}%')
+        print(f'completed at {complete_time}')
+
+        return {
+            'device_name': device_name,
+            'total_batches': len(self.batches),
+            'batch_size': self.batch_size,
+            'total_latency': latency,
+            'total_throughput': throughput,
+            'avg_latency': latency / len(self.batches),
+            'p50_latency': percentile_50,
+            'p95_latency': percentile_95,
+            'p99_latency': percentile_99,
+            'total_gpu_memory': all_batch_avg_memory_total,
+            'gpu_memory_percentage': memory_avg_usage_per,
+            'gpu_memory_used': all_batch_avg_memory_used,
+            'gpu_utilization': all_batch_avg_util,
+            'completed_time': complete_time,
+        }
 
 
 class ReqThread(Thread):

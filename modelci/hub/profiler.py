@@ -9,7 +9,6 @@ from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
-from modelci.hub.deployer import serve
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import Framework
 
@@ -41,7 +40,7 @@ class Profiler(object):
 
     def diagnose(self, device_name, batch_size=None):
         """Start diagnosing and profiling model."""
-        
+
         try:  # to check the container has started successfully or not.
             self.docker_client.containers.get(self.server_name)
         except Exception:
@@ -53,15 +52,19 @@ class Profiler(object):
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        self.inspector.run_model(device_name=device_name, server_name=self.server_name)
+        return self.inspector.run_model(device_name=device_name, server_name=self.server_name)
 
     def diagnose_all_batches(self, device_name, arr: list):
         """Run model tests in batch size from list input."""
+        result = dict()
         for size in arr:
-            self.diagnose(device_name, size)
+            result[size] = self.diagnose(device_name, size)
+        return result
 
     def auto_diagnose(self, available_devices, batch_list: list = None):
         """Select the free machine and deploy automatically to test the model using available platforms."""
+        from modelci.hub.deployer.serving import serve
+
         saved_path = self.model_info.saved_path
         model_id = self.model_info.id
         model_name = self.model_info.name
