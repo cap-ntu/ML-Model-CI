@@ -102,19 +102,14 @@ class ProfileLatencyVO(BaseModel):
 
 
 class ProfileThroughputVO(BaseModel):
-    batch_formation_throughput: InfoTupleVO
-    preprocess_throughput: InfoTupleVO
-    inference_throughput: InfoTupleVO
-    postprocess_throughput: InfoTupleVO
+    batch_formation_throughput: float
+    preprocess_throughput: float
+    inference_throughput: float
+    postprocess_throughput: float
 
     @staticmethod
     def from_bo(profile_throughput: ProfileThroughput):
-        return ProfileThroughputVO(
-            batch_formation_throughput=InfoTupleVO.from_bo(profile_throughput.batch_formation_throughput),
-            preprocess_throughput=InfoTupleVO.from_bo(profile_throughput.preprocess_throughput),
-            inference_throughput=InfoTupleVO.from_bo(profile_throughput.inference_throughput),
-            postprocess_throughput=InfoTupleVO.from_bo(profile_throughput.postprocess_throughput),
-        )
+        return ProfileThroughputVO(**vars(profile_throughput))
 
 
 class DynamicResultVO(BaseModel):
@@ -168,7 +163,9 @@ class ModelListOut(BaseModel):
     task: str
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
+    profile_result: ProfileResultVO = None
     status: Status
+    creator: str
     create_time: datetime
 
     @staticmethod
@@ -202,6 +199,7 @@ class ModelDetailOut(BaseModel):
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
     status: Status
+    creator: str
     create_time: datetime
 
     @staticmethod
