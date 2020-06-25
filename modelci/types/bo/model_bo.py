@@ -1,3 +1,4 @@
+import getpass
 import hashlib
 from datetime import datetime
 from pathlib import Path
@@ -44,6 +45,7 @@ class ModelBO(object):
         - model weights
         - profiling result (i.e. static profiling result and dynamic profiling results)
         - model checking status
+        - provider (uploader) of the model
         - create datetime
     """
 
@@ -60,10 +62,10 @@ class ModelBO(object):
             weight: Weight = Weight(),
             profile_result: ProfileResultBO = None,
             status: Status = Status.UNKNOWN,
+            creator: str = getpass.getuser(),
             create_time: datetime = datetime.now()
     ):
-        """Initializer.
-        """
+        """Initializer."""
         self._id: Optional[str] = None
         self.name = name
         self.framework = framework
@@ -77,6 +79,7 @@ class ModelBO(object):
         self.weight = weight
         self.profile_result = profile_result
         self.status = status
+        self.creator = creator
         self.create_time = create_time
 
     @property
@@ -94,19 +97,24 @@ class ModelBO(object):
 
         return save_path
 
-    def to_model_po(self):
-        """Convert business object to plain object.
-        """
+    def to_model_do(self):
+        """Convert business object to plain object."""
         input_dos = list(map(IOShape.to_io_shape_po, self.inputs))
         output_dos = list(map(IOShape.to_io_shape_po, self.outputs))
 
         model_do = ModelDO(
-            name=self.name, framework=self.framework.value, engine=self.engine.value,
-            version=self.version.ver, dataset=self.dataset, accuracy=self.acc,
+            name=self.name,
+            framework=self.framework.value,
+            engine=self.engine.value,
+            version=self.version.ver,
+            dataset=self.dataset,
+            accuracy=self.acc,
             inputs=input_dos,
             outputs=output_dos,
-            task=self.task, status=self.status.value,
-            create_time=self.create_time
+            task=self.task,
+            status=self.status.value,
+            creator=self.creator,
+            create_time=self.create_time,
         )
         if self._id is not None:
             model_do.id = ObjectId(self._id)
@@ -132,7 +140,7 @@ class ModelBO(object):
         return model_do
 
     @staticmethod
-    def from_model_po(model_do: Optional[ModelDO], lazy_fetch=True):
+    def from_model_do(model_do: Optional[ModelDO], lazy_fetch=True):
         """Create a business object from plain object.
 
         Args:
@@ -147,10 +155,18 @@ class ModelBO(object):
         outputs = list(map(IOShape.from_io_shape_po, model_do.outputs))
 
         model = ModelBO(
-            name=model_do.name, framework=Framework(model_do.framework), engine=Engine(model_do.engine),
-            version=ModelVersion(model_do.version), dataset=model_do.dataset, acc=model_do.accuracy,
-            inputs=inputs, outputs=outputs, task=model_do.task,
-            status=Status(model_do.status), create_time=model_do.create_time
+            name=model_do.name,
+            framework=Framework(model_do.framework),
+            engine=Engine(model_do.engine),
+            version=ModelVersion(model_do.version),
+            dataset=model_do.dataset,
+            acc=model_do.accuracy,
+            inputs=inputs,
+            outputs=outputs,
+            task=model_do.task,
+            status=Status(model_do.status),
+            creator=model_do.creator,
+            create_time=model_do.create_time,
         )
         model._id = str(model_do.id)
 
@@ -162,7 +178,6 @@ class ModelBO(object):
         return model
 
     def reload(self):
-        """Reload model business object.
-        """
+        """Reload model business object."""
         # TODO: reload
-        raise NotImplementedError()
+        raise NotImplementedError('Method `reload` not implemented.')

@@ -23,21 +23,21 @@ class DynamicProfileResultDO(EmbeddedDocument):
     # GPU utilization rate for processing batch data
     utilization = FloatField(min_value=0, max_value=1, required=True)
     # Min, max and avg model loading and initialization latencies
-    initialization_latency = ListField(FloatField(), required=True)
+    initialization_latency = ListField(FloatField(min_value=0), required=True)
     # Min, max and avg preprocess latencies
-    preprocess_latency = ListField(FloatField(), required=True)
+    preprocess_latency = ListField(FloatField(min_value=0), required=True)
     # Min, max and avg inference latencies
-    inference_latency = ListField(FloatField(), required=True)
+    inference_latency = ListField(FloatField(min_value=0), required=True)
     # Min, max and avg postprocess latencies
-    postprocess_latency = ListField(FloatField(), required=True)
-    # Min, max and avg batch formation latencies
-    batch_formation_throughput = ListField(FloatField(), required=True)
-    # Min, max and avg batch preprocess latencies
-    preprocess_throughput = ListField(FloatField(), required=True)
-    # Min, max and avg batch inference latencies
-    inference_throughput = ListField(FloatField(), required=True)
-    # Min, max and avg batch postprocess latencies
-    postprocess_throughput = ListField(FloatField(), required=True)
+    postprocess_latency = ListField(FloatField(min_value=0), required=True)
+    # Batch formation QPS
+    batch_formation_throughput = FloatField(min_value=0, required=True)
+    # Batch preprocess QPS
+    preprocess_throughput = FloatField(min_value=0, required=True)
+    # Batch inference QPS
+    inference_throughput = FloatField(min_value=0, required=True)
+    # Batch postprocess QPS
+    postprocess_throughput = FloatField(min_value=0, required=True)
     # Creation time of this record
     create_time = DateTimeField(required=True)
 

@@ -43,7 +43,7 @@ class ModelService(object):
             kwargs['version'] = version.ver
 
         model_pos = cls.__model_DAO.get_models(**kwargs)
-        models = list(map(ModelBO.from_model_po, model_pos))
+        models = list(map(ModelBO.from_model_do, model_pos))
         return models
 
     @classmethod
@@ -58,7 +58,7 @@ class ModelService(object):
         """
         model_pos = cls.__model_DAO.get_models_by_task(task=task)
 
-        return list(map(ModelBO.from_model_po, model_pos))
+        return list(map(ModelBO.from_model_do, model_pos))
 
     @classmethod
     def get_model_by_id(cls, id_: str):
@@ -76,7 +76,7 @@ class ModelService(object):
         if not cls.__model_DAO.exists_by_id(ObjectId(id_)):
             raise DoesNotExistException(f'Model id={id_} does not exists.')
 
-        return ModelBO.from_model_po(cls.__model_DAO.get_model_by_id(ObjectId(id_)))
+        return ModelBO.from_model_do(cls.__model_DAO.get_model_by_id(ObjectId(id_)))
 
     @classmethod
     def post_model(cls, model: ModelBO):
@@ -100,7 +100,7 @@ class ModelService(object):
                 'model BO'.format(model.id)
             )
 
-        model_po = model.to_model_po()
+        model_po = model.to_model_do()
         if cls.__model_DAO.exists_by_primary_keys(
                 name=model_po.name,
                 framework=model_po.framework,
@@ -134,7 +134,7 @@ class ModelService(object):
         """
         # check for the existence of Model
         if cls.__model_DAO.exists_by_id(model.id):
-            model_po_new = model.to_model_po()
+            model_po_new = model.to_model_do()
             model_po = cls.__model_DAO.get_model_by_id(model.id)
 
             # if weight changes, save all without patch
@@ -162,7 +162,7 @@ class ModelService(object):
         else:
             # if `force_insert` is set
             if force_insert:
-                model_po = model.to_model_po()
+                model_po = model.to_model_do()
                 return bool(cls.__model_DAO.save_model(model_po))
             else:
                 raise ValueError('Model ID {} does not exist. You may change the ID or set `force_insert=True` '
