@@ -16,18 +16,24 @@ We provide many build-in gRPC clients:
 
 You can use the `Profiler` class to instance a profiler to start your model profiling. Before starting the profiler, you need a client. We have some existed client in the `modelci.hub` and according to the task information of a model, the profiler will invoke appropriate clients to finish the profiling.
 
-```python 
+```python
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.profiler import Profiler
+
+test_data_item = ...
+batch_num = 100
+batch_size = 32
+
+model_bo = ...
 
 # create a client
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
 
 # init the profiler
-profiler = Profiler(model_info=mode_info, server_name='name of your server', inspector=torch_client)
+profiler = Profiler(model_bo=model_bo, server_name='name of your server', inspector=torch_client)
 
 # start profiling model
-profiler.diagnose('device name')
+profiler.diagnose('cuda:0')
 ```
 
 

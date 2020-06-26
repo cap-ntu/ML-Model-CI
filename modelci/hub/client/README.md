@@ -70,9 +70,9 @@ tfs_client = CVTFSClient(test_img_bytes, batch_num=100, batch_size=32, asynchron
 # get the model info from model manager.
 mode_info = retrieve_model(architecture_name='ResNet50', framework=Framework.TENSORFLOW, engine=Engine.TFS)
 # init a profiler.
-profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
+profiler = Profiler(model_bo=mode_info, server_name='tfs', inspector=tfs_client)
 # start profiling.
-profiler.diagnose('device name')
+profiler.diagnose('cuda:0')
 ```
 
 The profiling result looks like, 
@@ -105,7 +105,7 @@ from modelci.hub.profiler import Profiler
 model_info = ...
 
 # init a profiler, the server name must be the same as your serving container's.
-profiler = Profiler(model_info=model_info, server_name='tfs')
+profiler = Profiler(model_bo=model_info, server_name='tfs')
 # start profiling automatically.
 profiler.auto_diagnose('device name')
 # start profiling automatically with specific batch sizes, here is [2, 4, 16].

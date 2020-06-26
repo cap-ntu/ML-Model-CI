@@ -1,10 +1,9 @@
 """
 Author: huangyz0918
+Author: Li Yuanming
 Dec: profiling models.
 Date: 03/05/2020
 """
-import socket
-
 import docker
 
 from modelci.hub.client.onnx_client import CVONNXClient
@@ -12,7 +11,15 @@ from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.types.bo import Framework, DynamicProfileResultBO, ProfileMemory, ProfileLatency, ProfileThroughput
+from modelci.types.bo import (
+    Framework,
+    DynamicProfileResultBO,
+    ProfileMemory,
+    ProfileLatency,
+    ProfileThroughput,
+    ModelBO
+)
+from modelci.utils.misc import get_ip
 
 DEFAULT_BATCH_NUM = 100
 
@@ -21,12 +28,12 @@ class Profiler(object):
     """Profiler class, call this to test model performance.
 
     Args:
-        inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
+        model_bo (ModelBO): information about the model, can get from `retrieve_model` method.
         server_name (str): Serving platform's docker container's name.
-        model_info: information about the model, can get from `init_model_info` method.
+        inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
     """
 
-    def __init__(self, model_info, server_name: str, inspector: BaseModelInspector = None):
+    def __init__(self, model_bo: ModelBO, server_name: str, inspector: BaseModelInspector = None):
         """Init a profiler object."""
         if inspector is None:
             self.inspector = self.__auto_select_client()  # TODO: To Improve
@@ -37,7 +44,7 @@ class Profiler(object):
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
         self.server_name = server_name
-        self.model_info = model_info
+        self.model_info = model_bo
         self.docker_client = docker.from_env()
 
     def diagnose(self, batch_size=None, device='cuda') -> DynamicProfileResultBO:
@@ -131,7 +138,13 @@ class Profiler(object):
                 'please choose a serving engine for the model')
             # TODO How can we deploy to all available platforms if we don't know the engine?
         elif serving_engine == Framework.TFS:
-            return CVTFSClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+            return CVTFSClient(
+                None,
+                batch_num=DEFAULT_BATCH_NUM,
+                asynchronous=False,
+                inputs=self.model_info.inputs,
+                model_name=self.model_info.name
+            )
         elif serving_engine == Framework.TORCHSCRIPT:
             return CVTorchClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
         elif serving_engine == Framework.ONNX:
@@ -150,16 +163,3 @@ class Profiler(object):
         running_container = self.docker_client.containers.get(self.server_name)
         running_container.stop()
         print("successfully stop serving container: ", self.server_name)
-
-
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # doesn't even have to be reachable
-        s.connect(('10.255.255.255', 1))
-        ip = s.getsockname()[0]
-    except socket.error:
-        ip = '127.0.0.1'
-    finally:
-        s.close()
-    return ip

@@ -132,7 +132,7 @@ def register_model(
 
             # TODO: profile at backend
             container = serve(save_path=model_dir, device='cuda:0')
-            profiler = Profiler(model_info=model, server_name=container.name, inspector=client)
+            profiler = Profiler(model_bo=model, server_name=container.name, inspector=client)
             dpr = profiler.diagnose(GPUtil.getGPUs()[0].name)
             ModelService.append_dynamic_profiling_result(model.id, dynamic_result=dpr)
             container.stop()

@@ -11,14 +11,17 @@ from modelci.types.bo import Engine, Framework
 
 if __name__ == "__main__":
     test_img = Image.open("path to the test data")
-    tfs_client = CVTFSClient(test_img, batch_num=100, batch_size=32, asynchronous=True)
 
     register_model_from_yaml("path to your yaml file")  # register your model in the database
-    mode_info = retrieve_model(  # retrieve model information
+    model_bo = retrieve_model(  # retrieve model information
         architecture_name='MRCNN',
         framework=Framework.TENSORFLOW,
         engine=Engine.TFS
+    )[0]
+
+    tfs_client = CVTFSClient(
+        test_img, batch_num=100, batch_size=32, asynchronous=True, inputs=model_bo.inputs, model_name=model_bo.name
     )
 
-    profiler = Profiler(model_info=mode_info, server_name='tfs', inspector=tfs_client)
-    profiler.diagnose('RTX 2080Ti')  # profile batch size 32
+    profiler = Profiler(model_bo=model_bo, server_name='tfs', inspector=tfs_client)
+    profiler.diagnose('cuda:0')  # profile batch size 32

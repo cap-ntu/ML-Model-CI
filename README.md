@@ -99,8 +99,7 @@ from modelci.types.bo import IOShape
 ONNXConverter.from_torch_module(
     '<path to torch model>', 
     '<path to export onnx model>', 
-    input_shape=[IOShape([-1, 3, 224, 224], float)], 
-    batch_size=16
+    inputs=[IOShape([-1, 3, 224, 224], float)],
 )
 ```
 
@@ -125,7 +124,7 @@ model_info = ...
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
 
 # init the profiler
-profiler = Profiler(model_info=model_info, server_name='name of your server', inspector=torch_client)
+profiler = Profiler(model_bo=model_info, server_name='name of your server', inspector=torch_client)
 
 # start profiling model
 profiler.diagnose('device name')
@@ -140,7 +139,7 @@ MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispat
 We search for a converted model and then dispatch it to a device with a specific batch size.
 
 ```python
-from modelci.hub.deployer import serve
+from modelci.hub.deployer.serving import serve
 from modelci.hub.manager import retrieve_model
 from modelci.types.bo import Framework, Engine
 
