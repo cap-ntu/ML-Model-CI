@@ -1,6 +1,7 @@
 """
 Author: huangyz0918
-Dec: Abstract class for data preprocessing, implement this class and try to meet
+Author: Li Yuanming
+Dec: Abstract class for data pre-processing, implement this class and try to meet
     the data format that model requires here.
 Date: 26/04/2020
 """
@@ -10,9 +11,11 @@ import time
 from abc import ABCMeta, abstractmethod
 from threading import Thread
 
+import GPUtil
 import numpy as np
 
 from modelci.metrics.cadvisor.cadvisor import CAdvisor
+from modelci.utils.misc import get_device
 
 
 class BaseModelInspector(metaclass=ABCMeta):
@@ -70,16 +73,18 @@ class BaseModelInspector(metaclass=ABCMeta):
             batches.append(batch)
         return batches
 
-    def run_model(self, device_name, server_name):
+    def run_model(self, server_name: str, device: str):
         """Running the benchmarking for the specific model on the specific server.
 
         Args:
-            server_name: the container's name of Docker that serves the Deep Learning model.
-            device_name: The serving device's name, for example, RTX 2080Ti.
+            server_name (str): the container's name of Docker that serves the Deep Learning model.
+            device (str): Device name. E.g.: cpu, cuda, cuda:1.
         """
         # reset the results
         self.throughput_list = []
         self.latencies = []
+
+        cuda, device_num = get_device(device)
 
         # warm-up
         if self.batch_num > 10:
@@ -126,8 +131,17 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
         memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
 
+        if cuda:
+            gpu_device = GPUtil.getGPUs()[device_num]
+            device_name = gpu_device.name
+            device_id = gpu_device.uuid
+        else:
+            # TODO: Get CPU name
+            device_name = 'N.A.'
+            device_id = 'cpu'
+
         return self.print_results(
-            device_name, all_data_throughput, all_data_latency, custom_percentile,
+            device_name, device_id, all_data_throughput, all_data_latency, custom_percentile,
             all_batch_avg_memory_total,
             all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per
         )
@@ -183,6 +197,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     def print_results(
             self,
             device_name,
+            device_id,
             throughput,
             latency,
             custom_percentile,
@@ -225,14 +240,12 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         return {
             'device_name': device_name,
+            'device_id': device_id,
             'total_batches': len(self.batches),
             'batch_size': self.batch_size,
             'total_latency': latency,
             'total_throughput': throughput,
-            'avg_latency': latency / len(self.batches),
-            'p50_latency': percentile_50,
-            'p95_latency': percentile_95,
-            'p99_latency': percentile_99,
+            'latency': [latency / len(self.batches), percentile_50, percentile_95, percentile_99],
             'total_gpu_memory': all_batch_avg_memory_total,
             'gpu_memory_percentage': memory_avg_usage_per,
             'gpu_memory_used': all_batch_avg_memory_used,

@@ -270,7 +270,7 @@ class ModelService(object):
     def delete_dynamic_profiling_result(
             cls,
             id_: str,
-            dynamic_result_ip: Union[IPv4Address, IPv6Address],
+            dynamic_result_ip: Union[str, IPv4Address, IPv6Address],
             dynamic_result_device_id: str
     ):
         """Delete one dynamic profiling result to a model.

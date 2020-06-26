@@ -4,6 +4,7 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, Union, List
 
+import GPUtil
 import cv2
 import yaml
 
@@ -118,22 +119,22 @@ def register_model(
             test_img_bytes = cv2.imread('../../cat.jpg')
 
             kwargs = {'repeat_data': test_img_bytes, 'batch_size': 32, 'batch_num': 100, 'asynchronous': False}
-            engine_mapper = {
-                Engine.TORCHSCRIPT: CVTorchClient,
-                Engine.TFS: CVTFSClient,
-                Engine.ONNX: CVONNXClient,
-                Engine.TRT: CVTRTClient,
-            }
-            client = engine_mapper[engine](**kwargs)
-            container = serve(save_path=model_dir, device='cuda')
+            if engine == Engine.TORCHSCRIPT:
+                client = CVTorchClient(**kwargs)
+            elif engine == Engine.TFS:
+                client = CVTFSClient(**kwargs, inputs=model.inputs, model_name=model.name)
+            elif engine == Engine.ONNX:
+                client = CVONNXClient(**kwargs)
+            elif engine == Engine.TRT:
+                client = CVTRTClient(**kwargs)
+            else:
+                raise ValueError(f'No such serving engine: {engine}')
 
-            # todo
+            # TODO: profile at backend
+            container = serve(save_path=model_dir, device='cuda:0')
             profiler = Profiler(model_info=model, server_name=container.name, inspector=client)
-
-            result = profiler.diagnose()
-
-            print(result)
-
+            dpr = profiler.diagnose(GPUtil.getGPUs()[0].name)
+            ModelService.append_dynamic_profiling_result(model.id, dynamic_result=dpr)
             container.stop()
 
 

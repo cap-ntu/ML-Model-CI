@@ -1,6 +1,4 @@
 import argparse
-import logging
-import re
 from pathlib import Path
 from typing import Union
 
@@ -12,7 +10,7 @@ from modelci.hub.deployer import config
 from modelci.hub.manager import retrieve_model, retrieve_model_by_task
 from modelci.hub.utils import parse_path
 from modelci.types.bo import Framework, Engine
-from modelci.utils.misc import remove_dict_null
+from modelci.utils.misc import remove_dict_null, get_device
 
 
 def serve(
@@ -38,21 +36,7 @@ def serve(
     architecture: str = info['architecture']
     engine: Engine = info['engine']
 
-    # obtain device
-    device_num = None
-    if device == 'cpu':
-        cuda = False
-    else:
-        # match something like cuda, cuda:0, cuda:1
-        matched = re.match(r'^cuda(?::([0-9]+))?$', device)
-        if matched is None:  # load with CPU
-            logging.warning('Wrong device specification, using `cpu`.')
-            cuda = False
-        else:  # load with CUDA
-            cuda = True
-            device_num = matched.groups()[0]
-            if device_num is None:
-                device_num = 0
+    cuda, device_num = get_device(device)
 
     docker_tag = 'latest-gpu' if cuda else 'latest'
 

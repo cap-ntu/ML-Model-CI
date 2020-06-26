@@ -3,6 +3,8 @@ Author: huangyz0918
 Dec: profiling models.
 Date: 03/05/2020
 """
+import socket
+
 import docker
 
 from modelci.hub.client.onnx_client import CVONNXClient
@@ -38,7 +40,7 @@ class Profiler(object):
         self.model_info = model_info
         self.docker_client = docker.from_env()
 
-    def diagnose(self, device_name, batch_size=None) -> DynamicProfileResultBO:
+    def diagnose(self, batch_size=None, device='cuda') -> DynamicProfileResultBO:
         """Start diagnosing and profiling model."""
 
         try:  # to check the container has started successfully or not.
@@ -52,10 +54,11 @@ class Profiler(object):
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        result = self.inspector.run_model(device_name=device_name, server_name=self.server_name)
+        result = self.inspector.run_model(server_name=self.server_name, device=device)
 
         dpr_bo = DynamicProfileResultBO(
-            device_id='cuda:0',
+            ip=get_ip(),
+            device_id=result['device_id'],
             device_name=result['device_name'],
             batch=result['batch_size'],
             memory=ProfileMemory(
@@ -64,14 +67,9 @@ class Profiler(object):
                 utilization=result['gpu_utilization'],
             ),
             latency=ProfileLatency(
-                inference_latency=[
-                    result['avg_latency'],
-                    result['p50_latency'],
-                    result['p95_latency'],
-                    result['p99_latency'],
-                ]
+                inference_latency=result['latency'],
             ),
-            throughput=ProfileThroughput(inference_throughput=result['total_latency']),
+            throughput=ProfileThroughput(inference_throughput=result['total_throughput']),
             create_time=result['completed_time'],
         )
 
@@ -152,3 +150,16 @@ class Profiler(object):
         running_container = self.docker_client.containers.get(self.server_name)
         running_container.stop()
         print("successfully stop serving container: ", self.server_name)
+
+
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except socket.error:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
