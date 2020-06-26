@@ -236,7 +236,7 @@ class BaseModelInspector(metaclass=ABCMeta):
             'total_gpu_memory': all_batch_avg_memory_total,
             'gpu_memory_percentage': memory_avg_usage_per,
             'gpu_memory_used': all_batch_avg_memory_used,
-            'gpu_utilization': all_batch_avg_util,
+            'gpu_utilization': all_batch_avg_util / 100,
             'completed_time': complete_time,
         }
 

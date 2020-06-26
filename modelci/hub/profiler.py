@@ -10,7 +10,7 @@ from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.types.bo import Framework
+from modelci.types.bo import Framework, DynamicProfileResultBO, ProfileMemory, ProfileLatency, ProfileThroughput
 
 DEFAULT_BATCH_NUM = 100
 
@@ -38,7 +38,7 @@ class Profiler(object):
         self.model_info = model_info
         self.docker_client = docker.from_env()
 
-    def diagnose(self, device_name, batch_size=None):
+    def diagnose(self, device_name, batch_size=None) -> DynamicProfileResultBO:
         """Start diagnosing and profiling model."""
 
         try:  # to check the container has started successfully or not.
@@ -52,7 +52,30 @@ class Profiler(object):
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        return self.inspector.run_model(device_name=device_name, server_name=self.server_name)
+        result = self.inspector.run_model(device_name=device_name, server_name=self.server_name)
+
+        dpr_bo = DynamicProfileResultBO(
+            device_id='cuda:0',
+            device_name=result['device_name'],
+            batch=result['batch_size'],
+            memory=ProfileMemory(
+                total_memory=result['total_gpu_memory'],
+                memory_usage=result['gpu_memory_used'],
+                utilization=result['gpu_utilization'],
+            ),
+            latency=ProfileLatency(
+                inference_latency=[
+                    result['avg_latency'],
+                    result['p50_latency'],
+                    result['p95_latency'],
+                    result['p99_latency'],
+                ]
+            ),
+            throughput=ProfileThroughput(inference_throughput=result['total_latency']),
+            create_time=result['completed_time'],
+        )
+
+        return dpr_bo
 
     def diagnose_all_batches(self, device_name, arr: list):
         """Run model tests in batch size from list input."""
