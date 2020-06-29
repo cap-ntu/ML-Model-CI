@@ -21,7 +21,7 @@ const { Search } = Input;
  * @param {text}
  */
 function loadAllModels() {
-  const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
+  const targetUrl = '<your API address>';
   axios
     .get(targetUrl)
     .then(function (response) {
@@ -38,7 +38,7 @@ function loadAllModels() {
 }
 
 function loadModelById(id) {
-  const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
+  const targetUrl = '<your API address>';
   axios
     .get(targetUrl + id)
     .then(function (response) {
