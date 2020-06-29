@@ -6,12 +6,15 @@
     "@alifd/next": "^1.19.4",
     "@alifd/theme-design-pro": "^0.x",
     "antd": "^4.2.0",
+    "axios": "^0.19.2",
     "moment": "^2.24.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1"
   },
   "devDependencies": {
     "@ice/spec": "^1.0.0",
+    "@types/react": "^16.9.41",
+    "@types/react-dom": "^16.9.8",
     "build-plugin-antd": "^0.1.0",
     "build-plugin-fusion": "^0.1.0",
     "build-plugin-moment-locales": "^0.1.0",
