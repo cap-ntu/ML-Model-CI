@@ -22,7 +22,7 @@ const { Search } = Input;
  * @param {text}
  */
 function loadAllModels() {
-  const targetUrl = '<your API address>';
+  const targetUrl = 'http://localhost:5000';
   axios
     .get(targetUrl)
     .then(function (response) {
@@ -39,7 +39,7 @@ function loadAllModels() {
 }
 
 function loadModelById(id) {
-  const targetUrl = '<your API address>';
+  const targetUrl = 'http://localhost:5000';
   axios
     .get(targetUrl + id)
     .then(function (response) {
