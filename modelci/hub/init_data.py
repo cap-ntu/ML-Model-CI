@@ -57,7 +57,6 @@ class ModelExporter(object):
                 framework=framework,
                 version=ModelVersion(version),
                 convert=export_trt,
-                profile=False,
             )
         elif framework == Framework.PYTORCH:
             model = models.resnet50(pretrained=True)
@@ -71,7 +70,6 @@ class ModelExporter(object):
                 architecture='ResNet50',
                 framework=framework,
                 version=ModelVersion(version),
-                profile=False,
             )
         else:
             raise ValueError('Framework not supported.')

@@ -4,7 +4,6 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, Union, List
 
-import GPUtil
 import cv2
 import yaml
 
@@ -13,7 +12,6 @@ from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
-from modelci.hub.profiler import Profiler
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
@@ -56,7 +54,8 @@ def register_model(
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
     """
-    from modelci.hub.deployer.serving import serve
+    from modelci.controller import job_executor
+    from modelci.controller.executor import Job
 
     model_dir_list = list()
     if not convert:
@@ -113,6 +112,8 @@ def register_model(
             )
 
             ModelService.post_model(model)
+        # TODO refresh
+        model = ModelService.get_models(name=architecture, framework=framework, engine=engine, version=version)[0]
 
         # profile registered model
         if profile:
@@ -130,12 +131,8 @@ def register_model(
             else:
                 raise ValueError(f'No such serving engine: {engine}')
 
-            # TODO: profile at backend
-            container = serve(save_path=model_dir, device='cuda:0')
-            profiler = Profiler(model_bo=model, server_name=container.name, inspector=client)
-            dpr = profiler.diagnose(GPUtil.getGPUs()[0].name)
-            ModelService.append_dynamic_profiling_result(model.id, dynamic_result=dpr)
-            container.stop()
+            job = Job(client=client, device='cuda:0', model_bo=model, container_name='eager_wilson')
+            job_executor.submit(job)
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):

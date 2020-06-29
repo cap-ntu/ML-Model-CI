@@ -44,15 +44,14 @@ class BaseModelInspector(metaclass=ABCMeta):
         self.batch_size = batch_size
 
         self.raw_data = repeat_data
-        self.processed_data = self.raw_data
+        self.processed_data = self.data_preprocess(self.raw_data)
 
-        self.data_preprocess()
         self.batches = self.__client_batch_request()
 
     @abstractmethod
-    def data_preprocess(self):
+    def data_preprocess(self, x):
         """Handle raw data, after preprocessing we can get the processed_data, which is using for benchmarking."""
-        pass
+        return x
 
     def set_batch_size(self, new_bs):
         """update the batch size here.

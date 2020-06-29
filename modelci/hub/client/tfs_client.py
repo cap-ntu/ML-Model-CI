@@ -6,6 +6,7 @@ Date: 26/04/2020
 """
 from typing import List
 
+import cv2
 import grpc
 import numpy as np
 import tensorflow.compat.v1 as tf
@@ -26,19 +27,19 @@ class CVTFSClient(BaseModelInspector):
             batch_num=1,
             batch_size=1,
             asynchronous=None,
-            signature_name: str = 'serving_default'
+            signature_name: str = 'serving_default',
     ):
-        super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
-        tf.app.flags.DEFINE_string('server', f'0.0.0.0:{TFS_GRPC_PORT}', 'PredictionService host:port')
-        tf.app.flags.DEFINE_string('image', './data/cat.jpg', 'path to image in JPEG format')
-        self.request = None
-        self.stub = None
         self.model_name = model_name
         self.inputs = inputs
         self.signature_name = signature_name
+        super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
 
-    def data_preprocess(self):
-        pass
+        tf.app.flags.DEFINE_string('server', f'0.0.0.0:{TFS_GRPC_PORT}', 'PredictionService host:port')
+        self.request = None
+        self.stub = None
+
+    def data_preprocess(self, x):
+        return cv2.resize(x, tuple(self.inputs[0].shape[1:3]))
 
     def make_request(self, input_batch):
         flags = tf.app.flags.FLAGS

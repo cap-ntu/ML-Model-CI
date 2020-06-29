@@ -13,8 +13,8 @@ images=(
   'mlmodelci/pytorch-serving:latest-gpu'
   'mlmodelci/onnx-serving:latest'
   'mlmodelci/onnx-serving:latest-gpu'
-  'tensorflow/serving:latest'
-  'tensorflow/serving:latest-gpu'
+  'tensorflow/serving:2.1.0'
+  'tensorflow/serving:2.1.0-gpu'
   'nvcr.io/nvidia/tensorrtserver:19.10-py3'
 )
 

@@ -127,7 +127,7 @@ def optim_onnx(onnx_path, verbose=True):
 
 class TFSConverter(object):
     @staticmethod
-    def from_tf_model(model, save_path):
+    def from_tf_model(model, save_path: Path):
         import tensorflow as tf
 
         tf.compat.v1.saved_model.save(model, str(save_path))
