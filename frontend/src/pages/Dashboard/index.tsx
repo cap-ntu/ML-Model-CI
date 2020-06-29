@@ -383,7 +383,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.profile_result.dynamic_results[0].memory.utilization}
+                      {(record.profile_result.dynamic_results[0].memory.utilization * 100).toFixed(2)} %
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -407,7 +407,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.profile_result.dynamic_results[0].latency.preprocess_latency.avg}
+                      {(record.profile_result.dynamic_results[0].latency.preprocess_latency.avg * 1000).toFixed(2)} ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
