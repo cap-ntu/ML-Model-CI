@@ -335,7 +335,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.servingDevice}
+                      {record.profile_result.dynamic_results[0].device_name}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -359,7 +359,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.batchSize}
+                      {record.profile_result.dynamic_results[0].batch}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -371,7 +371,7 @@ export default class Dashboard extends React.Component {
                           color: 'black',
                         }}
                       >
-                        Profiling Number of Batches
+                        Device Memory Utilization
                       </a>
                     }
                   >
@@ -383,7 +383,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.batchNum}
+                      {record.profile_result.dynamic_results[0].memory.utilization}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -395,7 +395,7 @@ export default class Dashboard extends React.Component {
                           color: 'black',
                         }}
                       >
-                        All Batch Latency
+                        Preprocess Latency
                       </a>
                     }
                   >
@@ -407,7 +407,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.allLatency}
+                      {record.profile_result.dynamic_results[0].latency.preprocess_latency.avg}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -432,7 +432,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.allThroughput}
+                      {(record.profile_result.dynamic_results[0].throughput.inference_throughput).toFixed(2)} req/sec
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -456,7 +456,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.latency50}
+                      {(record.profile_result.dynamic_results[0].latency.inference_latency.p50 * 1000).toFixed(2)} ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -480,7 +480,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.latency95}
+                      {(record.profile_result.dynamic_results[0].latency.inference_latency.p95 * 1000).toFixed(2)} ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -504,7 +504,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.latency99}
+                      {(record.profile_result.dynamic_results[0].latency.inference_latency.p99 * 1000).toFixed(2)} ms
                     </Tag>
                   </Descriptions.Item>
                 </Descriptions>
