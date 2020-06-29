@@ -4,6 +4,7 @@ import os
 import tensorflow as tf
 from torchvision import models
 
+from modelci.controller import job_executor
 from modelci.hub.converter import TFSConverter
 from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
@@ -146,9 +147,13 @@ def export_model(args):
     elif model_name == 'mobilenet':
         ModelExporter.MobileNet(framework)
     else:
-        exit("Model Not Found.")
+        exit('Model Not Found.')
 
-    print("Model {} is exported.".format(args.model))
+    print(f'Model {args.model} is exported.')
+
+    job_executor.finish()
+    job_executor.join()
+    print(f'Finish profiling {args.model}.')
 
 
 if __name__ == '__main__':

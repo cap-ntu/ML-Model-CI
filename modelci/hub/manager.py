@@ -38,6 +38,7 @@ def register_model(
         In the `no_generate` model(i.e. `no_generate` flag is set to be `True`), `architecture`, `framework`, `engine`
         and `version` could be None. If any of the above arguments is `None`, all of them will be auto induced
         from the origin_model path. An `ValueError` will be raised if the mata info cannot be induced.
+
     Arguments:
         origin_model: The uploaded model without optimization. When `no_generate` flag is set, this parameter should
             be a str indicating model file path.

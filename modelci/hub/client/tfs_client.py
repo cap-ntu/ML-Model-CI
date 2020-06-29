@@ -34,16 +34,14 @@ class CVTFSClient(BaseModelInspector):
         self.signature_name = signature_name
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
 
-        tf.app.flags.DEFINE_string('server', f'0.0.0.0:{TFS_GRPC_PORT}', 'PredictionService host:port')
         self.request = None
         self.stub = None
 
     def data_preprocess(self, x):
-        return cv2.resize(x, tuple(self.inputs[0].shape[1:3]))
+        return cv2.resize(x, tuple(self.inputs[0].shape[1:3])).astype(np.float32)
 
     def make_request(self, input_batch):
-        flags = tf.app.flags.FLAGS
-        channel = grpc.insecure_channel(flags.server)
+        channel = grpc.insecure_channel(self.SEVER_URL)
         self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
         self.request = predict_pb2.PredictRequest()
         self.request.model_spec.name = self.model_name

@@ -7,6 +7,7 @@ Date: 6/29/2020
 """
 from queue import Queue
 from threading import Thread
+from typing import Union
 
 from docker.models.containers import Container
 
@@ -32,12 +33,13 @@ class Job(object):
 
 class JobExecutor(Thread):
     _instance = None
+    _queue_finish_flag = object()
 
     def __init__(self, q_size: int = 200):
         if self._instance is not None:
             return
         super().__init__()
-        self.job_queue: Queue[Job] = Queue(maxsize=q_size)
+        self.job_queue: Queue[Union[Job, object]] = Queue(maxsize=q_size)
         self._hold_container: Queue[Container] = Queue(maxsize=10)
         self._instance = self
 
@@ -52,12 +54,23 @@ class JobExecutor(Thread):
             container.stop()
 
     def submit(self, job: Job):
+        """Submit a profiling job to the executor."""
         self.job_queue.put(job)
+
+    def finish(self):
+        """The executor stops accepting new coming jobs.
+
+        This function should be called before `join`. Otherwise, the executor will never stop.
+        """
+        self.job_queue.put(self._queue_finish_flag)
 
     def run(self) -> None:
         from modelci.hub.deployer.serving import serve
 
         for job in iter(self.job_queue.get, None):
+            # exit the queue
+            if job is self._queue_finish_flag:
+                break
             # start a new container if container not started
             if job.container_name is None:
                 container = serve(save_path=job.model.saved_path, device=job.device)

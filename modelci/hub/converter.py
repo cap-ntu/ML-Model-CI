@@ -27,9 +27,13 @@ from ..hub.utils import GiB, parse_path, TensorRTPlatform
 
 class TorchScriptConverter(object):
     @staticmethod
-    def from_torch_module(model: nn.Module, save_path: Path):
-        """Save a loaded model in TorchScript
-        """
+    def from_torch_module(model: nn.Module, save_path: Path, override: bool = False):
+        """Save a loaded model in TorchScript."""
+        if save_path.with_suffix('.zip').exists():
+            if not override:  # file exist yet override flag is not set
+                # TODO: add logging
+                print('Use cached model')
+                return True
         model.eval()
         traced = torch.jit.script(model)
         save_path.parent.mkdir(parents=True, exist_ok=True)
@@ -45,7 +49,8 @@ class ONNXConverter(object):
             save_path: Path,
             inputs: Iterable[IOShape],
             opset: int = 10,
-            optimize: bool = True
+            optimize: bool = True,
+            override: bool = False,
     ):
         """Save a loaded model in ONNX.
 
@@ -54,8 +59,15 @@ class ONNXConverter(object):
             save_path (Path): ONNX saved path.
             inputs (Iterable[IOShape]): Model input shapes.
             opset (int): ONNX op set version.
-            optimize (bool): Flag to optimize ONNX network.
+            optimize (bool): Flag to optimize ONNX network. Default to `True`.
+            override (bool): Flag to override if the file with path to `save_path` has existed. Default to `False`.
         """
+        if save_path.with_suffix('.onnx').exists():
+            if not override:  # file exist yet override flag is not set
+                # TODO: add logging
+                print('Use cached model')
+                return True
+
         export_kwargs = dict()
 
         # assert batch size
@@ -127,8 +139,14 @@ def optim_onnx(onnx_path, verbose=True):
 
 class TFSConverter(object):
     @staticmethod
-    def from_tf_model(model, save_path: Path):
+    def from_tf_model(model, save_path: Path, override: bool = False):
         import tensorflow as tf
+
+        if save_path.with_suffix('.zip').exists():
+            if not override:  # file exist yet override flag is not set
+                # TODO: add logging
+                print('Use cached model')
+                return True
 
         tf.compat.v1.saved_model.save(model, str(save_path))
         subprocess.call(['zip', '-r', save_path.with_suffix('.zip'), save_path])
@@ -145,7 +163,8 @@ class TRTConverter(object):
             inputs: List[IOShape],
             outputs: List[IOShape],
             int8_calibrator=None,
-            create_model_config: bool = True
+            create_model_config: bool = True,
+            override: bool = False,
     ):
         """Takes an ONNX file and creates a TensorRT engine to run inference with
         From https://github.com/layerism/TensorRT-Inference-Server-Tutorial
@@ -153,6 +172,12 @@ class TRTConverter(object):
         FIXME: bug exist: TRT 6.x.x does not support opset 10 used in ResNet50(ONNX).
         """
         import tensorrt as trt
+
+        if save_path.with_suffix('.plan').exists():
+            if not override:  # file exist yet override flag is not set
+                # TODO: add logging
+                print('Use cached model')
+                return True
 
         onnx_path = Path(onnx_path)
         assert onnx_path.exists()
@@ -207,11 +232,17 @@ class TRTConverter(object):
             max_workspace_size_bytes: int = 1 << 32,
             precision_mode: str = 'FP32',
             maximum_cached_engines: int = 100,
-            create_model_config: bool = True
+            create_model_config: bool = True,
+            override: bool = False,
     ):
-        """Convert TensorFlow SavedModel to TF-TRT SavedModel
-        """
+        """Convert TensorFlow SavedModel to TF-TRT SavedModel."""
         from tensorflow.python.compiler.tensorrt import trt_convert as trt
+
+        if save_path.with_suffix('.zip').exists():
+            if not override:  # file exist yet override flag is not set
+                # TODO: add logging
+                print('Use cached model')
+                return True
 
         tf_path = Path(tf_path)
         save_path = Path(save_path)
