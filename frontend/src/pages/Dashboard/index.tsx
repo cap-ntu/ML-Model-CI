@@ -100,7 +100,7 @@ export default class Dashboard extends React.Component {
   fetch = (params = {}) => {
     this.setState({ loading: true });
     reqwest({
-      url: 'http://155.69.146.35:8000/api/v1/model/',
+      url: '<your API address>',
       method: 'get',
       type: 'json',
       data: getRandomuserParams(params),
@@ -117,7 +117,7 @@ export default class Dashboard extends React.Component {
   };
 
   loadAllModels = () => {
-    const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
+    const targetUrl = '<your API address>';
     axios
       .get(targetUrl)
       .then((response) => {
