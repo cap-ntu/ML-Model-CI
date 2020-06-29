@@ -36,16 +36,10 @@ const columns = [
     key: 'task',
     className: 'column',
   },
-  // {
-  //   title: 'Model User',
-  //   dataIndex: 'modelUser',
-  //   key: 'modelUser',
-  //   className: 'column',
-  // },
   {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
+    title: 'Model User',
+    dataIndex: 'creator',
+    key: 'creator',
     className: 'column',
   },
   {
@@ -78,6 +72,7 @@ export default class Dashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      profilingResult: {},
       allModelInfo: [],
       pagination: {
         current: 1,
@@ -137,24 +132,6 @@ export default class Dashboard extends React.Component {
       .then(() => {
         // always executed
       });
-  };
-
-  loadModelById = (id) => {
-    const targetUrl = 'http://155.69.146.35:8000/api/v1/model/';
-    axios
-      .get(targetUrl + id)
-      .then((response) => {
-        // handle success
-        return response;
-      })
-      .catch((error) => {
-        // handle error
-        // console.log(error);
-      })
-      .then(() => {
-        // always executed
-      });
-    return [];
   };
 
   public render() {
