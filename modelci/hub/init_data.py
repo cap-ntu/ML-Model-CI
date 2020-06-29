@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import tensorflow as tf
 from torchvision import models
@@ -8,6 +9,8 @@ from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
 from modelci.types.bo import Framework, IOShape, ModelVersion, Engine
 from modelci.types.trtis_objects import ModelInputFormat
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 
 class ModelExporter(object):
@@ -53,7 +56,8 @@ class ModelExporter(object):
                 architecture='ResNet50',
                 framework=framework,
                 version=ModelVersion(version),
-                convert=export_trt
+                convert=export_trt,
+                profile=False,
             )
         elif framework == Framework.PYTORCH:
             model = models.resnet50(pretrained=True)
@@ -66,7 +70,8 @@ class ModelExporter(object):
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet50',
                 framework=framework,
-                version=ModelVersion(version)
+                version=ModelVersion(version),
+                profile=False,
             )
         else:
             raise ValueError('Framework not supported.')

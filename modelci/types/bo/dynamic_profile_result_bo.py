@@ -59,22 +59,22 @@ class ProfileLatency(object):
         """Initializer."""
         # convert latencies to InfoTuple type
         if init_latency is None:
-            init_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+            init_latency = InfoTuple(0, 0, 0, 0)
         elif isinstance(init_latency, Iterable):
             init_latency = InfoTuple(*init_latency)
 
         if preprocess_latency is None:
-            preprocess_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+            preprocess_latency = InfoTuple(0, 0, 0, 0)
         elif isinstance(preprocess_latency, Iterable):
             preprocess_latency = InfoTuple(*preprocess_latency)
 
         if inference_latency is None:
-            inference_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+            inference_latency = InfoTuple(0, 0, 0, 0)
         elif isinstance(inference_latency, Iterable):
             inference_latency = InfoTuple(*inference_latency)
 
         if postprocess_latency is None:
-            postprocess_latency = InfoTuple(float('inf'), float('inf'), float('inf'), float('inf'))
+            postprocess_latency = InfoTuple(0, 0, 0, 0)
         elif isinstance(postprocess_latency, Iterable):
             postprocess_latency = InfoTuple(*postprocess_latency)
 
@@ -104,10 +104,10 @@ class ProfileThroughput(object):
     """
     def __init__(
             self,
-            batch_formation_throughput: float = float('inf'),
-            preprocess_throughput: float = float('inf'),
-            inference_throughput: float = float('inf'),
-            postprocess_throughput: float = float('inf'),
+            batch_formation_throughput: float = 0,
+            preprocess_throughput: float = 0,
+            inference_throughput: float = 0,
+            postprocess_throughput: float = 0,
     ):
         """Initializer."""
         # data to batched data throughput
