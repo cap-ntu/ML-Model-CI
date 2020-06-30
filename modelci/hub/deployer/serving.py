@@ -38,8 +38,6 @@ def serve(
 
     cuda, device_num = get_device(device)
 
-    docker_tag = 'latest-gpu' if cuda else 'latest'
-
     docker_client = docker.from_env()
 
     # set mount
@@ -54,18 +52,21 @@ def serve(
         environment['CUDA_VISIBLE_DEVICES'] = device_num
 
     if engine == Engine.TFS:
+        docker_tag = '2.1.0-gpu' if cuda else '2.1.0'
         ports = {'8501': config.TFS_HTTP_PORT, '8500': config.TFS_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
             f'tensorflow/serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.TORCHSCRIPT:
+        docker_tag = 'latest-gpu' if cuda else 'latest'
         ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
             f'mlmodelci/pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.ONNX:
+        docker_tag = 'latest-gpu' if cuda else 'latest'
         ports = {'8000': config.ONNX_HTTP_PORT, '8001': config.ONNX_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(

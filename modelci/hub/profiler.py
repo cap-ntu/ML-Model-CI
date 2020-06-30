@@ -4,6 +4,9 @@ Author: Li Yuanming
 Dec: profiling models.
 Date: 03/05/2020
 """
+import random
+import time
+
 import docker
 
 from modelci.hub.client.onnx_client import CVONNXClient
@@ -11,6 +14,7 @@ from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
+from modelci.persistence.exceptions import ServiceException
 from modelci.types.bo import (
     Framework,
     DynamicProfileResultBO,
@@ -47,16 +51,28 @@ class Profiler(object):
         self.model_info = model_bo
         self.docker_client = docker.from_env()
 
-    def diagnose(self, batch_size=None, device='cuda') -> DynamicProfileResultBO:
-        """Start diagnosing and profiling model."""
+    def diagnose(self, batch_size: int = None, device='cuda', timeout=10) -> DynamicProfileResultBO:
+        """Start diagnosing and profiling model.
 
-        try:  # to check the container has started successfully or not.
-            self.docker_client.containers.get(self.server_name)
-        except Exception:
-            print(
-                '\n'
-                'ModelCI Error: starting the serving engine failed, please start the Docker container manually. \n'
-            )
+        Args:
+            batch_size (int): Batch size.
+            device (str): Device name.
+            timeout (float): Waiting for docker container timeout in second.
+        """
+        model_status = False
+        retry_time = 0  # use binary exponential backoff algorithm
+        tick = time.time()
+        while time.time() - tick < timeout:
+            if self.inspector.check_model_status():
+                model_status = True
+                break
+            retry_time += 1
+            # get backoff time in s
+            backoff_time = random.randint(0, 2 ** retry_time - 1) * 1e-3
+            time.sleep(backoff_time)
+
+        if not model_status:  # raise an error as model is not served.
+            raise ServiceException('Model not served!')
 
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
@@ -143,7 +159,7 @@ class Profiler(object):
                 batch_num=DEFAULT_BATCH_NUM,
                 asynchronous=False,
                 inputs=self.model_info.inputs,
-                model_name=self.model_info.name
+                model_bo=self.model_info.name
             )
         elif serving_engine == Framework.TORCHSCRIPT:
             return CVTorchClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)

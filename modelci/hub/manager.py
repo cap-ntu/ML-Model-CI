@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterable, Union, List
 
 import cv2
+import tensorflow as tf
 import yaml
 
 from modelci.hub.client.onnx_client import CVONNXClient
@@ -118,13 +119,16 @@ def register_model(
 
         # profile registered model
         if profile:
-            test_img_bytes = cv2.imread('../../cat.jpg')
+            file = tf.keras.utils.get_file(
+                "grace_hopper.jpg",
+                "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
+            test_img_bytes = cv2.imread(file)
 
             kwargs = {'repeat_data': test_img_bytes, 'batch_size': 32, 'batch_num': 100, 'asynchronous': False}
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
             elif engine == Engine.TFS:
-                client = CVTFSClient(**kwargs, inputs=model.inputs, model_name=model.name)
+                client = CVTFSClient(**kwargs, model_bo=model)
             elif engine == Engine.ONNX:
                 client = CVONNXClient(**kwargs)
             elif engine == Engine.TRT:
@@ -132,7 +136,7 @@ def register_model(
             else:
                 raise ValueError(f'No such serving engine: {engine}')
 
-            job = Job(client=client, device='cuda:0', model_bo=model, container_name='eager_wilson')
+            job = Job(client=client, device='cuda:0', model_bo=model)
             job_executor.submit(job)
 
 

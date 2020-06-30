@@ -20,7 +20,7 @@ if __name__ == "__main__":
     )[0]
 
     tfs_client = CVTFSClient(
-        test_img, batch_num=100, batch_size=32, asynchronous=True, inputs=model_bo.inputs, model_name=model_bo.name
+        test_img, batch_num=100, batch_size=32, asynchronous=True, inputs=model_bo.inputs, model_bo=model_bo.name
     )
 
     profiler = Profiler(model_bo=model_bo, server_name='tfs', inspector=tfs_client)

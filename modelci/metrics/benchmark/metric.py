@@ -72,6 +72,11 @@ class BaseModelInspector(metaclass=ABCMeta):
             batches.append(batch)
         return batches
 
+    @abstractmethod
+    def check_model_status(self) -> bool:
+        """Check the loading status for model."""
+        raise NotImplementedError('Method `check_model_status` not implemented.')
+
     def run_model(self, server_name: str, device: str):
         """Running the benchmarking for the specific model on the specific server.
 

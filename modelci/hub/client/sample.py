@@ -41,7 +41,7 @@ if __name__ == "__main__":
         batch_size=32,
         asynchronous=False,
         inputs=model_bo.inputs,
-        model_name=model_bo.name,
+        model_bo=model_bo.name,
     )
     # trt_client = CVTRTClient(test_img, batch_num=100, batch_size=32, asynchronous=False)
     # torch_client = CVTorchClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
