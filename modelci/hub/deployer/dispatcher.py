@@ -52,6 +52,7 @@ def serve(
         environment['CUDA_VISIBLE_DEVICES'] = device_num
 
     if engine == Engine.TFS:
+        # Tensorflow Serving 2.2.0 has the issue: https://github.com/tensorflow/serving/issues/1663
         docker_tag = '2.1.0-gpu' if cuda else '2.1.0'
         ports = {'8501': config.TFS_HTTP_PORT, '8500': config.TFS_GRPC_PORT}
         environment['MODEL_NAME'] = architecture

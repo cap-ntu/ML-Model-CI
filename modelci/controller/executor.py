@@ -22,12 +22,12 @@ class Job(object):
             self,
             client: BaseModelInspector,
             device: str,
-            model_bo: ModelBO,
+            model_info: ModelBO,
             container_name: str = None
     ):
         self.client = client
         self.device = device
-        self.model = model_bo
+        self.model = model_info
         self.container_name = container_name
 
 
@@ -61,11 +61,13 @@ class JobExecutor(Thread):
         """The executor stops accepting new coming jobs.
 
         This function should be called before `join`. Otherwise, the executor will never stop.
+
+        TODO: Save exit when there is an exception. Try excepthook in python 3.8
         """
         self.job_queue.put(self._queue_finish_flag)
 
     def run(self) -> None:
-        from modelci.hub.deployer.serving import serve
+        from modelci.hub.deployer.dispatcher import serve
 
         for job in iter(self.job_queue.get, None):
             # exit the queue

@@ -136,8 +136,10 @@ def register_model(
             else:
                 raise ValueError(f'No such serving engine: {engine}')
 
-            job = Job(client=client, device='cuda:0', model_bo=model)
-            job_executor.submit(job)
+            job_cuda = Job(client=client, device='cuda:0', model_info=model)
+            # job_cpu = Job(client=client, device='cpu', model_info=model)
+            job_executor.submit(job_cuda)
+            # job_executor.submit(job_cpu)
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):
