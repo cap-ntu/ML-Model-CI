@@ -24,19 +24,18 @@ test_data_item = ...
 batch_num = 100
 batch_size = 32
 
-model_bo = ...
+# Obtain model info from `retrieve_models` API.
+model_info = ...
 
 # create a client
 torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
 
 # init the profiler
-profiler = Profiler(model_bo=model_bo, server_name='name of your server', inspector=torch_client)
+profiler = Profiler(model_info=model_info, server_name='name of your server', inspector=torch_client)
 
 # start profiling model
-profiler.diagnose('cuda:0')
+profiler.diagnose(device='cuda:0')
 ```
-
-
 
 ## Build a Customized Client
 
@@ -44,30 +43,23 @@ For flexible usage, you can build a customized client if necessary. We provide a
 
 Once you have implemented a customized client, you can pass its instance to `Profiler`, and start profiling like the above shows.
 
-```python 
-import grpc
-import tensorflow.compat.v1 as tf
-from tensorflow_serving.apis import predict_pb2
-from tensorflow_serving.apis import prediction_service_pb2_grpc
-
-
+```python
 from modelci.metrics.benchmark.metric import BaseModelInspector
 
-class YourClient(BaseModelInspector):
+class MyClient(BaseModelInspector):
     def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=None):
         """
         Parameters of parent's __init__, you can choose some to implement.
-        ----------
-        @param batch_num: the number of batches you want to run
-        @param batch_size: batch size you want
-        @param repeat_data: data unit to repeat.
-        @param asynchronous: running asynchronously, default is False.
-        @param sla: SLA, default is 1 sec.
-        @param percentile: The SLA percentile. Default is 95.
+        
+        Args:
+            batch_num: the number of batches you want to run
+            batch_size: batch size you want
+            repeat_data: data unit to repeat.
+            asynchronous: running asynchronously, default is False.
         """
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
 
-    def data_preprocess(self):
+    def data_preprocess(self, x):
         """
         Handle raw data, after preprocessing we can get the 
         processed_data, which is using for benchmarking.
@@ -87,9 +79,8 @@ class YourClient(BaseModelInspector):
         Abstract function for sub-class to implement the 
         detailed infer function.
 
-        Parameters
-        ----------        
-        @param input_batch: The batch data in the request.
+        Args:
+            input_batch: The batch data in the request.
         """
         pass
 ```

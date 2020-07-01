@@ -79,7 +79,7 @@ class JobExecutor(Thread):
                 self._hold_container.put(container)
             else:
                 container_name = job.container_name
-            profiler = Profiler(model_bo=job.model, server_name=container_name, inspector=job.client)
+            profiler = Profiler(model_info=job.model, server_name=container_name, inspector=job.client)
             dpr = profiler.diagnose(device=job.device)
             ModelService.append_dynamic_profiling_result(job.model.id, dynamic_result=dpr)
             if job.container_name is None:

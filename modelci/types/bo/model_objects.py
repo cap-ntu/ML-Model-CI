@@ -182,7 +182,7 @@ class Weight(object):
 
     def __init__(
             self,
-            weight: bytes = None,
+            weight: Union[bytes, BinaryIO] = None,
             *,
             filename: str = 'dummy',  # TODO: file name auto-gen
             content_type: str = 'application/octet-stream',
@@ -192,7 +192,7 @@ class Weight(object):
         """Initializer.
 
         Args:
-            weight (Optional[bytes]): model weight read from Grid FS.
+            weight (Optional[Union[bytes, BinaryIO]]): model weight read from Grid FS.
             gridfs_file (Optional[GridFSProxy]): Grid FS object storing the weight. Default to None.
                 This attribute is to keep track of Grid FS file, in order to perform a file update.
             lazy_fetch (bool): The weight is not loaded from MongoDB initially when this flag is set `True`. Default to

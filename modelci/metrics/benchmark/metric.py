@@ -188,16 +188,17 @@ class BaseModelInspector(metaclass=ABCMeta):
         """
         pass
 
-    # TODO: save result as a dict or something with logger
     def dump_result(self, path=None):
         """Export the testing results to local JSON file.
 
         Args:
             path: The path to save the results.
+
+        TODO:
+            save result as a dict or something with logger
         """
         pass
 
-    # TODO: replace printing with saving code in mongodb, or logging.
     def print_results(
             self,
             device_name,
@@ -221,6 +222,8 @@ class BaseModelInspector(metaclass=ABCMeta):
             all_batch_avg_util: The average GPU utilization of inferring all batches.
             memory_avg_usage_per: The GPU memory usage percentile.
             device_name: The serving device's name, for example, RTX 2080Ti.
+        TODO:
+            replace printing with saving code in mongodb, or logging.
         """
         percentile_50 = np.percentile(self.latencies, 50)
         percentile_95 = np.percentile(self.latencies, 95)

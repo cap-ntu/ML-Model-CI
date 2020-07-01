@@ -68,7 +68,7 @@ def auto_model_profiling(model_info, server_name, device_util_thd=0.01, device_m
             different_kind_devices[gpu.name] = gpu
 
     for device in list(different_kind_devices.values()):
-        profiler = Profiler(model_bo=model_info, server_name=server_name)
+        profiler = Profiler(model_info=model_info, server_name=server_name)
         monitor = UtilMonitor(device, profiler, period, device_util_thd, device_memory_thd)
         monitor.start()
 

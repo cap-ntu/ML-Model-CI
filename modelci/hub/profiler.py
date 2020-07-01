@@ -32,12 +32,12 @@ class Profiler(object):
     """Profiler class, call this to test model performance.
 
     Args:
-        model_bo (ModelBO): information about the model, can get from `retrieve_model` method.
+        model_info (ModelBO): Information about the model, can get from `retrieve_model` method.
         server_name (str): Serving platform's docker container's name.
         inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
     """
 
-    def __init__(self, model_bo: ModelBO, server_name: str, inspector: BaseModelInspector = None):
+    def __init__(self, model_info: ModelBO, server_name: str, inspector: BaseModelInspector = None):
         """Init a profiler object."""
         if inspector is None:
             self.inspector = self.__auto_select_client()  # TODO: To Improve
@@ -48,7 +48,7 @@ class Profiler(object):
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
         self.server_name = server_name
-        self.model_info = model_bo
+        self.model_bo = model_info
         self.docker_client = docker.from_env()
 
     def diagnose(self, batch_size: int = None, device='cuda', timeout=10) -> DynamicProfileResultBO:
@@ -109,11 +109,11 @@ class Profiler(object):
         """Select the free machine and deploy automatically to test the model using available platforms."""
         from modelci.hub.deployer.serving import serve
 
-        saved_path = self.model_info.saved_path
-        model_id = self.model_info.id
-        model_name = self.model_info.name
-        model_framework = self.model_info.framework
-        serving_engine = self.model_info.engine
+        saved_path = self.model_bo.saved_path
+        model_id = self.model_bo.id
+        model_name = self.model_bo.name
+        model_framework = self.model_bo.framework
+        serving_engine = self.model_bo.engine
 
         # for testing
         print('\n available GPU devices: ', [device.name for device in available_devices])
@@ -148,7 +148,7 @@ class Profiler(object):
     def __auto_select_client(self):
         # according to the serving engine, select the right testing client.
         # TODO: replace the input None data in each client with self-generated data.
-        serving_engine = self.model_info.engine
+        serving_engine = self.model_bo.engine
         if serving_engine == Framework.NONE:
             raise Exception(
                 'please choose a serving engine for the model')
@@ -158,8 +158,7 @@ class Profiler(object):
                 None,
                 batch_num=DEFAULT_BATCH_NUM,
                 asynchronous=False,
-                inputs=self.model_info.inputs,
-                model_bo=self.model_info.name
+                model_info=self.model_bo
             )
         elif serving_engine == Framework.TORCHSCRIPT:
             return CVTorchClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)

@@ -17,6 +17,7 @@ from tensorflow_serving.apis import prediction_service_pb2_grpc
 from modelci.hub.deployer.config import TFS_GRPC_PORT, TFS_HTTP_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
+from modelci.types.type_conversion import model_data_type_to_np
 
 
 class CVTFSClient(BaseModelInspector):
@@ -25,23 +26,25 @@ class CVTFSClient(BaseModelInspector):
     def __init__(
             self,
             repeat_data,
-            model_bo: ModelBO,
+            model_info: ModelBO,
             batch_num=1,
             batch_size=1,
             asynchronous=None,
             signature_name: str = 'serving_default',
     ):
-        self.model_name = model_bo.name
-        self.inputs = model_bo.inputs
+        self.model_name = model_info.name
+        self.inputs = model_info.inputs
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
 
         self.request = None
         self.stub = None
-        self.version = model_bo.version
+        self.version = model_info.version
         self.signature_name = signature_name
 
     def data_preprocess(self, x):
-        return cv2.resize(x, tuple(self.inputs[0].shape[1:3])).astype(np.float32)
+        shape = self.inputs[0].shape
+        dtype = model_data_type_to_np(self.inputs[0].dtype)
+        return cv2.resize(x, tuple(shape[1:3])).astype(dtype)
 
     def make_request(self, input_batch):
         channel = grpc.insecure_channel(f'{self.SERVER_HOST}:{TFS_GRPC_PORT}')

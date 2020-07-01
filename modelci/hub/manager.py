@@ -128,7 +128,7 @@ def register_model(
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
             elif engine == Engine.TFS:
-                client = CVTFSClient(**kwargs, model_bo=model)
+                client = CVTFSClient(**kwargs, model_info=model)
             elif engine == Engine.ONNX:
                 client = CVONNXClient(**kwargs)
             elif engine == Engine.TRT:

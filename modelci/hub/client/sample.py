@@ -40,8 +40,7 @@ if __name__ == "__main__":
         batch_num=100,
         batch_size=32,
         asynchronous=False,
-        inputs=model_bo.inputs,
-        model_bo=model_bo.name,
+        model_info=model_bo,
     )
     # trt_client = CVTRTClient(test_img, batch_num=100, batch_size=32, asynchronous=False)
     # torch_client = CVTorchClient(test_img_ndarray, batch_num=100, batch_size=32, asynchronous=False)
@@ -49,8 +48,8 @@ if __name__ == "__main__":
 
     # model_path = '../resnet50_explicit_path.yml'
     # register_model_from_yaml(model_path)
-    profiler = Profiler(model_bo=model_bo, server_name='tfs', inspector=tfs_client)
-    profiler.diagnose('cuda:0')
+    profiler = Profiler(model_info=model_bo, server_name='tfs', inspector=tfs_client)
+    profiler.diagnose(device='cuda:0')
     # profiler.diagnose(batch_size=1) # you can use a new batch_size to overwrite the client's.
     # profiler.diagnose_all_batches([1, 2, 4, 8, 16, 32]) # run all 1, 2, 4, 8, 16, 32 batch size
 
