@@ -62,6 +62,7 @@ dependencies:
   - packaging=20.3
   - pcre=8.43
   - pillow=7.1.2
+  - pip=20.1.1
   - pixman=0.38.0
   - pluggy=0.13.1
   - py=1.8.1
@@ -99,6 +100,7 @@ dependencies:
       - docker==4.2.0
       - fastapi==0.58.0
       - future==0.18.2
+      - gputil==1.4.0
       - grpclib==0.3.1
       - h11==0.9.0
       - h2==3.2.0
@@ -109,9 +111,9 @@ dependencies:
       - multidict==4.7.5
       - numpy==1.18.4
       - onnx==1.6.0
-      - pip==20.1.1
       - pprintpp==0.4.0
       - protobuf==3.12.1
+      - py-cpuinfo==6.0.0
       - pydantic==1.5.1
       - pygments==2.6.1
       - pymongo==3.10.1

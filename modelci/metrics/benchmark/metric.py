@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 from threading import Thread
 
 import GPUtil
+import cpuinfo
 import numpy as np
 
 from modelci.metrics.cadvisor.cadvisor import CAdvisor
@@ -138,10 +139,9 @@ class BaseModelInspector(metaclass=ABCMeta):
         if cuda:
             gpu_device = GPUtil.getGPUs()[device_num]
             device_name = gpu_device.name
-            device_id = gpu_device.uuid
+            device_id = f'cuda:{gpu_device.id}'
         else:
-            # TODO: Get CPU name
-            device_name = 'N.A.'
+            device_name = cpuinfo.get_cpu_info()['brand_raw']
             device_id = 'cpu'
 
         return self.print_results(

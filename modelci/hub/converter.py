@@ -57,7 +57,7 @@ class ONNXConverter(object):
         Arguments:
             model (nn.Module): PyTorch model.
             save_path (Path): ONNX saved path.
-            inputs (Iterable[IOShape]): Model input shapes.
+            inputs (Iterable[IOShape]): Model input shapes. Batch size is indicated at the dimension.
             opset (int): ONNX op set version.
             optimize (bool): Flag to optimize ONNX network. Default to `True`.
             override (bool): Flag to override if the file with path to `save_path` has existed. Default to `False`.
