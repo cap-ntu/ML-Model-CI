@@ -10,12 +10,14 @@ import datetime
 import time
 from abc import ABCMeta, abstractmethod
 from threading import Thread
+from typing import Any
 
 import GPUtil
 import cpuinfo
 import numpy as np
 
 from modelci.metrics.cadvisor.cadvisor import CAdvisor
+from modelci.types.bo import ModelBO
 from modelci.utils.misc import get_device
 
 
@@ -33,7 +35,16 @@ class BaseModelInspector(metaclass=ABCMeta):
         percentile: The SLA percentile. Default is 95.
     """
 
-    def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=False, percentile=95, sla=1.0):
+    def __init__(
+            self,
+            repeat_data,
+            model_info: ModelBO,
+            batch_num=1,
+            batch_size=1,
+            asynchronous=False,
+            percentile=95,
+            sla=1.0
+    ):
         self.throughput_list = []
         self.latencies = []
 
@@ -43,6 +54,7 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         self.batch_num = batch_num
         self.batch_size = batch_size
+        self.model_info = model_info
 
         self.raw_data = repeat_data
         self.processed_data = self.data_preprocess(self.raw_data)
@@ -167,24 +179,24 @@ class BaseModelInspector(metaclass=ABCMeta):
         Args:
             batch_input: The batch data in the request.
         """
-        self.make_request(batch_input)
+        request = self.make_request(batch_input)
         start_time = time.time()
-        self.infer(batch_input)
+        self.infer(request)
         end_time = time.time()
         return end_time - start_time
 
-    def make_request(self, input_batch):
+    def make_request(self, input_batch) -> Any:
         """Function for sub-class to implement before inferring, to create the `self.request` can be
             overridden if needed.
         """
         pass
 
     @abstractmethod
-    def infer(self, input_batch):
+    def infer(self, request):
         """Abstract function for sub-class to implement the detailed infer function.
 
         Args:
-            input_batch: The batch data in the request.
+            request: The batch data in the request.
         """
         pass
 

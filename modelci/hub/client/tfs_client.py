@@ -36,7 +36,6 @@ class CVTFSClient(BaseModelInspector):
         self.inputs = model_info.inputs
         super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
 
-        self.request = None
         self.stub = None
         self.version = model_info.version
         self.signature_name = signature_name
@@ -49,9 +48,16 @@ class CVTFSClient(BaseModelInspector):
     def make_request(self, input_batch):
         channel = grpc.insecure_channel(f'{self.SERVER_HOST}:{TFS_GRPC_PORT}')
         self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
-        self.request = predict_pb2.PredictRequest()
-        self.request.model_spec.name = self.model_name
-        self.request.model_spec.signature_name = self.signature_name
+        input_batch = np.stack(input_batch)
+
+        request = predict_pb2.PredictRequest()
+        request.model_spec.name = self.model_name
+        request.model_spec.signature_name = self.signature_name
+        for input_ in self.inputs:
+            tensor_proto = tf.make_tensor_proto(input_batch, shape=input_batch.shape)
+            request.inputs[input_.name].CopyFrom(tensor_proto)
+
+        return request
 
     def check_model_status(self) -> bool:
         api_url = f'http://{self.SERVER_HOST}:{TFS_HTTP_PORT}/v1/models/{self.model_name}/versions/{self.version}'
@@ -66,9 +72,5 @@ class CVTFSClient(BaseModelInspector):
             print(e, file=sys.stderr)
             return False
 
-    def infer(self, input_batch):
-        input_batch = np.stack(input_batch)
-        for input_ in self.inputs:
-            tensor_proto = tf.make_tensor_proto(input_batch, shape=input_batch.shape)
-            self.request.inputs[input_.name].CopyFrom(tensor_proto)
-        self.stub.Predict(self.request, 10.0)
+    def infer(self, request):
+        self.stub.Predict(request, 10.0)
