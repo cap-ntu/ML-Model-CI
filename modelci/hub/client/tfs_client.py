@@ -32,17 +32,21 @@ class CVTFSClient(BaseModelInspector):
             asynchronous=None,
             signature_name: str = 'serving_default',
     ):
-        self.model_name = model_info.name
-        self.inputs = model_info.inputs
-        super().__init__(repeat_data=repeat_data, batch_num=batch_num, batch_size=batch_size, asynchronous=asynchronous)
+        super().__init__(
+            repeat_data=repeat_data,
+            model_info=model_info,
+            batch_num=batch_num,
+            batch_size=batch_size,
+            asynchronous=asynchronous
+        )
 
         self.stub = None
         self.version = model_info.version
         self.signature_name = signature_name
 
     def data_preprocess(self, x):
-        shape = self.inputs[0].shape
-        dtype = model_data_type_to_np(self.inputs[0].dtype)
+        shape = self.model_info.inputs[0].shape
+        dtype = model_data_type_to_np(self.model_info.inputs[0].dtype)
         return cv2.resize(x, tuple(shape[1:3])).astype(dtype)
 
     def make_request(self, input_batch):
@@ -51,16 +55,16 @@ class CVTFSClient(BaseModelInspector):
         input_batch = np.stack(input_batch)
 
         request = predict_pb2.PredictRequest()
-        request.model_spec.name = self.model_name
+        request.model_spec.name = self.model_info.name
         request.model_spec.signature_name = self.signature_name
-        for input_ in self.inputs:
+        for input_ in self.model_info.inputs:
             tensor_proto = tf.make_tensor_proto(input_batch, shape=input_batch.shape)
             request.inputs[input_.name].CopyFrom(tensor_proto)
 
         return request
 
     def check_model_status(self) -> bool:
-        api_url = f'http://{self.SERVER_HOST}:{TFS_HTTP_PORT}/v1/models/{self.model_name}/versions/{self.version}'
+        api_url = f'http://{self.SERVER_HOST}:{TFS_HTTP_PORT}/v1/models/{self.model_info.name}/versions/{self.version}'
         try:
             response = requests.get(api_url)
             state = response.json()['model_version_status'][0]['state']

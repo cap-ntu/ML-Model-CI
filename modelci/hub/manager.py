@@ -12,7 +12,7 @@ from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
-from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
+from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
@@ -124,11 +124,17 @@ def register_model(
                 "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
             test_img_bytes = cv2.imread(file)
 
-            kwargs = {'repeat_data': test_img_bytes, 'batch_size': 32, 'batch_num': 100, 'asynchronous': False}
+            kwargs = {
+                'repeat_data': test_img_bytes,
+                'batch_size': 32,
+                'batch_num': 100,
+                'asynchronous': False,
+                'model_info': model,
+            }
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
             elif engine == Engine.TFS:
-                client = CVTFSClient(**kwargs, model_info=model)
+                client = CVTFSClient(**kwargs)
             elif engine == Engine.ONNX:
                 client = CVONNXClient(**kwargs)
             elif engine == Engine.TRT:
@@ -227,8 +233,8 @@ def _generate_model_family(
         generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape
-        ONNXConverter.from_torch_module(model, onnx_dir, inputs, optimize=False)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+        # ONNXConverter.from_torch_module(model, onnx_dir, inputs, optimize=False)
+        # generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
         # TRTConverter.from_onnx(

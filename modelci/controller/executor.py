@@ -49,10 +49,6 @@ class JobExecutor(Thread):
         else:
             return cls._instance
 
-    def __del__(self):
-        for container in iter(self._hold_container.get, None):
-            container.stop()
-
     def submit(self, job: Job):
         """Submit a profiling job to the executor."""
         self.job_queue.put(job)
