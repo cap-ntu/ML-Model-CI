@@ -37,23 +37,27 @@ class CVONNXClient(BaseModelInspector):
             [
                 transforms.ToPILImage(),
                 transforms.Resize(255),
-                transforms.CenterCrop(self.model_info.inputs[2:]),
+                transforms.CenterCrop(self.model_info.inputs[0].shape[2:]),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-                torch.Tensor.numpy])
+                torch.Tensor.numpy
+            ]
+        )
         return transform(x)
 
     def make_request(self, input_batch):
-        meta = json.dumps({'shape': self.model_info.inputs[0].shape, 'dtype': self.model_info.inputs[0].dtype})
+        meta = json.dumps(
+            {'shape': self.model_info.inputs[0].shape[1:], 'dtype': self.model_info.inputs[0].dtype}
+        )
         request = InferRequest()
         request.model_name = self.model_info.name
         request.meta = meta
-        request.raw_input = list(map(bytes, input_batch))
+        request.raw_input.extend(list(map(bytes, input_batch)))
         return request
 
     def check_model_status(self) -> bool:
         """TODO: wait for status API for TorchServing."""
-        time.sleep(2)
+        time.sleep(5)
         return True
 
     def infer(self, request):
