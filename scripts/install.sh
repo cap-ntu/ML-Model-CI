@@ -46,7 +46,7 @@ conda >> /dev/null || exit 1
 error_capture scripts/install.conda_env.sh all
 
 # Activate conda
-source "${HOME}/anaconda3/etc/profile.d/conda.sh"
+source "${CONDA_PREFIX}/etc/profile.d/conda.sh"
 conda activate modelci
 
 # Install Triton client APIs
