@@ -4,6 +4,7 @@ Author: Li Yuanming
 Dec: profiling models.
 Date: 03/05/2020
 """
+import os
 import random
 import time
 
@@ -26,6 +27,8 @@ from modelci.types.bo import (
 from modelci.utils.misc import get_ip
 
 DEFAULT_BATCH_NUM = 100
+
+random.seed(ord(os.urandom(1)))
 
 
 class Profiler(object):
@@ -107,7 +110,7 @@ class Profiler(object):
 
     def auto_diagnose(self, available_devices, batch_list: list = None):
         """Select the free machine and deploy automatically to test the model using available platforms."""
-        from modelci.hub.deployer.serving import serve
+        from modelci.hub.deployer.dispatcher import serve
 
         saved_path = self.model_bo.saved_path
         model_id = self.model_bo.id
@@ -153,19 +156,16 @@ class Profiler(object):
             raise Exception(
                 'please choose a serving engine for the model')
             # TODO How can we deploy to all available platforms if we don't know the engine?
-        elif serving_engine == Framework.TFS:
-            return CVTFSClient(
-                None,
-                batch_num=DEFAULT_BATCH_NUM,
-                asynchronous=False,
-                model_info=self.model_bo
-            )
+
+        kwargs = {'repeat_data': None, 'model_info': self.model_bo, 'batch_num': DEFAULT_BATCH_NUM}
+        if serving_engine == Framework.TFS:
+            return CVTFSClient(**kwargs)
         elif serving_engine == Framework.TORCHSCRIPT:
-            return CVTorchClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+            return CVTorchClient(**kwargs)
         elif serving_engine == Framework.ONNX:
-            return CVONNXClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+            return CVONNXClient(**kwargs)
         elif serving_engine == Framework.TRT:
-            return CVTRTClient(None, batch_num=DEFAULT_BATCH_NUM, asynchronous=False)
+            return CVTRTClient(**kwargs)
         elif serving_engine == Framework.TVM:
             raise NotImplementedError
         elif serving_engine == Framework.CUSTOMIZED:
