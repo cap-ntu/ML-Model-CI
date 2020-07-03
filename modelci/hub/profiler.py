@@ -54,13 +54,13 @@ class Profiler(object):
         self.model_bo = model_info
         self.docker_client = docker.from_env()
 
-    def diagnose(self, batch_size: int = None, device='cuda', timeout=10) -> DynamicProfileResultBO:
+    def diagnose(self, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResultBO:
         """Start diagnosing and profiling model.
 
         Args:
             batch_size (int): Batch size.
             device (str): Device name.
-            timeout (float): Waiting for docker container timeout in second.
+            timeout (float): Waiting for docker container timeout in second. Default timeout period is 30s.
         """
         model_status = False
         retry_time = 0  # use binary exponential backoff algorithm

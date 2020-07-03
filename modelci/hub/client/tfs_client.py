@@ -45,9 +45,9 @@ class CVTFSClient(BaseModelInspector):
         self.signature_name = signature_name
 
     def data_preprocess(self, x):
-        shape = self.model_info.inputs[0].shape
-        dtype = model_data_type_to_np(self.model_info.inputs[0].dtype)
-        return cv2.resize(x, tuple(shape[1:3])).astype(dtype)
+        input_ = self.model_info.inputs[0]
+        dtype = model_data_type_to_np(input_.dtype)
+        return cv2.resize(x, (input_.height, input_.width)).astype(dtype)
 
     def make_request(self, input_batch):
         channel = grpc.insecure_channel(f'{self.SERVER_HOST}:{TFS_GRPC_PORT}')

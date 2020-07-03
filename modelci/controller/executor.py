@@ -14,7 +14,7 @@ from docker.models.containers import Container
 from modelci.hub.profiler import Profiler
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.service import ModelService
-from modelci.types.bo import ModelBO
+from modelci.types.bo import ModelBO, Status
 
 
 class Job(object):
@@ -58,7 +58,9 @@ class JobExecutor(Thread):
 
         This function should be called before `join`. Otherwise, the executor will never stop.
 
-        TODO: Save exit when there is an exception. Try excepthook in python 3.8
+        TODO:
+            1. Save exit when there is an exception. Try excepthook in python 3.8
+            2. Change failed profiling model status to fail.
         """
         self.job_queue.put(self._queue_finish_flag)
 
@@ -77,9 +79,18 @@ class JobExecutor(Thread):
                 self._hold_container.put(container)
             else:
                 container_name = job.container_name
+            # change model status
+            job.model.status = Status.RUNNING
+            ModelService.update_model(job.model)
+
             profiler = Profiler(model_info=job.model, server_name=container_name, inspector=job.client)
             dpr = profiler.diagnose(device=job.device)
             ModelService.append_dynamic_profiling_result(job.model.id, dynamic_result=dpr)
+
+            # set model status to pass
+            job.model.status = Status.PASS
+            ModelService.update_model(job.model)
+
             if job.container_name is None:
                 # get holding container
                 self._hold_container.get().stop()

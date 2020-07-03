@@ -4,13 +4,15 @@ Author: Li Yuanming
 Desc: template client for TensorRT Serving of ResNet-50
 Date: 26/04/2020
 """
+import sys
 
-from tensorrtserver.api import InferContext, ProtocolType, ServerStatus, ServerStatusContext
+import cv2
+from tensorrtserver.api import InferContext, ProtocolType, ServerStatus, ServerStatusContext, InferenceServerException
 
-from modelci.data_engine.preprocessor import image_classification_preprocessor
 from modelci.hub.deployer.config import TRT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
+from modelci.types.type_conversion import model_data_type_to_np
 
 
 class CVTRTClient(BaseModelInspector):
@@ -36,9 +38,8 @@ class CVTRTClient(BaseModelInspector):
 
     def data_preprocess(self, x):
         input_ = self.model_info.inputs[0]
-        return image_classification_preprocessor(
-            self.raw_data, input_.format, input_.dtype, input_.channel, input_.height, input_.width, 'NONE'
-        )
+        dtype = model_data_type_to_np(input_.dtype)
+        return cv2.resize(x, (input_.height, input_.width)).astype(dtype)
 
     def make_request(self, input_batch):
         input_ = {self.model_info.inputs[0].name: input_batch}
@@ -53,10 +54,15 @@ class CVTRTClient(BaseModelInspector):
         ctx.run(request[0], request[1], self.batch_size)
 
     def check_model_status(self) -> bool:
+        name = self.model_info.name
+        version = self.model_info.version.ver
         ctx = ServerStatusContext(self.SERVER_URI, ProtocolType.GRPC, self.model_info.name)
-        server_status: ServerStatus = ctx.get_server_status()
-
-        if self.model_info.name in server_status.model_status:
-            return True
-        else:
+        try:
+            server_status: ServerStatus = ctx.get_server_status()
+            if server_status.model_status[name].version_status[version].ready_state == 1:
+                return True
+            else:
+                return False
+        except InferenceServerException as e:
+            print(e, file=sys.stderr)
             return False
