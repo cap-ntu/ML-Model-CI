@@ -185,11 +185,12 @@ class BaseModelInspector(metaclass=ABCMeta):
         end_time = time.time()
         return end_time - start_time
 
+    @abstractmethod
     def make_request(self, input_batch) -> Any:
         """Function for sub-class to implement before inferring, to create the `self.request` can be
             overridden if needed.
         """
-        return input_batch
+        pass
 
     @abstractmethod
     def infer(self, request):
