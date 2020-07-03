@@ -39,11 +39,11 @@ class BaseModelInspector(metaclass=ABCMeta):
             self,
             repeat_data,
             model_info: ModelBO,
-            batch_num=1,
-            batch_size=1,
-            asynchronous=False,
-            percentile=95,
-            sla=1.0
+            batch_num: int = 1,
+            batch_size: int = 1,
+            asynchronous: bool = False,
+            percentile: int = 95,
+            sla: float = 1.0,
     ):
         self.throughput_list = []
         self.latencies = []
