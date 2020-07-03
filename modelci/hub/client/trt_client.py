@@ -40,13 +40,17 @@ class CVTRTClient(BaseModelInspector):
             self.raw_data, input_.format, input_.dtype, input_.channel, input_.height, input_.width, 'NONE'
         )
 
-    def infer(self, input_batch):
+    def make_request(self, input_batch):
         input_ = {self.model_info.inputs[0].name: input_batch}
         output = {self.model_info.outputs[0].name: (InferContext.ResultFormat.CLASS, 1)}
+
+        return input_, output
+
+    def infer(self, request):
         name = self.model_info.name
         version = self.model_info.version.ver
         ctx = InferContext(self.SERVER_URI, ProtocolType.GRPC, name, version)
-        ctx.run(input_, output, self.batch_size)
+        ctx.run(request[0], request[1], self.batch_size)
 
     def check_model_status(self) -> bool:
         ctx = ServerStatusContext(self.SERVER_URI, ProtocolType.GRPC, self.model_info.name)

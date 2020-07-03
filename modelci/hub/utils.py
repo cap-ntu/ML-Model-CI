@@ -6,12 +6,10 @@ from typing import Union
 
 import numpy as np
 import tensorflow as tf
-import tensorrtserver.api.model_config_pb2 as model_config
 import torch
-from tensorrtserver.api import ServerStatusContext
 
 from modelci.types.bo import Framework, Engine, ModelVersion
-from modelci.types.trtis_objects import DataType, ModelInputFormat, ServerStatus, ModelStatus
+from modelci.types.trtis_objects import DataType, ModelInputFormat
 
 
 def parse_path(path: Path):
@@ -53,92 +51,6 @@ def generate_path(model_name: str, framework: Framework, engine: Engine, version
 
 def GiB(val):
     return val * 1 << 30
-
-
-def parse_trt_model(url, protocol, model_name, batch_size, verbose=False):
-    """
-    Check the configuration of a model to make sure it meets the
-    requirements for an image classification network (as expected by
-    this client)
-    """
-    ctx = ServerStatusContext(url, protocol, model_name, verbose)
-    server_status: ServerStatus = ctx.get_server_status()
-
-    # print(server_status.model_status)
-
-    if model_name not in server_status.model_status:
-        raise Exception("unable to get status for '" + model_name + "'")
-
-    status: ModelStatus = server_status.model_status[model_name]
-    config = status.config
-
-    if len(config.input) != 1:
-        raise Exception("expecting 1 input, got {}".format(len(config.input)))
-    if len(config.output) != 1:
-        raise Exception("expecting 1 output, got {}".format(len(config.output)))
-
-    input = config.input[0]
-    output = config.output[0]
-
-    if output.data_type != model_config.TYPE_FP32:
-        raise Exception("expecting output datatype to be TYPE_FP32, model '" +
-                        model_name + "' output type is " +
-                        model_config.DataType.Name(output.data_type))
-
-    # Output is expected to be a vector. But allow any number of
-    # dimensions as long as all but 1 is size 1 (e.g. { 10 }, { 1, 10
-    # }, { 10, 1, 1 } are all ok). Variable-size dimensions are not
-    # currently supported.
-    non_one_cnt = 0
-    for dim in output.dims:
-        if dim == -1:
-            raise Exception("variable-size dimension in model output not supported")
-        if dim > 1:
-            non_one_cnt += 1
-            if non_one_cnt > 1:
-                raise Exception("expecting model output to be a vector")
-
-    # Model specifying maximum batch size of 0 indicates that batching
-    # is not supported and so the input tensors do not expect an "N"
-    # dimension (and 'batch_size' should be 1 so that only a single
-    # image instance is inferred at a time).
-    max_batch_size = config.max_batch_size
-    if max_batch_size == 0:
-        if batch_size != 1:
-            raise Exception("batching not supported for model '" + model_name + "'")
-    else:  # max_batch_size > 0
-        if batch_size > max_batch_size:
-            raise Exception("expecting batch size <= {} for model {}".format(max_batch_size, model_name))
-
-    # Model input must have 3 dims, either CHW or HWC
-    if len(input.dims) != 3:
-        raise Exception(
-            "expecting input to have 3 dimensions, model '{}' input has {}".format(
-                model_name, len(input.dims)))
-
-    # Variable-size dimensions are not currently supported.
-    for dim in input.dims:
-        if dim == -1:
-            raise Exception("variable-size dimension in model input not supported")
-
-    if ((input.format != model_config.ModelInput.FORMAT_NCHW) and
-            (input.format != model_config.ModelInput.FORMAT_NHWC)):
-        raise Exception("unexpected input format " + model_config.ModelInput.Format.Name(input.format) +
-                        ", expecting " +
-                        model_config.ModelInput.Format.Name(model_config.ModelInput.FORMAT_NCHW) +
-                        " or " +
-                        model_config.ModelInput.Format.Name(model_config.ModelInput.FORMAT_NHWC))
-
-    if input.format == model_config.ModelInput.FORMAT_NHWC:
-        h = input.dims[0]
-        w = input.dims[1]
-        c = input.dims[2]
-    else:
-        c = input.dims[0]
-        h = input.dims[1]
-        w = input.dims[2]
-
-    return input.name, output.name, c, h, w, input.format, model_dtype_to_np(input.data_type)
 
 
 def type_to_trt_type(tensor_type: type):

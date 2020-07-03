@@ -1,5 +1,5 @@
 from mongoengine import EmbeddedDocument
-from mongoengine.fields import *
+from mongoengine.fields import StringField, IntField, FloatField, ListField, DateTimeField
 
 
 class DynamicProfileResultDO(EmbeddedDocument):

@@ -189,7 +189,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         """Function for sub-class to implement before inferring, to create the `self.request` can be
             overridden if needed.
         """
-        pass
+        return input_batch
 
     @abstractmethod
     def infer(self, request):
