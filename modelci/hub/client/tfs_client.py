@@ -14,14 +14,15 @@ import tensorflow.compat.v1 as tf
 from tensorflow_serving.apis import prediction_service_pb2_grpc
 from tensorflow_serving.apis.predict_pb2 import PredictRequest
 
-from modelci.hub.deployer.config import TFS_GRPC_PORT
+from modelci.hub.deployer.config import TFS_GRPC_PORT, TFS_HTTP_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
 from modelci.types.type_conversion import model_data_type_to_np
 
 
 class CVTFSClient(BaseModelInspector):
-    SERVER_URI = f'localhost:{TFS_GRPC_PORT}'
+    SERVER_GRPC_URI = f'localhost:{TFS_GRPC_PORT}'
+    SERVER_HTTP_URI = f'localhost:{TFS_HTTP_PORT}'
 
     def __init__(
             self,
@@ -40,7 +41,7 @@ class CVTFSClient(BaseModelInspector):
             asynchronous=asynchronous
         )
 
-        channel = grpc.insecure_channel(self.SERVER_URI)
+        channel = grpc.insecure_channel(self.SERVER_GRPC_URI)
         self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
         self.version = model_info.version
         self.signature_name = signature_name
@@ -63,7 +64,7 @@ class CVTFSClient(BaseModelInspector):
         return request
 
     def check_model_status(self) -> bool:
-        api_url = f'http://{self.SERVER_URI}/v1/models/{self.model_info.name}/versions/{self.version}'
+        api_url = f'http://{self.SERVER_HTTP_URI}/v1/models/{self.model_info.name}/versions/{self.version}'
         try:
             response = requests.get(api_url)
             state = response.json()['model_version_status'][0]['state']
