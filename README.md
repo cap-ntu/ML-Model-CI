@@ -20,17 +20,18 @@
     <a href="#quick-start">Quick Start</a> •
     <a href="#tutorial">Tutorial</a> •
     <a href="#contributing">Contributing</a> •
+    <a href="#Citation">Citation</a> •
     <a href="#license">License</a>
 </p>
 
 ## Features
 
--   **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
--   **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud.
--   **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
+- **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
+- **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud.
+- **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
     detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
--   **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
--   **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
+- **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
+- **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 ## Installation
 
@@ -57,16 +58,15 @@ docker pull mlmodelci/mlmodelci
 <!-- Please refer to [here](/integration/README.md) for more information. -->
 
 ## Quick Start
+
 *The system is still under the active development. Welcome to join us!*
 
-MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services 
-(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
-clear start, we present the whole pipeline step by step as follows.
+MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services
+(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more clear start, we present the whole pipeline step by step as follows.
 
-### Register a Model 
+### Register a Model
 
-Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud service, the first step is to publish the 
-model to our system.
+Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud service, the first step is to publish the model to our system.
 
 ```python
 from modelci.hub.manager import register_model
@@ -130,7 +130,6 @@ profiler = Profiler(model_info=model_info, server_name='name of your server', in
 profiler.diagnose('device name')
 ```
 
-
 ### Dispatch a model
 
 MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispatcher launches a serving system 
@@ -154,25 +153,36 @@ serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-servin
 
 Now your model is an efficient cloud service!
 
-
 For more information please take a look at our tutorials.
-
 
 ## Tutorial
 
 After the Quick Start, we provide detailed tutorials for users to understand our system.
 
--   [Register a Model in ModelHub](./docs/tutorial/register.md)
--   [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
--   [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
--   [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
--   [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
+- [Register a Model in ModelHub](./docs/tutorial/register.md)
+- [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
+- [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
+- [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
+- [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
 
 ## Contributing
 
 MLModelCI welcomes your contributions! Please refer to [here](CONTRIBUTING.md) to get start.
 
+## Citation
+
+If you use MLModelCI in your work or use any functions published in MLModelCI, please cite:
+```
+@article{zhang2020mlmodelci,
+  title={MLModelCI: An Automatic Cloud Platform for Efficient MLaaS},
+  author={Zhang, Huaizheng and Li, Yuanming and Huang, Yizheng and Wen, Yonggang and Yin, Jianxiong and Guan, Kyle},
+  journal={arXiv preprint arXiv:2006.05096},
+  year={2020}
+}
+```
+
 ## License
+
 ```
    Copyright 2020 Nanyang Technological University, Singapore
 
