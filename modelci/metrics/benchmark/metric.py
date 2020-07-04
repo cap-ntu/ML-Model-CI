@@ -1,6 +1,7 @@
 """
 Author: huangyz0918
-Dec: Abstract class for data preprocessing, implement this class and try to meet
+Author: Li Yuanming
+Dec: Abstract class for data pre-processing, implement this class and try to meet
     the data format that model requires here.
 Date: 26/04/2020
 """
@@ -9,10 +10,15 @@ import datetime
 import time
 from abc import ABCMeta, abstractmethod
 from threading import Thread
+from typing import Any
 
+import GPUtil
+import cpuinfo
 import numpy as np
 
 from modelci.metrics.cadvisor.cadvisor import CAdvisor
+from modelci.types.bo import ModelBO
+from modelci.utils.misc import get_device
 
 
 class BaseModelInspector(metaclass=ABCMeta):
@@ -29,7 +35,16 @@ class BaseModelInspector(metaclass=ABCMeta):
         percentile: The SLA percentile. Default is 95.
     """
 
-    def __init__(self, repeat_data, batch_num=1, batch_size=1, asynchronous=False, percentile=95, sla=1.0):
+    def __init__(
+            self,
+            repeat_data,
+            model_info: ModelBO,
+            batch_num: int = 1,
+            batch_size: int = 1,
+            asynchronous: bool = False,
+            percentile: int = 95,
+            sla: float = 1.0,
+    ):
         self.throughput_list = []
         self.latencies = []
 
@@ -39,17 +54,17 @@ class BaseModelInspector(metaclass=ABCMeta):
 
         self.batch_num = batch_num
         self.batch_size = batch_size
+        self.model_info = model_info
 
         self.raw_data = repeat_data
-        self.processed_data = self.raw_data
+        self.processed_data = self.data_preprocess(self.raw_data)
 
-        self.data_preprocess()
         self.batches = self.__client_batch_request()
 
     @abstractmethod
-    def data_preprocess(self):
+    def data_preprocess(self, x):
         """Handle raw data, after preprocessing we can get the processed_data, which is using for benchmarking."""
-        pass
+        return x
 
     def set_batch_size(self, new_bs):
         """update the batch size here.
@@ -70,16 +85,23 @@ class BaseModelInspector(metaclass=ABCMeta):
             batches.append(batch)
         return batches
 
-    def run_model(self, device_name, server_name):
+    @abstractmethod
+    def check_model_status(self) -> bool:
+        """Check the loading status for model."""
+        raise NotImplementedError('Method `check_model_status` not implemented.')
+
+    def run_model(self, server_name: str, device: str):
         """Running the benchmarking for the specific model on the specific server.
 
         Args:
-            server_name: the container's name of Docker that serves the Deep Learning model.
-            device_name: The serving device's name, for example, RTX 2080Ti.
+            server_name (str): the container's name of Docker that serves the Deep Learning model.
+            device (str): Device name. E.g.: cpu, cuda, cuda:1.
         """
         # reset the results
         self.throughput_list = []
         self.latencies = []
+
+        cuda, device_num = get_device(device)
 
         # warm-up
         if self.batch_num > 10:
@@ -126,9 +148,19 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
         memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
 
-        self.print_results(device_name, all_data_throughput, all_data_latency, custom_percentile,
-                           all_batch_avg_memory_total,
-                           all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per)
+        if cuda:
+            gpu_device = GPUtil.getGPUs()[device_num]
+            device_name = gpu_device.name
+            device_id = f'cuda:{gpu_device.id}'
+        else:
+            device_name = cpuinfo.get_cpu_info()['brand_raw']
+            device_id = 'cpu'
+
+        return self.print_results(
+            device_name, device_id, all_data_throughput, all_data_latency, custom_percentile,
+            all_batch_avg_memory_total,
+            all_batch_avg_memory_used, all_batch_avg_util, memory_avg_usage_per
+        )
 
     def __inference_callback(self, a_batch_latency):
         """A callback function which handles the results of a asynchronous inference request.
@@ -147,40 +179,43 @@ class BaseModelInspector(metaclass=ABCMeta):
         Args:
             batch_input: The batch data in the request.
         """
-        self.make_request(batch_input)
+        request = self.make_request(batch_input)
         start_time = time.time()
-        self.infer(batch_input)
+        self.infer(request)
         end_time = time.time()
         return end_time - start_time
 
-    def make_request(self, input_batch):
+    @abstractmethod
+    def make_request(self, input_batch) -> Any:
         """Function for sub-class to implement before inferring, to create the `self.request` can be
             overridden if needed.
         """
         pass
 
     @abstractmethod
-    def infer(self, input_batch):
+    def infer(self, request):
         """Abstract function for sub-class to implement the detailed infer function.
 
         Args:
-            input_batch: The batch data in the request.
+            request: The batch data in the request.
         """
         pass
 
-    # TODO: save result as a dict or something with logger
     def dump_result(self, path=None):
         """Export the testing results to local JSON file.
 
         Args:
             path: The path to save the results.
+
+        TODO:
+            save result as a dict or something with logger
         """
         pass
 
-    # TODO: replace printing with saving code in mongodb, or logging.
     def print_results(
             self,
             device_name,
+            device_id,
             throughput,
             latency,
             custom_percentile,
@@ -200,10 +235,13 @@ class BaseModelInspector(metaclass=ABCMeta):
             all_batch_avg_util: The average GPU utilization of inferring all batches.
             memory_avg_usage_per: The GPU memory usage percentile.
             device_name: The serving device's name, for example, RTX 2080Ti.
+        TODO:
+            replace printing with saving code in mongodb, or logging.
         """
         percentile_50 = np.percentile(self.latencies, 50)
         percentile_95 = np.percentile(self.latencies, 95)
         percentile_99 = np.percentile(self.latencies, 99)
+        complete_time = datetime.datetime.now()
 
         print('\n')
         print(f'testing device: {device_name}')
@@ -215,10 +253,25 @@ class BaseModelInspector(metaclass=ABCMeta):
         print(f'99th-percentile latency: {percentile_99} s')
         # print(f'{self.percentile}th-percentile latency: {custom_percentile} s')
         print(f'total GPU memory: {all_batch_avg_memory_total} bytes')
-        print('average GPU memory usage percentile: {:.4f}'.format(memory_avg_usage_per))
+        print(f'average GPU memory usage percentage: {memory_avg_usage_per:.4f}')
         print(f'average GPU memory used: {all_batch_avg_memory_used} bytes')
-        print('average GPU utilization: {:.4f}%'.format(all_batch_avg_util))
-        print(f'completed at {datetime.datetime.now()}')
+        print(f'average GPU utilization: {all_batch_avg_util:.4f}%')
+        print(f'completed at {complete_time}')
+
+        return {
+            'device_name': device_name,
+            'device_id': device_id,
+            'total_batches': len(self.batches),
+            'batch_size': self.batch_size,
+            'total_latency': latency,
+            'total_throughput': throughput,
+            'latency': [latency / len(self.batches), percentile_50, percentile_95, percentile_99],
+            'total_gpu_memory': all_batch_avg_memory_total,
+            'gpu_memory_percentage': memory_avg_usage_per,
+            'gpu_memory_used': all_batch_avg_memory_used,
+            'gpu_utilization': all_batch_avg_util / 100,
+            'completed_time': complete_time,
+        }
 
 
 class ReqThread(Thread):

@@ -1,6 +1,4 @@
 import argparse
-import logging
-import re
 from pathlib import Path
 from typing import Union
 
@@ -12,7 +10,7 @@ from modelci.hub.deployer import config
 from modelci.hub.manager import retrieve_model, retrieve_model_by_task
 from modelci.hub.utils import parse_path
 from modelci.types.bo import Framework, Engine
-from modelci.utils.misc import remove_dict_null
+from modelci.utils.misc import remove_dict_null, get_device
 
 
 def serve(
@@ -38,23 +36,7 @@ def serve(
     architecture: str = info['architecture']
     engine: Engine = info['engine']
 
-    # obtain device
-    device_num = None
-    if device == 'cpu':
-        cuda = False
-    else:
-        # match something like cuda, cuda:0, cuda:1
-        matched = re.match(r'^cuda(?::([0-9]+))?$', device)
-        if matched is None:  # load with CPU
-            logging.warning('Wrong device specification, using `cpu`.')
-            cuda = False
-        else:  # load with CUDA
-            cuda = True
-            device_num = matched.groups()[0]
-            if device_num is None:
-                device_num = 0
-
-    docker_tag = 'latest-gpu' if cuda else 'latest'
+    cuda, device_num = get_device(device)
 
     docker_client = docker.from_env()
 
@@ -70,18 +52,22 @@ def serve(
         environment['CUDA_VISIBLE_DEVICES'] = device_num
 
     if engine == Engine.TFS:
+        # Tensorflow Serving 2.2.0 has the issue: https://github.com/tensorflow/serving/issues/1663
+        docker_tag = '2.1.0-gpu' if cuda else '2.1.0'
         ports = {'8501': config.TFS_HTTP_PORT, '8500': config.TFS_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
             f'tensorflow/serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.TORCHSCRIPT:
+        docker_tag = 'latest-gpu' if cuda else 'latest'
         ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
             f'mlmodelci/pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.ONNX:
+        docker_tag = 'latest-gpu' if cuda else 'latest'
         ports = {'8000': config.ONNX_HTTP_PORT, '8001': config.ONNX_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
@@ -110,12 +96,12 @@ def serve_by_name(args):
     engine = Engine[args.engine.upper()]
 
     model_bo = retrieve_model(architecture_name=model, framework=framework, engine=engine)
-    serve(model_bo.saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
 
 def serve_by_task(args):
     model_bo = retrieve_model_by_task(task=args.task)
-    serve(model_bo.saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
 
 if __name__ == '__main__':
@@ -127,15 +113,15 @@ if __name__ == '__main__':
     by_name_parser.add_argument('-f', '--framework', type=str, required=True, help='Framework name')
     by_name_parser.add_argument('-e', '--engine', type=str, required=True, help='Engine name')
     by_name_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
-    by_name_parser.add_argument('--name', type=str, default=None, help='Serving Docker container name.')
+    by_name_parser.add_argument('--name', type=str, help='Serving Docker container name.')
     by_name_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
     by_name_parser.set_defaults(func=serve_by_name)
 
     by_task_parser = subparsers.add_parser('task', help='Serving by task')
     by_task_parser.add_argument('--task', type=str, required=True, help='task name')
     by_task_parser.add_argument('--device', type=str, default='cpu', help='Serving device name. E.g.: `cpu`, `cuda:0`.')
-    by_name_parser.add_argument('--name', type=str, default=None, help='Serving Docker container name.')
-    by_name_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
+    by_task_parser.add_argument('--name', type=str, help='Serving Docker container name.')
+    by_task_parser.add_argument('-b', '--bs', type=str, default=16, help='Batch size for serving.')
     by_task_parser.set_defaults(func=serve_by_task)
 
     # parse argument

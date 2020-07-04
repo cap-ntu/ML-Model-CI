@@ -53,6 +53,8 @@ class ModelDO(Document):
     profile_result = EmbeddedDocumentField(ProfileResultDO)
     # Status enum value
     status = IntField(required=True)
+    # Model provider (uploader)
+    creator = StringField(required=True)
     # Creation time of this record
     create_time = DateTimeField(required=True)
 

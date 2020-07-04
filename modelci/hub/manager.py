@@ -4,9 +4,15 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, Union, List
 
+import cv2
+import tensorflow as tf
 import yaml
 
-from modelci.hub.converter import TorchScriptConverter, ONNXConverter, TFSConverter, TRTConverter
+from modelci.hub.client.onnx_client import CVONNXClient
+from modelci.hub.client.tfs_client import CVTFSClient
+from modelci.hub.client.torch_client import CVTorchClient
+from modelci.hub.client.trt_client import CVTRTClient
+from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
@@ -24,7 +30,7 @@ def register_model(
         engine: Engine = None,
         version: ModelVersion = None,
         convert=True,
-        profile=False,
+        profile=True,
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
@@ -33,6 +39,7 @@ def register_model(
         In the `no_generate` model(i.e. `no_generate` flag is set to be `True`), `architecture`, `framework`, `engine`
         and `version` could be None. If any of the above arguments is `None`, all of them will be auto induced
         from the origin_model path. An `ValueError` will be raised if the mata info cannot be induced.
+
     Arguments:
         origin_model: The uploaded model without optimization. When `no_generate` flag is set, this parameter should
             be a str indicating model file path.
@@ -49,6 +56,9 @@ def register_model(
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
     """
+    from modelci.controller import job_executor
+    from modelci.controller.executor import Job
+
     model_dir_list = list()
     if not convert:
         # type and existence check
@@ -104,10 +114,38 @@ def register_model(
             )
 
             ModelService.post_model(model)
+        # TODO refresh
+        model = ModelService.get_models(name=architecture, framework=framework, engine=engine, version=version)[0]
 
+        # profile registered model
         if profile:
-            # TODO(lym): profile
-            pass
+            file = tf.keras.utils.get_file(
+                "grace_hopper.jpg",
+                "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
+            test_img_bytes = cv2.imread(file)
+
+            kwargs = {
+                'repeat_data': test_img_bytes,
+                'batch_size': 32,
+                'batch_num': 100,
+                'asynchronous': False,
+                'model_info': model,
+            }
+            if engine == Engine.TORCHSCRIPT:
+                client = CVTorchClient(**kwargs)
+            elif engine == Engine.TFS:
+                client = CVTFSClient(**kwargs)
+            elif engine == Engine.ONNX:
+                client = CVONNXClient(**kwargs)
+            elif engine == Engine.TRT:
+                client = CVTRTClient(**kwargs)
+            else:
+                raise ValueError(f'No such serving engine: {engine}')
+
+            job_cuda = Job(client=client, device='cuda:0', model_info=model)
+            # job_cpu = Job(client=client, device='cpu', model_info=model)
+            job_executor.submit(job_cuda)
+            # job_executor.submit(job_cpu)
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):
@@ -282,17 +320,18 @@ def retrieve_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-):
+) -> List[ModelBO]:
     """Query a model by name, framework, engine or version.
+
     Arguments:
         architecture_name (str): Model architecture name.
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
         version (ModelVersion): Model version. Default to None.
-    Returns:
-        ModelBO: Model business object.
-    """
 
+    Returns:
+        List[ModelBO]: A list of model business object.
+    """
     # retrieve
     models = ModelService.get_models(architecture_name, framework=framework, engine=engine, version=version)
     # check if found
@@ -304,13 +343,15 @@ def retrieve_model(
     return models
 
 
-def retrieve_model_by_task(task='image classification') -> ModelBO:
+def retrieve_model_by_task(task: str = 'image classification') -> List[ModelBO]:
     """Query a model by task.
     This function will download a cache model from the model DB.
+
     Arguments:
         task (str): Task name. Default to "image classification"
+
     Returns:
-        ModelBo: Model business object.
+        List[ModelBO]: A list of model business object.
     """
     # retrieve
     models = ModelService.get_models_by_task(task)

@@ -1,3 +1,5 @@
-from .serving import serve
-
-__all__ = ['serve']
+# from .dispatcher import serve
+# TODO: circular reference as
+#   dispatcher depends on manager
+#   manager depends on profiler
+#   profiler depends on dispatcher

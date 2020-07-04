@@ -82,7 +82,7 @@ class ProfileMemoryVO(BaseModel):
 
     @staticmethod
     def from_bo(profile_memory_bo: ProfileMemory):
-        return ProfileLatencyVO(**vars(profile_memory_bo))
+        return ProfileMemoryVO(**vars(profile_memory_bo))
 
 
 class ProfileLatencyVO(BaseModel):
@@ -102,19 +102,14 @@ class ProfileLatencyVO(BaseModel):
 
 
 class ProfileThroughputVO(BaseModel):
-    batch_formation_throughput: InfoTupleVO
-    preprocess_throughput: InfoTupleVO
-    inference_throughput: InfoTupleVO
-    postprocess_throughput: InfoTupleVO
+    batch_formation_throughput: float
+    preprocess_throughput: float
+    inference_throughput: float
+    postprocess_throughput: float
 
     @staticmethod
     def from_bo(profile_throughput: ProfileThroughput):
-        return ProfileThroughputVO(
-            batch_formation_throughput=InfoTupleVO.from_bo(profile_throughput.batch_formation_throughput),
-            preprocess_throughput=InfoTupleVO.from_bo(profile_throughput.preprocess_throughput),
-            inference_throughput=InfoTupleVO.from_bo(profile_throughput.inference_throughput),
-            postprocess_throughput=InfoTupleVO.from_bo(profile_throughput.postprocess_throughput),
-        )
+        return ProfileThroughputVO(**vars(profile_throughput))
 
 
 class DynamicResultVO(BaseModel):
@@ -133,7 +128,7 @@ class DynamicResultVO(BaseModel):
             device_id=dynamic_profile_result_bo.device_id,
             device_name=dynamic_profile_result_bo.device_name,
             batch=dynamic_profile_result_bo.batch,
-            memeory=ProfileMemoryVO.from_bo(dynamic_profile_result_bo.memory),
+            memory=ProfileMemoryVO.from_bo(dynamic_profile_result_bo.memory),
             latency=ProfileLatencyVO.from_bo(dynamic_profile_result_bo.latency),
             throughput=ProfileThroughputVO.from_bo(dynamic_profile_result_bo.throughput),
             ip=str(dynamic_profile_result_bo.ip),
@@ -151,9 +146,9 @@ class ProfileResultVO(BaseModel):
         if profile_result_bo is None:
             return None
 
-        return ProfileLatencyVO(
+        return ProfileResultVO(
             static_result='N.A.',
-            dynamic_restuls=list(map(DynamicResultVO.from_bo, profile_result_bo.dynamic_results))
+            dynamic_results=list(map(DynamicResultVO.from_bo, profile_result_bo.dynamic_results))
         )
 
 
@@ -168,7 +163,9 @@ class ModelListOut(BaseModel):
     task: str
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
+    profile_result: ProfileResultVO = None
     status: Status
+    creator: str
     create_time: datetime
 
     @staticmethod
@@ -184,7 +181,9 @@ class ModelListOut(BaseModel):
             task=model_bo.task,
             inputs=list(map(IOShapeVO.from_bo, model_bo.inputs)),
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
+            profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
             status=Status(model_bo.status.name),
+            creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
 
@@ -202,6 +201,7 @@ class ModelDetailOut(BaseModel):
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
     status: Status
+    creator: str
     create_time: datetime
 
     @staticmethod

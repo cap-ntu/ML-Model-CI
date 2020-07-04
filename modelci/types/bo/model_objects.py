@@ -127,17 +127,48 @@ class IOShape(object):
         # input / output datatype
         self.dtype = dtype
 
-    def to_io_shape_po(self):
-        """Convert IO shape business object to IO shape plain object.
-        """
+    @property
+    def batch_size(self) -> int:
+        return self.shape[0]
 
+    @property
+    def example_shape(self):
+        return self.shape[1:]
+
+    @property
+    def height(self):
+        if self.format == ModelInputFormat.FORMAT_NONE:
+            raise ValueError('No height for shape format of `ModelInputFormat.FORMAT_NONE`.')
+        if self.format == ModelInputFormat.FORMAT_NCHW:
+            return self.shape[2]
+        if self.format == ModelInputFormat.FORMAT_NHWC:
+            return self.shape[1]
+
+    @property
+    def width(self):
+        if self.format == ModelInputFormat.FORMAT_NONE:
+            raise ValueError('No width for shape format of `ModelInputFormat.FORMAT_NONE`.')
+        if self.format == ModelInputFormat.FORMAT_NCHW:
+            return self.shape[3]
+        if self.format == ModelInputFormat.FORMAT_NHWC:
+            return self.shape[2]
+
+    @property
+    def channel(self):
+        if self.format == ModelInputFormat.FORMAT_NONE:
+            raise ValueError('No channel for shape format of `ModelInputFormat.FORMAT_NONE`.')
+        if self.format == ModelInputFormat.FORMAT_NCHW:
+            return self.shape[1]
+        if self.format == ModelInputFormat.FORMAT_NHWC:
+            return self.shape[3]
+
+    def to_io_shape_po(self):
+        """Convert IO shape business object to IO shape plain object."""
         return IOShapeDO(name=self.name, shape=self.shape, dtype=self.dtype.name, format=self.format)
 
     @staticmethod
     def from_io_shape_po(io_shape_po: IOShapeDO):
-        """Create IO shape business object from IO shape plain object
-        """
-
+        """Create IO shape business object from IO shape plain object."""
         io_shape_bo = IOShape(
             name=io_shape_po.name,
             shape=io_shape_po.shape,
@@ -148,7 +179,7 @@ class IOShape(object):
         return io_shape_bo
 
     def __str__(self):
-        return '{}, dtype={}'.format(self.shape, self.dtype)
+        return '{}, dtype={}, format={}'.format(self.shape, self.dtype, self.format.name)
 
 
 class InfoTuple(object):
@@ -182,7 +213,7 @@ class Weight(object):
 
     def __init__(
             self,
-            weight: bytes = None,
+            weight: Union[bytes, BinaryIO] = None,
             *,
             filename: str = 'dummy',  # TODO: file name auto-gen
             content_type: str = 'application/octet-stream',
@@ -192,7 +223,7 @@ class Weight(object):
         """Initializer.
 
         Args:
-            weight (Optional[bytes]): model weight read from Grid FS.
+            weight (Optional[Union[bytes, BinaryIO]]): model weight read from Grid FS.
             gridfs_file (Optional[GridFSProxy]): Grid FS object storing the weight. Default to None.
                 This attribute is to keep track of Grid FS file, in order to perform a file update.
             lazy_fetch (bool): The weight is not loaded from MongoDB initially when this flag is set `True`. Default to

@@ -96,10 +96,10 @@ def test_register_dynamic_profiling_result():
             postprocess_latency=dummy_info_tuple,
         ),
         throughput=ProfileThroughput(
-            batch_formation_throughput=dummy_info_tuple,
-            preprocess_throughput=dummy_info_tuple,
-            inference_throughput=dummy_info_tuple,
-            postprocess_throughput=dummy_info_tuple,
+            batch_formation_throughput=1,
+            preprocess_throughput=1,
+            inference_throughput=1,
+            postprocess_throughput=1,
         )
     )
     assert ModelService.append_dynamic_profiling_result(model.id, dpr)
@@ -121,10 +121,10 @@ def test_update_dynamic_profiling_result():
             postprocess_latency=dummy_info_tuple,
         ),
         throughput=ProfileThroughput(
-            batch_formation_throughput=dummy_info_tuple,
-            preprocess_throughput=dummy_info_tuple,
-            inference_throughput=dummy_info_tuple,
-            postprocess_throughput=dummy_info_tuple,
+            batch_formation_throughput=1,
+            preprocess_throughput=1,
+            inference_throughput=1,
+            postprocess_throughput=1,
         )
     )
     # check update
@@ -152,10 +152,10 @@ def test_delete_dynamic_profiling_result():
             postprocess_latency=dummy_info_tuple2,
         ),
         throughput=ProfileThroughput(
-            batch_formation_throughput=dummy_info_tuple2,
-            preprocess_throughput=dummy_info_tuple2,
-            inference_throughput=dummy_info_tuple2,
-            postprocess_throughput=dummy_info_tuple2,
+            batch_formation_throughput=1,
+            preprocess_throughput=1,
+            inference_throughput=1,
+            postprocess_throughput=1,
         )
     )
     ModelService.append_dynamic_profiling_result(model.id, dpr)
