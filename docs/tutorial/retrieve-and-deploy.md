@@ -58,7 +58,7 @@ Or MLModelCI will set them automatically.
 
 
 ```python
-from modelci.hub.deployer import serve
+from modelci.hub.deployer.dispatcher import serve
 
 saved_path = ...
 device = '1'

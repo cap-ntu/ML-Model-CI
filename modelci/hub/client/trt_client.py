@@ -37,6 +37,7 @@ class CVTRTClient(BaseModelInspector):
         )
 
     def data_preprocess(self, x):
+        """Resize the inputs into given size and data type."""
         input_ = self.model_info.inputs[0]
         dtype = model_data_type_to_np(input_.dtype)
         return cv2.resize(x, (input_.height, input_.width)).astype(dtype)
