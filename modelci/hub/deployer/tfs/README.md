@@ -12,7 +12,7 @@ We assume you have setup the MongoDB and all environment variables [install](/RE
 See `modelci/hub/init_data.py`.  
 For example, running 
 ```shell script
-python modelci/init_data.py --model resnet50 --framework tensorflow
+python modelci/hub/init_data.py export --model resnet50 --framework tensorflow
 ```
 Models will be saved at `~/.modelci/ResNet50/tensorflow-tfs/` directory.  
 **Note**: You do not need to rerun the above code if you have done so for [TensorRT](/modelci/hub/deployer/trt).
