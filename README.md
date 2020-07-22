@@ -171,7 +171,7 @@ MLModelCI welcomes your contributions! Please refer to [here](CONTRIBUTING.md) t
 
 ## Citation
 
-If you use MLModelCI in your work or use any functions published in MLModelCI, please cite:
+If you use MLModelCI in your work or use any functions published in MLModelCI, we would appreciate if you could cite:
 ```
 @article{zhang2020mlmodelci,
   title={MLModelCI: An Automatic Cloud Platform for Efficient MLaaS},
