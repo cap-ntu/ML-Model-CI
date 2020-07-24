@@ -26,7 +26,7 @@ class ServingEngine(object):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # load the latest version of a TorchScript model
-        self.model = torch.jit.load(str(max(model_dir))).to(self.device)
+        self.model = torch.jit.load(str(max(model_dir)), map_location=self.device)
         self.model.eval()
 
     def batch_predict(self, inputs: torch.Tensor):
