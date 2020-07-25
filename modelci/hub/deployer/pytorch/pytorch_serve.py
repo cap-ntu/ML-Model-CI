@@ -33,7 +33,10 @@ class ServingEngine(object):
         inputs = inputs.to(self.device)
         outputs = self.model(inputs)
 
-        return outputs.cpu().detach().tolist()
+        if isinstance(outputs, tuple):
+            return outputs[0].cpu().detach().tolist()
+        else:
+            return outputs.cpu().detach().tolist()
 
 
 class PredictServicer(service_pb2_grpc.PredictServicer):
