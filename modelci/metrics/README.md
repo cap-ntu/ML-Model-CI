@@ -8,6 +8,6 @@ Here are some metrics of model performance.
 
 ## Roadmap
 
-- [ ] Profile local model performance
-
-- [ ] Profile containerized model performance
+- add cost metric
+- add carbon metric
+- more clients
