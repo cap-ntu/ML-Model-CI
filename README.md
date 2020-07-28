@@ -181,6 +181,14 @@ If you use MLModelCI in your work or use any functions published in MLModelCI, w
 }
 ```
 
+## Contact
+
+Please feel free to contact our team if you meet any problem when using this source code. We are glad to upgrade the code meet to your requirements if it is reasonable.
+
+We also open to collaboration based on this elementary system and research idea.
+
+> *huaizhen001 AT e.ntu.edu.sg*
+
 ## License
 
 ```
