@@ -33,6 +33,11 @@
 - **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
+**News**
+- (2020-08) The work has been accepted as an opensource competation paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
+- (2020-06) The docker image has been built.
+- (2020-05) The cAdvisor is applied to monitor the running containers.
+
 ## Installation
 
 ### Command Line  
