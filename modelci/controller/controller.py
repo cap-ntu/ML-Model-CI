@@ -4,8 +4,8 @@ from threading import Thread
 
 import GPUtil
 
-from modelci.hub.profiler import Profiler
-from modelci.monitor.gpu_node_exporter import GPUNodeExporter
+from modelci.hub import Profiler
+from modelci.monitor import GPUNodeExporter
 
 
 class UtilMonitor(Thread):

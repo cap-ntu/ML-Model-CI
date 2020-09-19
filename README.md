@@ -40,6 +40,12 @@
 
 ## Installation
 
+### Pip
+
+```shell script
+pip install .
+```
+
 ### Command Line  
 
 ```shell script
@@ -143,7 +149,7 @@ MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispat
 We search for a converted model and then dispatch it to a device with a specific batch size.
 
 ```python
-from modelci.hub.deployer.serving import serve
+from modelci.hub.deployer.dispatcher import serve
 from modelci.hub.manager import retrieve_model
 from modelci.types.bo import Framework, Engine
 

@@ -9,10 +9,10 @@ import sys
 import cv2
 from tensorrtserver.api import InferContext, ProtocolType, ServerStatus, ServerStatusContext, InferenceServerException
 
-from modelci.hub.deployer.config import TRT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
 from modelci.types.type_conversion import model_data_type_to_np
+from ..deployer.config import TRT_GRPC_PORT
 
 
 class CVTRTClient(BaseModelInspector):
