@@ -13,6 +13,10 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
+################################################################################
+# Check Platform and Python Version
+################################################################################
+
 if sys.version_info < (3,):
     print('Python 2 has reached end-of-life and is no longer supported by PyTorch.')
     sys.exit(-1)
@@ -38,8 +42,9 @@ if sys.version_info < python_min_version or sys.version_info >= python_max_versi
 TRITON_CLIENT_INSTALL = True
 TRITON_CLIENT_VERSION = '1.8.0'
 
-process = subprocess.Popen(['lsb_release', '-sr'], stdout=subprocess.PIPE, universal_newlines=True)
-stdout, _ = process.communicate()
+# Get Ubuntu version
+check_ubuntu_version_args = ['/usr/bin/lsb_release', '-sr']
+stdout = subprocess.check_output(check_ubuntu_version_args, universal_newlines=True)
 try:
     UBUNTU_VERSION = int(stdout.strip().replace('.', ''))
 except ValueError:
@@ -77,7 +82,7 @@ def install_triton_client():
 
     package_path = save_name.parent / f'python/tensorrtserver-{TRITON_CLIENT_VERSION}-py2.py3-none-linux_x86_64.whl'
 
-    subprocess.call([sys.executable, '-m', 'pip', 'install', package_path])
+    subprocess.check_output([sys.executable, '-m', 'pip', 'install', package_path])
 
 
 # parse required packages
@@ -86,12 +91,16 @@ with open('requirements.txt') as f:
     for line in f.readlines():
         install_requires.append(line.strip())
 
+################################################################################
+# Pip Install Packages
+################################################################################
+
 setup(
     name='modelci',
     version='1.0.0',
     description='A complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS)',
-    author='Yuanming Li',
-    author_email='yli056@e.ntu.edu.sg',
+    author='NTU CAP',
+    author_email='huaizhen001@e.ntu.edu.sg',
     url='https://github.com/cap-ntu/ML-Model-CI',
     install_requires=install_requires,
     packages=find_packages(),
