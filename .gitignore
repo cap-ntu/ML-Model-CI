@@ -138,7 +138,3 @@ dmypy.json
 
 # Idea
 .idea/
-
-# proto
-**/*_pb2.py
-**/*_pb2_grpc.py

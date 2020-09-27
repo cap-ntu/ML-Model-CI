@@ -19,7 +19,6 @@ requests==2.23.0
 rich==2.2.3
 tensorflow>=2.1.0
 tensorflow-serving-api>=2.1.0
-tensorrtserver@ file:///home/lym/tmp/tensorrtserver/python/tensorrtserver-1.8.0-py2.py3-none-linux_x86_64.whl
 toolz==0.10.0
 torch>=1.4.0
 torchvision>=0.5.0
