@@ -9,9 +9,11 @@ import platform
 import subprocess
 import sys
 import tarfile
+from distutils.core import setup
 from pathlib import Path
 
-from setuptools import setup, find_packages
+import requests
+from setuptools import find_packages
 
 ################################################################################
 # Check Platform and Python Version
@@ -21,8 +23,9 @@ if sys.version_info < (3,):
     print('Python 2 has reached end-of-life and is no longer supported by PyTorch.')
     sys.exit(-1)
 if sys.platform != 'linux':
-    print('Only support Linux system.')
-    sys.exit(-1)
+    TRITON_CLIENT_INSTALL = False
+else:
+    TRITON_CLIENT_INSTALL = True
 
 python_min_version = (3, 7, 0)
 python_min_version_str = '.'.join((str(num) for num in python_min_version))
@@ -39,12 +42,11 @@ if sys.version_info < python_min_version or sys.version_info >= python_max_versi
 # Download Required non-pip Packages
 ################################################################################
 
-TRITON_CLIENT_INSTALL = True
 TRITON_CLIENT_VERSION = '1.8.0'
 
 # Get Ubuntu version
 check_ubuntu_version_args = ['/usr/bin/lsb_release', '-sr']
-stdout = subprocess.check_output(check_ubuntu_version_args, universal_newlines=True)
+stdout = subprocess.check_output(check_ubuntu_version_args, universal_newlines=True, shell=False)
 try:
     UBUNTU_VERSION = int(stdout.strip().replace('.', ''))
 except ValueError:
@@ -53,8 +55,6 @@ except ValueError:
 
 
 def install_triton_client():
-    import requests
-
     filename = f'v{TRITON_CLIENT_VERSION}_ubuntu{UBUNTU_VERSION}.clients.tar.gz'
     save_name = Path.home() / 'tmp/tensorrtserver/tritonis.client.tar.gz'
     save_name.parent.mkdir(parents=True, exist_ok=True)
@@ -82,7 +82,7 @@ def install_triton_client():
 
     package_path = save_name.parent / f'python/tensorrtserver-{TRITON_CLIENT_VERSION}-py2.py3-none-linux_x86_64.whl'
 
-    subprocess.check_output([sys.executable, '-m', 'pip', 'install', package_path])
+    return package_path
 
 
 # parse required packages
@@ -90,6 +90,11 @@ with open('requirements.txt') as f:
     install_requires = list()
     for line in f.readlines():
         install_requires.append(line.strip())
+
+if TRITON_CLIENT_INSTALL:
+    # add Triton client package
+    triton_client_package = install_triton_client()
+    install_requires.append(f'tensorrtserver@ file://{triton_client_package}')
 
 ################################################################################
 # Pip Install Packages
@@ -106,5 +111,3 @@ setup(
     packages=find_packages(),
     python_requires='>=3.7',
 )
-
-install_triton_client()

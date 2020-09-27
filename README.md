@@ -40,10 +40,13 @@
 
 ## Installation
 
-### Pip
+### Using Pip
 
 ```shell script
-pip install .
+# need to install requests package first
+pip install setuptools requests==2.23.0
+# then install modelci
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
 ```
 
 ### Command Line  

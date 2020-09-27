@@ -16,7 +16,7 @@ import GPUtil
 import cpuinfo
 import numpy as np
 
-from modelci.metrics.cadvisor import CAdvisor
+from modelci.metrics import CAdvisor
 from modelci.types.bo import ModelBO
 from modelci.utils.misc import get_device
 
