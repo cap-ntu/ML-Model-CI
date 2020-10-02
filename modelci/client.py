@@ -83,7 +83,7 @@ def stop_mongodb(docker_client, name='modelci.mongo'):
 
 
 def start_cadvisor(docker_client, name='modelci.cadvisor', gpu=False, port=8080):
-    """Stop cAdvisor service.
+    """Start cAdvisor service.
 
     Args:
         docker_client (docker.client.DockerClient): Docker client instance.
@@ -126,7 +126,7 @@ def start_cadvisor(docker_client, name='modelci.cadvisor', gpu=False, port=8080)
 
         print('starting cAdvisor...')
         docker_client.containers.run(
-            'google/cadvisor:latest', name=name, ports={'8080/tcp': port}, detach=True, privileged=True, remove=True,
+            'google/cadvisor:latest', name=name, ports={'8080/tcp': port}, detach=True, privileged=True,
             environment={'LD_LIBRARY_PATH': str(Path(lib_path).parent)},
             volumes={
                 lib_path: {'bind': lib_path},
@@ -162,6 +162,45 @@ def stop_cadvisor(docker_client, name='modelci.cadvisor'):
         print(f'Service not started: container {name} not found')
 
 
+def start_node_exporter(docker_client, name='modelci.{}-exporter', port=9400):
+    """Start cAdvisor service.
+
+    Args:
+        docker_client (docker.client.DockerClient): Docker client instance.
+        name (str): Name template for node exporter. Default to be 'modelci.{}-exporter'.
+    """
+    try:
+        docker_client.images.get('bgbiao/dcgm-exporter:latest')
+    except ImageNotFound:
+        docker_client.images.pull('bgbiao/dcgm-exporter:latest')
+
+    try:
+        docker_client.images.get('bgbiao/gpu-metrics-exporter:latest')
+    except ImageNotFound:
+        docker_client.images.pull('bgbiao/gpu-metrics-exporter:latest')
+
+    # start dcgm-exporter
+    dcgm_container = docker_client.containers.run(
+        'bgbiao/dcgm-exporter', detach=True, runtime='nvidia', name=name.format('dcgm')
+    )
+
+    # start gpu-metric-exporter
+    docker_client.containers.run(
+        'bgbiao/gpu-metrics-exporter', detach=True, privileged=True, name=name.format('gpu-metric'),
+        ports={'9400/tcp': port}, volumes_from=[dcgm_container.id]
+    )
+
+
+def stop_node_exporter(docker_client, name='modelci.{}-exporter'):
+    for sub_name in ['dcgm', 'gpu-metric']:
+        try:
+            container = docker_client.containers.get(name.format(sub_name))
+            container.stop()
+            print(f'{name.format(sub_name)} stopped')
+        except NotFound:
+            print(f'Service not started: container {name.format(sub_name)} not found')
+
+
 def download_serving_containers(docker_client):
     images = [
         'mlmodelci/pytorch-serving:latest',
@@ -182,4 +221,4 @@ def download_serving_containers(docker_client):
 
 if __name__ == '__main__':
     c = docker.from_env()
-    start_cadvisor(c, gpu=True)
+    stop_node_exporter(c)
