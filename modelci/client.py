@@ -5,6 +5,7 @@ Author: USER
 Email: yli056@e.ntu.edu.sg
 Date: 10/2/2020
 """
+import subprocess
 from pathlib import Path
 
 import docker
@@ -81,6 +82,86 @@ def stop_mongodb(docker_client, name='modelci.mongo'):
         print(f'Service not started: container {name} not found')
 
 
+def start_cadvisor(docker_client, name='modelci.cadvisor', gpu=False, port=8080):
+    """Stop cAdvisor service.
+
+    Args:
+        docker_client (docker.client.DockerClient): Docker client instance.
+    """
+    try:
+        docker_client.images.get('google/cadvisor:latest')
+    except ImageNotFound:
+        docker_client.images.pull('google/cadvisor:latest')
+
+    try:
+        container = docker_client.containers.get(name)
+        print(f'Already exist, found container name={name}.')
+
+        container.start()
+        print('Stared')
+        return
+    except NotFound:
+        pass
+
+    if gpu:
+        # find libnvidia-ml.so.1
+        cache_file = Path('/tmp/libnvidia-ml.cache')
+        if cache_file.exists():
+            with open(cache_file) as f:
+                lib_path = f.read().strip()
+        else:
+            args1 = ('locate', 'libnvidia-ml.so.1')
+            args2 = ('grep', '-v', 'lib32')
+            args3 = ('head', '-1')
+            locate = subprocess.Popen(args1, stdout=subprocess.PIPE)
+            grep = subprocess.Popen(args2, stdin=locate.stdout, stdout=subprocess.PIPE)
+            locate.wait()
+            grep.wait()
+
+            lib_path = subprocess.check_output(args3, stdin=grep.stdout, universal_newlines=True).strip()
+
+            # save to cache
+            with open(cache_file, 'w') as f:
+                f.write(lib_path)
+
+        print('starting cAdvisor...')
+        docker_client.containers.run(
+            'google/cadvisor:latest', name=name, ports={'8080/tcp': port}, detach=True, privileged=True, remove=True,
+            environment={'LD_LIBRARY_PATH': str(Path(lib_path).parent)},
+            volumes={
+                lib_path: {'bind': lib_path},
+                '/': {'bind': '/rootfs', 'mode': 'ro'},
+                '/var/run': {'bind': '/var/run', 'mode': 'rw'},
+                '/sys': {'bind': '/sys', 'mode': 'ro'},
+                '/var/lib/docker': {'bind': '/var/lib/docker', 'mode': 'ro'},
+            }
+        )
+    else:
+        docker_client.containers.run(
+            'google/cadvisor:latest', name=name, ports={'8080/tcp': port}, detach=True, privileged=True,
+            volumes={
+                '/': {'bind': '/rootfs', 'mode': 'ro'},
+                '/var/run': {'bind': '/var/run', 'mode': 'rw'},
+                '/sys': {'bind': '/sys', 'mode': 'ro'},
+                '/var/lib/docker': {'bind': '/var/lib/docker', 'mode': 'ro'},
+            }
+        )
+
+
+def stop_cadvisor(docker_client, name='modelci.cadvisor'):
+    """Stop Mongo DB service.
+
+    Args:
+        docker_client (docker.client.DockerClient): Docker client instance.
+    """
+    try:
+        container = docker_client.containers.get(name)
+        container.stop()
+        print(f'Stopped')
+    except NotFound:
+        print(f'Service not started: container {name} not found')
+
+
 def download_serving_containers(docker_client):
     images = [
         'mlmodelci/pytorch-serving:latest',
@@ -101,4 +182,4 @@ def download_serving_containers(docker_client):
 
 if __name__ == '__main__':
     c = docker.from_env()
-    start_mongodb(c)
+    start_cadvisor(c, gpu=True)
