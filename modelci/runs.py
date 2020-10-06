@@ -5,27 +5,30 @@ Author: USER
 Email: yli056@e.ntu.edu.sg
 Date: 10/2/2020
 """
+import atexit
+import os
+import signal
 import subprocess
+import sys
 from pathlib import Path
 
 import docker
 from docker.errors import ImageNotFound, NotFound
 
+from modelci.app.config import SERVER_HOST, SERVER_PORT
+from modelci.config import MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB, CADVISOR_PORT, NODE_EXPORTER_PORT
 from modelci.utils import Logger
 
 logger = Logger(__name__, welcome=False)
 
 MONGO_CONTAINER_NAME = 'modelci.mongo'
-MONGO_INITDB_ROOT_USERNAME = 'admin'
-MONGO_INITDB_ROOT_PASSWORD = 'admin'
-MONGO_INITDB_USERNAME = 'modelci'
-MONGO_INITDB_PASSWORD = 'modelci@2020'
-MONGO_INITDB_DATABASE = 'modelci'
 
 CADVISOR_CONTAINER_NAME = 'modelci.cadvisor'
 
 GDCM_EXPORTER_CONTAINER_NAME = 'modelci.gdcm-exporter'
 GPU_METRICS_EXPORTER_CONTAINER_NAME = 'modelci.gpu-metrics-exporter'
+
+backend_process = None
 
 
 def start():
@@ -49,6 +52,8 @@ def start():
     else:
         start_node_exporter(docker_client)
 
+    start_fastapi_backend()
+
 
 def stop():
     """Stop the ModelCI service"""
@@ -61,15 +66,15 @@ def stop():
 def start_mongodb(
         docker_client,
         name=MONGO_CONTAINER_NAME,
-        root_user=MONGO_INITDB_ROOT_USERNAME,
-        user=MONGO_INITDB_USERNAME,
-        modelci_db=MONGO_INITDB_DATABASE
+        port=MONGO_PORT,
 ):
     """Start Mongo DB service.
     From https://stackoverflow.com/a/53522699/13173608.
 
     Args:
         docker_client (docker.client.DockerClient): Docker client instance.
+        name (str): Container name for MongoDB service.
+        port (int): Port for MongoDB service.
     """
 
     try:
@@ -89,14 +94,12 @@ def start_mongodb(
     init_sh_path = str(Path(__file__).parent.absolute() / 'init-mongo.sh')
 
     docker_client.containers.run(
-        'mongo', detach=True, ports={'27017/tcp': '27017'}, name=name,
+        'mongo', detach=True, ports={'27017/tcp': port}, name=name,
         volumes={init_sh_path: {'bind': '/docker-entrypoint-initdb.d/init-mongo.sh', 'mode': 'ro'}},
         environment={
-            'MONGO_INITDB_ROOT_USERNAME': root_user,
-            'MONGO_INITDB_ROOT_PASSWORD': MONGO_INITDB_ROOT_PASSWORD,  # TODO: to be replaced
-            'MONGO_INITDB_USERNAME': user,
-            'MONGO_INITDB_PASSWORD': MONGO_INITDB_PASSWORD,  # TODO: to be replaced
-            'MONGO_INITDB_DATABASE': modelci_db,
+            'MONGO_INITDB_USERNAME': MONGO_USERNAME,
+            'MONGO_INITDB_PASSWORD': MONGO_PASSWORD,
+            'MONGO_INITDB_DATABASE': MONGO_DB,
         }
     )
     logger.info(f'{name} stared')
@@ -107,6 +110,7 @@ def stop_mongodb(docker_client, name=MONGO_CONTAINER_NAME):
 
     Args:
         docker_client (docker.client.DockerClient): Docker client instance.
+        name (str): Container name for MongoDB service.
     """
     try:
         container = docker_client.containers.get(name)
@@ -116,11 +120,14 @@ def stop_mongodb(docker_client, name=MONGO_CONTAINER_NAME):
         logger.info(f'Service not started: container {name} not found')
 
 
-def start_cadvisor(docker_client, name=CADVISOR_CONTAINER_NAME, gpu=False, port=8080):
+def start_cadvisor(docker_client, name=CADVISOR_CONTAINER_NAME, gpu=False, port=CADVISOR_PORT):
     """Start cAdvisor service.
 
     Args:
         docker_client (docker.client.DockerClient): Docker client instance.
+        name (str): Container name for cAdvisor service.
+        gpu (bool): Flag for enable GPU.
+        port (int): Port for cAdvisor service.
     """
     try:
         container = docker_client.containers.get(name)
@@ -130,6 +137,13 @@ def start_cadvisor(docker_client, name=CADVISOR_CONTAINER_NAME, gpu=False, port=
         return
     except NotFound:
         pass
+
+    volumes = {
+        '/': {'bind': '/rootfs', 'mode': 'ro'},
+        '/var/run': {'bind': '/var/run', 'mode': 'rw'},
+        '/sys': {'bind': '/sys', 'mode': 'ro'},
+        '/var/lib/docker': {'bind': '/var/lib/docker', 'mode': 'ro'},
+    }
 
     if gpu:
         # find libnvidia-ml.so.1
@@ -155,23 +169,12 @@ def start_cadvisor(docker_client, name=CADVISOR_CONTAINER_NAME, gpu=False, port=
         docker_client.containers.run(
             'google/cadvisor:latest', name=name, ports={'8080/tcp': port}, detach=True, privileged=True,
             environment={'LD_LIBRARY_PATH': str(Path(lib_path).parent)},
-            volumes={
-                lib_path: {'bind': lib_path},
-                '/': {'bind': '/rootfs', 'mode': 'ro'},
-                '/var/run': {'bind': '/var/run', 'mode': 'rw'},
-                '/sys': {'bind': '/sys', 'mode': 'ro'},
-                '/var/lib/docker': {'bind': '/var/lib/docker', 'mode': 'ro'},
-            }
+            volumes={lib_path: {'bind': lib_path}, **volumes}
         )
     else:
         docker_client.containers.run(
             'google/cadvisor:latest', name=name, ports={'8080/tcp': port}, detach=True, privileged=True,
-            volumes={
-                '/': {'bind': '/rootfs', 'mode': 'ro'},
-                '/var/run': {'bind': '/var/run', 'mode': 'rw'},
-                '/sys': {'bind': '/sys', 'mode': 'ro'},
-                '/var/lib/docker': {'bind': '/var/lib/docker', 'mode': 'ro'},
-            }
+            volumes=volumes,
         )
     logger.info(f'{name} started.')
 
@@ -181,6 +184,7 @@ def stop_cadvisor(docker_client, name=CADVISOR_CONTAINER_NAME):
 
     Args:
         docker_client (docker.client.DockerClient): Docker client instance.
+        name (str): Container name for cAdvisor service.
     """
     try:
         container = docker_client.containers.get(name)
@@ -194,15 +198,16 @@ def start_node_exporter(
         docker_client,
         dcgm_name=GDCM_EXPORTER_CONTAINER_NAME,
         gpu_metrics_name=GPU_METRICS_EXPORTER_CONTAINER_NAME,
-        port=9400
+        port=NODE_EXPORTER_PORT,
 ):
-    """Start cAdvisor service.
+    """Start node exporter service.
 
     Args:
         docker_client (docker.client.DockerClient): Docker client instance.
         dcgm_name (str): Container name of dcgm-exporter. Default to `GDCM_EXPORTER_CONTAINER_NAME`.
         gpu_metrics_name (str): Container name of gpu-metrics-exporter. Default to
             `GPU_METRICS_EXPORTER_CONTAINER_NAME`.
+        port (int): Port for node exporter service.
     """
     # start dcgm-exporter
     try:
@@ -233,6 +238,14 @@ def stop_node_exporter(
         dcgm_name=GDCM_EXPORTER_CONTAINER_NAME,
         gpu_metrics_name=GPU_METRICS_EXPORTER_CONTAINER_NAME
 ):
+    """Stop node exporter service.
+
+    Args:
+        docker_client (docker.client.DockerClient): Docker client instance.
+        dcgm_name (str): Container name of dcgm-exporter. Default to `GDCM_EXPORTER_CONTAINER_NAME`.
+        gpu_metrics_name (str): Container name of gpu-metrics-exporter. Default to
+            `GPU_METRICS_EXPORTER_CONTAINER_NAME`.
+    """
     for name in [dcgm_name, gpu_metrics_name]:
         try:
             container = docker_client.containers.get(name)
@@ -240,6 +253,18 @@ def stop_node_exporter(
             logger.info(f'{name} stopped')
         except NotFound:
             logger.info(f'Service not started: container {name} not found')
+
+
+def start_fastapi_backend():
+    global backend_process
+    args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--host', SERVER_HOST, '--port', str(SERVER_PORT)]
+    backend_process = subprocess.Popen(args, preexec_fn=os.setsid)
+
+
+@atexit.register
+def stop_fastapi_backend():
+    if isinstance(backend_process, subprocess.Popen):
+        os.killpg(os.getpgid(backend_process.pid), signal.SIGTERM)
 
 
 def download_serving_containers(docker_client):
@@ -266,5 +291,5 @@ def download_serving_containers(docker_client):
 
 
 if __name__ == '__main__':
-    # start()
-    stop()
+    start()
+    # stop()
