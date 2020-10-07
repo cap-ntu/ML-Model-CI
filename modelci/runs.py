@@ -8,6 +8,7 @@ Date: 10/2/2020
 import os
 import random
 import signal
+# NOQA: B404
 import subprocess
 import sys
 from pathlib import Path
@@ -176,11 +177,11 @@ def start_cadvisor(docker_client, gpu=False, port=CADVISOR_PORT):
                 args1 = ('locate', 'libnvidia-ml.so.1')
                 args2 = ('grep', '-v', 'lib32')
                 args3 = ('head', '-1')
-                locate = subprocess.Popen(args1, stdout=subprocess.PIPE)
+                locate = subprocess.Popen(args1, stdout=subprocess.PIPE)  # NOQA: B603
                 grep = subprocess.Popen(args2, stdin=locate.stdout, stdout=subprocess.PIPE)
                 locate.wait()
                 grep.wait()
-
+                # NOQA: B603
                 lib_path = subprocess.check_output(args3, stdin=grep.stdout, universal_newlines=True).strip()
 
                 # save to cache
@@ -268,7 +269,7 @@ def start_fastapi_backend():
     if not pid:
         args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--host', SERVER_HOST, '--port',
                 str(SERVER_PORT)]
-        backend_process = subprocess.Popen(args, preexec_fn=os.setsid)
+        backend_process = subprocess.Popen(args, preexec_fn=os.setsid)  # NOQA: B603
         # save the process pid
         with open('/tmp/fastapi_backend', 'w') as f:
             f.write(str(backend_process.pid))
