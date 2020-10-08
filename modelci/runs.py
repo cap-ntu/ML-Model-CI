@@ -8,16 +8,17 @@ Date: 10/2/2020
 import os
 import random
 import signal
-# NOQA: B404
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import docker
+from pymongo import MongoClient
 
 from modelci.app.config import SERVER_HOST, SERVER_PORT
 from modelci.config import (
-    MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB, MONGO_CONTAINER_LABEL,
+    MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB, MONGO_CONTAINER_LABEL,
     CADVISOR_CONTAINER_LABEL, CADVISOR_PORT,
     DCGM_EXPORTER_CONTAINER_LABEL, GPU_METRICS_EXPORTER_CONTAINER_LABEL, NODE_EXPORTER_PORT,
 )
@@ -121,11 +122,8 @@ def start_mongodb(docker_client, port=MONGO_PORT):
     if mongo_name is None:
         mongo_name = f'mongo-{random.randint(0, 100000)}'
 
-        init_sh_path = str(Path(__file__).parent.absolute() / 'init-mongo.sh')
-
         docker_client.containers.run(
             'mongo', detach=True, ports={'27017/tcp': port}, name=mongo_name,
-            volumes={init_sh_path: {'bind': '/docker-entrypoint-initdb.d/init-mongo.sh', 'mode': 'ro'}},
             environment={
                 'MONGO_INITDB_USERNAME': MONGO_USERNAME,
                 'MONGO_INITDB_PASSWORD': MONGO_PASSWORD,
@@ -133,6 +131,19 @@ def start_mongodb(docker_client, port=MONGO_PORT):
             },
             labels=[MONGO_CONTAINER_LABEL]
         )
+
+        time.sleep(1)
+        try:
+            # create MongoDB user
+            client = MongoClient(f'{MONGO_HOST}:{MONGO_PORT}')
+            kwargs = {'pwd': MONGO_PASSWORD, 'roles': [{'role': 'readWrite', 'db': MONGO_DB}]}
+            getattr(client, MONGO_DB).command("createUser", MONGO_USERNAME, **kwargs)
+        except Exception as e:
+            logger.error(f'Exception during starting MongoDB: {e}')
+            container = list_containers(docker_client, filters={'name': mongo_name})[0]
+            container.kill()
+            container.remove()
+            return
 
     check_container_status(docker_client, name=mongo_name)
     logger.info(f'Container name={mongo_name} stared')
@@ -172,26 +183,25 @@ def start_cadvisor(docker_client, gpu=False, port=CADVISOR_PORT):
             cache_file = Path('/tmp/libnvidia-ml.cache')
             if cache_file.exists():
                 with open(cache_file) as f:
-                    lib_path = f.read().strip()
+                    libnvidia_ml_path = f.read().strip()
             else:
                 args1 = ('locate', 'libnvidia-ml.so.1')
                 args2 = ('grep', '-v', 'lib32')
                 args3 = ('head', '-1')
-                locate = subprocess.Popen(args1, stdout=subprocess.PIPE)  # NOQA: B603
+                locate = subprocess.Popen(args1, stdout=subprocess.PIPE)
                 grep = subprocess.Popen(args2, stdin=locate.stdout, stdout=subprocess.PIPE)
                 locate.wait()
                 grep.wait()
-                # NOQA: B603
-                lib_path = subprocess.check_output(args3, stdin=grep.stdout, universal_newlines=True).strip()
+                libnvidia_ml_path = subprocess.check_output(args3, stdin=grep.stdout, universal_newlines=True).strip()
 
                 # save to cache
                 with open(cache_file, 'w') as f:
-                    f.write(lib_path)
+                    f.write(libnvidia_ml_path)
 
             docker_client.containers.run(
                 'google/cadvisor:latest', name=cadvisor_name, ports={'8080/tcp': port}, detach=True, privileged=True,
-                environment={'LD_LIBRARY_PATH': str(Path(lib_path).parent)},
-                volumes={lib_path: {'bind': lib_path}, **volumes}, labels=[CADVISOR_CONTAINER_LABEL]
+                environment={'LD_LIBRARY_PATH': str(Path(libnvidia_ml_path).parent)},
+                volumes={libnvidia_ml_path: {'bind': libnvidia_ml_path}, **volumes}, labels=[CADVISOR_CONTAINER_LABEL]
             )
         else:
             docker_client.containers.run(
@@ -269,7 +279,7 @@ def start_fastapi_backend():
     if not pid:
         args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--host', SERVER_HOST, '--port',
                 str(SERVER_PORT)]
-        backend_process = subprocess.Popen(args, preexec_fn=os.setsid)  # NOQA: B603
+        backend_process = subprocess.Popen(args, preexec_fn=os.setsid)
         # save the process pid
         with open('/tmp/fastapi_backend', 'w') as f:
             f.write(str(backend_process.pid))

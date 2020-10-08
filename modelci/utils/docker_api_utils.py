@@ -25,7 +25,7 @@ def check_container_status(docker_client, name):
 
 
 def list_containers(docker_client, filters):
-    return docker_client.containers.list(filters=filters)
+    return docker_client.containers.list(all=True, filters=filters)
 
 
 def get_image(docker_client, name, logger):
