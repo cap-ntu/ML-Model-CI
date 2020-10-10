@@ -92,9 +92,9 @@ class DockerContainerManager(object):
                 # try start stopped container
                 self.logger.warning(f'Service already exist, found container name={container.name}.')
                 container.start()
-                self.logger.info(f'Service started.')
+                self.logger.info('Service started.')
             else:
-                self.logger.warning(f'Service already started.')
+                self.logger.warning(f'Service with container name={container.name} already started.')
 
         if not MODELCI_DOCKER_PORT_LABELS['mongo'] in all_labels:
             self._start_mongo_db()
