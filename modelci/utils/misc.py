@@ -2,6 +2,7 @@ import collections
 import logging
 import re
 import socket
+import subprocess
 
 
 def json_update(d, u):
@@ -58,3 +59,13 @@ def get_device(device: str):
                 device_num = 0
 
     return cuda, device_num
+
+
+def check_process_running(port: int):
+    args = ['lsof', '-t', f'-i:{port}']
+    try:
+        pid = int(subprocess.check_output(args, universal_newlines=True, text=True, stderr=subprocess.DEVNULL))
+    except subprocess.CalledProcessError:
+        # process not found
+        pid = None
+    return pid
