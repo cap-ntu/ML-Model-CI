@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import numpy as np
+import onnxconverter_common
 import tensorflow as tf
 import torch
 
@@ -69,6 +70,53 @@ def model_data_type_to_np(model_dtype):
         DataType.TYPE_FP32: np.float32,
         DataType.TYPE_FP64: np.float64,
         DataType.TYPE_STRING: np.dtype(object)
+    }
+
+    if isinstance(model_dtype, int):
+        model_dtype = DataType(model_dtype)
+    elif isinstance(model_dtype, str):
+        model_dtype = DataType[model_dtype]
+    elif not isinstance(model_dtype, DataType):
+        raise TypeError(
+            f'model_dtype is expecting one of the type: `int`, `str`, or `DataType` but got {type(model_dtype)}'
+        )
+    return mapper[model_dtype]
+
+
+def model_data_type_to_torch(model_dtype):
+    mapper = {
+        DataType.TYPE_INVALID: None,
+        DataType.TYPE_BOOL: torch.bool,
+        DataType.TYPE_UINT8: torch.uint8,
+        DataType.TYPE_INT8: torch.int8,
+        DataType.TYPE_INT16: torch.int16,
+        DataType.TYPE_INT32: torch.int32,
+        DataType.TYPE_INT64: torch.int64,
+        DataType.TYPE_FP16: torch.float16,
+        DataType.TYPE_FP32: torch.float32,
+        DataType.TYPE_FP64: torch.float64,
+    }
+
+    if isinstance(model_dtype, int):
+        model_dtype = DataType(model_dtype)
+    elif isinstance(model_dtype, str):
+        model_dtype = DataType[model_dtype]
+    elif not isinstance(model_dtype, DataType):
+        raise TypeError(
+            f'model_dtype is expecting one of the type: `int`, `str`, or `DataType` but got {type(model_dtype)}'
+        )
+    return mapper[model_dtype]
+
+
+def model_data_type_to_onnx(model_dtype):
+    mapper = {
+        DataType.TYPE_INVALID: onnxconverter_common,
+        DataType.TYPE_BOOL: onnxconverter_common.BooleanTensorType,
+        DataType.TYPE_INT32: onnxconverter_common.Int32TensorType,
+        DataType.TYPE_INT64: onnxconverter_common.Int64TensorType,
+        DataType.TYPE_FP32: onnxconverter_common.FloatTensorType,
+        DataType.TYPE_FP64: onnxconverter_common.DoubleTensorType,
+        DataType.TYPE_STRING: onnxconverter_common.StringType,
     }
 
     if isinstance(model_dtype, int):

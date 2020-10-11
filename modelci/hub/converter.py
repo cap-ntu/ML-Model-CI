@@ -1,17 +1,18 @@
-import json
-import re
 import subprocess
-from functools import reduce, partial
 from pathlib import Path
 from typing import Iterable, Union, List
 
 import onnx
+import onnxmltools as onnxmltools
 import torch
 import torch.jit
 import torch.onnx
 from betterproto import Casing
+from google.protobuf import json_format
+from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
+from hummingbird.ml.supported import xgb_operator_list, lgbm_operator_list, sklearn_operator_list
 from onnx import optimizer
-from torch import nn
+from tensorflow import keras
 
 from modelci.types.bo import IOShape
 from modelci.types.trtis_objects import (
@@ -23,16 +24,51 @@ from modelci.types.trtis_objects import (
     ModelInstanceGroupKind,
 )
 from ..hub.utils import GiB, parse_path, TensorRTPlatform
+from ..types.type_conversion import model_data_type_to_torch, model_data_type_to_onnx
+from ..utils import Logger
+
+logger = Logger('converter', welcome=False)
+
+
+class PyTorchConverter(object):
+    @staticmethod
+    def from_xgboost(
+            model: Union.__getitem__(tuple(xgb_operator_list)),  # noqa
+            device: str = 'cpu',
+    ) -> torch.nn.Module:
+        """Convert PyTorch module from XGBoost"""
+        return _convert_xgboost(model, 'torch', test_input=None, device=device)
+
+    @staticmethod
+    def from_lightgbm(
+            model: Union.__getitem__(tuple(lgbm_operator_list)),  # noqa
+            device: str = 'cpu',
+    ):
+        return _convert_lightgbm(model, 'torch', test_input=None, device=device)
+
+    @staticmethod
+    def from_sklearn(
+            model: Union.__getitem__(tuple(sklearn_operator_list)),  # noqa
+            device: str = 'cpu',
+    ):
+        return _convert_sklearn(model, 'torch', test_input=None, device=device)
+
+    @staticmethod
+    def from_onnx(
+            model: onnx.ModelProto,
+            device: str = 'cpu',
+    ):
+        return _convert_onnxml(model, 'torch', test_input=None, device=device)
 
 
 class TorchScriptConverter(object):
     @staticmethod
-    def from_torch_module(model: nn.Module, save_path: Path, override: bool = False):
-        """Save a loaded model in TorchScript."""
+    def from_torch_module(model: torch.nn.Module, save_path: Path, override: bool = False):
+        """Convert a PyTorch nn.Module into TorchScript.
+        """
         if save_path.with_suffix('.zip').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
         model.eval()
         traced = torch.jit.script(model)
@@ -43,9 +79,30 @@ class TorchScriptConverter(object):
 
 
 class ONNXConverter(object):
+    class _Wrapper(object):
+        @staticmethod
+        def load_and_save(converter):
+            def wrap(save_path: Path, *args, optimize: bool = True, override: bool = False):
+                if save_path.with_suffix('.onnx').exists():
+                    if not override:  # file exist yet override flag is not set
+                        logger.info('Use cached model')
+                        return True
+                onnx_model = converter(*args, save_path=save_path)
+                save_path.parent.mkdir(parents=True, exist_ok=True)
+                save_path_with_ext = save_path.with_suffix('.onnx')
+                onnxmltools.utils.save_model(onnx_model, save_path_with_ext)
+
+                if optimize:
+                    network = ONNXConverter.optim_onnx(save_path_with_ext)
+                    onnx.save(network, str(save_path_with_ext))
+
+                return True
+
+            return wrap
+
     @staticmethod
     def from_torch_module(
-            model: nn.Module,
+            model: torch.nn.Module,
             save_path: Path,
             inputs: Iterable[IOShape],
             opset: int = 10,
@@ -64,8 +121,7 @@ class ONNXConverter(object):
         """
         if save_path.with_suffix('.onnx').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         export_kwargs = dict()
@@ -89,9 +145,11 @@ class ONNXConverter(object):
         save_path.parent.mkdir(parents=True, exist_ok=True)
         save_path_with_ext = save_path.with_suffix('.onnx')
 
-        dummy_tensors = list()
+        dummy_tensors, input_names = list(), list()
         for input_ in inputs:
-            dummy_tensors.append(torch.rand(batch_size, *input_.shape[1:], requires_grad=True))
+            dtype = model_data_type_to_torch(input_.dtype)
+            dummy_tensors.append(torch.rand(batch_size, *input_.shape[1:], requires_grad=True, dtype=dtype))
+            input_names.append(input_.name)
 
         torch.onnx.export(
             model,  # model being run
@@ -100,41 +158,89 @@ class ONNXConverter(object):
             export_params=True,  # store the trained parameter weights inside the model file
             opset_version=opset,  # the ONNX version to export the model to
             do_constant_folding=True,  # whether to execute constant folding for optimization
-            input_names=['input'],  # the model's input names
+            input_names=input_names,  # the model's input names
             output_names=['output'],  # the model's output names
             keep_initializers_as_inputs=True,
             **export_kwargs
         )
 
         if optimize:
-            network = optim_onnx(save_path_with_ext)
+            network = ONNXConverter.optim_onnx(save_path_with_ext)
             onnx.save(network, str(save_path_with_ext))
 
         return True
 
+    @staticmethod
+    @_Wrapper.load_and_save
+    def from_keras(
+            model: keras.models.Model,
+            opset: int = 10,
+    ):
+        return onnxmltools.convert_keras(model, target_opset=opset)
 
-def optim_onnx(onnx_path, verbose=True):
-    """Optimize ONNX network
-    """
+    @staticmethod
+    @_Wrapper.load_and_save
+    def from_sklearn(
+            model,
+            inputs: Iterable[IOShape],
+            opset: int = 10,
+    ):
+        initial_type = ONNXConverter._convert_initial_type(inputs)
+        return onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
 
-    model = onnx.load(onnx_path)
-    print("Begin Simplify ONNX Model ...")
-    passes = [
-        'eliminate_deadend',
-        'eliminate_identity',
-        'extract_constant_to_initializer',
-        'eliminate_unused_initializer',
-        'fuse_add_bias_into_conv',
-        'fuse_bn_into_conv',
-        'fuse_matmul_add_bias_into_gemm'
-    ]
-    model = optimizer.optimize(model, passes)
+    @staticmethod
+    @_Wrapper.load_and_save
+    def from_xgboost(model, inputs: Iterable[IOShape], opset: int = 10):
+        initial_type = ONNXConverter._convert_initial_type(inputs)
+        return onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
 
-    if verbose:
-        for m in onnx.helper.printable_graph(model.graph).split("\n"):
-            print(m)
+    @staticmethod
+    @_Wrapper.load_and_save
+    def from_lightgbm(model, inputs: Iterable[IOShape], opset: int = 10):
+        initial_type = ONNXConverter._convert_initial_type(inputs)
+        return onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
 
-    return model
+    @staticmethod
+    def _convert_initial_type(inputs: Iterable[IOShape]):
+        # assert batch size
+        batch_sizes = list(map(lambda x: x.shape[0], inputs))
+        if not all(batch_size == batch_sizes[0] for batch_size in batch_sizes):
+            raise ValueError(
+                'batch size for inputs (i.e. the first dimensions of `input.shape` are not consistent.')
+        batch_size = batch_sizes[0]
+
+        if batch_size == -1:
+            batch_size = None
+        else:
+            assert batch_size > 0
+
+        initial_type = list()
+        for input_ in inputs:
+            initial_type.append((input_.name, model_data_type_to_onnx([batch_size, *input_.shape[1:]])))
+
+    @staticmethod
+    def optim_onnx(onnx_path, verbose=True):
+        """Optimize ONNX network
+        """
+
+        model = onnx.load(onnx_path)
+        print("Begin Simplify ONNX Model ...")
+        passes = [
+            'eliminate_deadend',
+            'eliminate_identity',
+            'extract_constant_to_initializer',
+            'eliminate_unused_initializer',
+            'fuse_add_bias_into_conv',
+            'fuse_bn_into_conv',
+            'fuse_matmul_add_bias_into_gemm'
+        ]
+        model = optimizer.optimize(model, passes)
+
+        if verbose:
+            for m in onnx.helper.printable_graph(model.graph).split("\n"):
+                print(m)
+
+        return model
 
 
 class TFSConverter(object):
@@ -144,8 +250,7 @@ class TFSConverter(object):
 
         if save_path.with_suffix('.zip').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         tf.compat.v1.saved_model.save(model, str(save_path))
@@ -175,8 +280,7 @@ class TRTConverter(object):
 
         if save_path.with_suffix('.plan').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         onnx_path = Path(onnx_path)
@@ -374,6 +478,8 @@ class TRTConverter(object):
             instance_group (List[ModelInstanceGroup]): Model instance group (workers) definition. Default is to
                 create a single instance loading on the first available CUDA device.
         """
+        from tensorrtserver.api import model_config_pb2
+
         # assert batch size
         batch_sizes = list(map(lambda x: x.shape[0], inputs))
         if not all(batch_size == batch_sizes[0] for batch_size in batch_sizes):

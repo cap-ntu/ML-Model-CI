@@ -81,7 +81,7 @@ class IOShape(object):
 
     Args:
         shape (List[int]): the shape of the input or output tensor.
-        dtype (Union[type, str]): The data type of the input or output tensor.
+        dtype (DataType, type, str): The data type of the input or output tensor.
         name (str): Tensor name. Default to None.
         format (ModelInputFormat): Input format, used for TensorRT currently.
             Default to `ModelInputFormat.FORMAT_NONE`.
