@@ -67,7 +67,17 @@ docker pull mlmodelci/mlmodelci
 *The system is still under the active development. Welcome to join us!*
 
 MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services
-(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more clear start, we present the whole pipeline step by step as follows.
+(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
+clear start, we present the whole pipeline step by step as follows.
+
+### Start the ModelCI service
+
+Once you have installed, start ModelCI service by:
+```python
+import modelci.runs
+
+modelci.runs.start()
+```
 
 ### Register a Model
 
@@ -143,7 +153,7 @@ MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispat
 We search for a converted model and then dispatch it to a device with a specific batch size.
 
 ```python
-from modelci.hub.deployer.serving import serve
+from modelci.hub.deployer.dispatcher import serve
 from modelci.hub.manager import retrieve_model
 from modelci.types.bo import Framework, Engine
 
