@@ -52,7 +52,7 @@ setuptools==41.0.0
 six==1.14.0
 stringcase==1.2.0
 tensorboard==2.1.0
-tensorflow==2.1.0
+tensorflow==2.1.2
 tensorflow-estimator==2.1.0
 termcolor==1.1.0
 toolz==0.10.0
