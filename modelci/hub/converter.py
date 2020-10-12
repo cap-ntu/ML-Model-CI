@@ -1,7 +1,8 @@
 import subprocess
 from pathlib import Path
-from typing import Iterable, Union, List
+from typing import Iterable, Union, List, Sequence, Optional
 
+import numpy as np
 import onnx
 import onnxmltools as onnxmltools
 import torch
@@ -9,6 +10,7 @@ import torch.jit
 import torch.onnx
 from betterproto import Casing
 from google.protobuf import json_format
+from hummingbird.ml import constants as hb_constants
 from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
 from hummingbird.ml.supported import xgb_operator_list, lgbm_operator_list, sklearn_operator_list
 from onnx import optimizer
@@ -31,34 +33,80 @@ logger = Logger('converter', welcome=False)
 
 
 class PyTorchConverter(object):
+    hb_common_extra_config = {hb_constants.CONTAINER: False}
+
     @staticmethod
     def from_xgboost(
             model: Union.__getitem__(tuple(xgb_operator_list)),  # noqa
+            inputs: Sequence[IOShape],
             device: str = 'cpu',
+            extra_config: Optional[dict] = None,
     ) -> torch.nn.Module:
         """Convert PyTorch module from XGBoost"""
-        return _convert_xgboost(model, 'torch', test_input=None, device=device)
+        # inputs for XGBoost should contains only 1 argument with 2 dim
+        if not (len(inputs) == 1 and len(inputs[0].shape) == 2):
+            raise RuntimeError(
+                'XGboost does not support such input data for inference. The input data should contains only 1\n'
+                'argument with exactly 2 dimensions.'
+            )
+
+        if extra_config is None:
+            extra_config = dict()
+
+        # assert batch size
+        batch_size = inputs[0].shape[0]
+        if batch_size == -1:
+            batch_size = 1
+        test_input = np.random.rand(batch_size, inputs[0].shape[1])
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update(extra_config)
+
+        return _convert_xgboost(
+            model, 'torch', test_input=test_input, device=device, extra_config=extra_config_
+        )
 
     @staticmethod
     def from_lightgbm(
             model: Union.__getitem__(tuple(lgbm_operator_list)),  # noqa
+            inputs: Optional[Sequence[IOShape]] = None,
             device: str = 'cpu',
+            extra_config: Optional[dict] = None
     ):
-        return _convert_lightgbm(model, 'torch', test_input=None, device=device)
+        if extra_config is None:
+            extra_config = dict()
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update(extra_config)
+
+        return _convert_lightgbm(
+            model, 'torch', test_input=None, device=device, extra_config=extra_config_
+        )
 
     @staticmethod
     def from_sklearn(
             model: Union.__getitem__(tuple(sklearn_operator_list)),  # noqa
             device: str = 'cpu',
+            extra_config: Optional[dict] = None,
     ):
-        return _convert_sklearn(model, 'torch', test_input=None, device=device)
+        if extra_config is None:
+            extra_config = dict()
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update(extra_config)
+
+        return _convert_sklearn(
+            model, 'torch', test_input=None, device=device, extra_config=extra_config_
+        )
 
     @staticmethod
     def from_onnx(
             model: onnx.ModelProto,
             device: str = 'cpu',
     ):
-        return _convert_onnxml(model, 'torch', test_input=None, device=device)
+        return _convert_onnxml(
+            model, 'torch', test_input=None, device=device, extra_config=PyTorchConverter.hb_common_extra_config
+        )
 
 
 class TorchScriptConverter(object):
