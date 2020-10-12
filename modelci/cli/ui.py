@@ -10,14 +10,6 @@ from modelci.types.trtis_objects import ModelInputFormat
 console = Console()
 
 
-def welcome_view():
-    console.print('ML Model CI', style='bold #D75455', end=' ')
-    console.print('❤', style='red', end=' ')
-    console.print(
-        'A complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS)'
-    )
-
-
 def single_model_view(model_bo: Optional[ModelBO], top=False):
     if model_bo is None:
         return ''
