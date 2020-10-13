@@ -7,7 +7,7 @@ Date: 6/29/2020
 """
 from queue import Queue
 from threading import Thread
-from typing import Union
+from typing import Union, Optional
 
 from docker.models.containers import Container
 
@@ -53,8 +53,8 @@ class JobExecutor(Thread):
         """Submit a profiling job to the executor."""
         self.job_queue.put(job)
 
-    def finish(self):
-        """The executor stops accepting new coming jobs.
+    def join(self, timeout: Optional[float] = ...) -> None:
+        """The executor stops accepting new coming jobs and joins to its parent.
 
         This function should be called before `join`. Otherwise, the executor will never stop.
 
@@ -63,6 +63,7 @@ class JobExecutor(Thread):
             2. Change failed profiling model status to fail.
         """
         self.job_queue.put(self._queue_finish_flag)
+        return super().join(timeout)
 
     def run(self) -> None:
         from modelci.hub.deployer.dispatcher import serve

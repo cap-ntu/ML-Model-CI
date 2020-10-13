@@ -7,6 +7,7 @@ Date: 10/12/2020
 """
 import click
 
+import modelci.hub.cli
 from modelci.app import (start as app_start, stop as app_stop)
 from modelci.utils import Logger
 from modelci.utils.docker_container_manager import DockerContainerManager
@@ -49,8 +50,8 @@ def clean():
     container_conn.remove_all()
 
 
-# cli.add_command(modelci.runs.commands)
-
+cli.add_command(modelci.hub.cli.commands)
+cli.add_command(modelci.hub.cli.models)
 
 if __name__ == '__main__':
     cli()
