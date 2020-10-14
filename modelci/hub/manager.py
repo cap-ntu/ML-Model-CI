@@ -30,7 +30,7 @@ def register_model(
         engine: Engine = None,
         version: ModelVersion = None,
         convert=True,
-        profile=False,
+        profile=True,
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a

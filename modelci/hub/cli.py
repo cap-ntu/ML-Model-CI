@@ -6,11 +6,12 @@ Email: yli056@e.ntu.edu.sg
 Date: 10/12/2020
 """
 import click
+import requests
 
+from modelci.app import SERVER_HOST, SERVER_PORT
 from modelci.hub.init_data import export_model
-from modelci.hub.manager import retrieve_model
-from modelci.types.bo import Framework, Engine, ModelVersion
-from modelci.ui import model_view
+from modelci.ui import model_view, model_detailed_view
+from modelci.utils.misc import remove_dict_null
 
 
 @click.command()
@@ -25,18 +26,14 @@ from modelci.ui import model_view
     type=click.Choice(['NONE', 'TFS', 'TORCHSCRIPT', 'ONNX', 'TRT', 'TVM', 'CUSTOMIZED'], case_sensitive=False),
     help='Model serving engine.'
 )
-@click.option('-v', '--version', type=click.INT, help='Model version')
-def models(name, framework, engine, version):
-    if name:
-        name = name.lower()
-    if framework:
-        framework = Framework[framework.upper()]
-    if engine:
-        engine = Engine[engine.upper()]
-    if version:
-        version = ModelVersion(version)
-    model_list = retrieve_model(name, framework=framework, engine=engine, version=version, download=False)
-    model_view([model_list])
+@click.option('-v', '--version', type=click.INT, help='Model version.')
+@click.option('-a', '--all', 'list_all', type=click.BOOL, is_flag=True, help='Show all models.')
+@click.option('-q', '--quiet', type=click.BOOL, is_flag=True, help='Only show numeric IDs.')
+def models(name, framework, engine, version, list_all, quiet):
+    payload = remove_dict_null({'name': name, 'framework': framework, 'engine': engine, 'version': version})
+    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/', params=payload) as r:
+        model_list = r.json()
+        model_view([model_list], list_all=list_all, quiet=quiet)
 
 
 @click.group('model')
@@ -69,3 +66,13 @@ def export(name, framework, trt):
     engines.
     """
     export_model(model_name=name, framework=framework, enable_trt=trt)
+    exit(0)
+
+
+@commands.command()
+@click.argument('model_id')
+def show(model_id):
+    """Show a single model."""
+    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
+        model = r.json()
+        model_detailed_view(model)
