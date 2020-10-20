@@ -320,6 +320,7 @@ def retrieve_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
+        download: bool = True,
 ) -> List[ModelBO]:
     """Query a model by name, framework, engine or version.
 
@@ -328,6 +329,7 @@ def retrieve_model(
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
         version (ModelVersion): Model version. Default to None.
+        download (bool): Flag for whether the model needs to be cached locally.
 
     Returns:
         List[ModelBO]: A list of model business object.
@@ -335,10 +337,8 @@ def retrieve_model(
     # retrieve
     models = ModelService.get_models(architecture_name, framework=framework, engine=engine, version=version)
     # check if found
-    if len(models) == 0:
-        raise FileNotFoundError('Model not found!')
-
-    _get_remote_model_weights(models)
+    if len(models) != 0 and download:
+        _get_remote_model_weights(models)
 
     return models
 

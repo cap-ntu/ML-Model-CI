@@ -19,15 +19,15 @@ router = APIRouter()
 @router.get('/', response_model=List[ModelListOut])
 def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, version: int = None):
     if framework is not None:
-        framework = Framework[framework]
+        framework = Framework[framework.value.upper()]
     if engine is not None:
-        engine = Engine[engine]
+        engine = Engine[engine.value.upper()]
 
     models = ModelService.get_models(name=name, framework=framework, engine=engine, version=version)
     return list(map(ModelListOut.from_bo, models))
 
 
 @router.get('/{id}', response_model=ModelDetailOut)
-def get_model(*, id: str):
+def get_model(*, id: str):  # noqa
     model = ModelService.get_model_by_id(id)
     return ModelDetailOut.from_bo(model)

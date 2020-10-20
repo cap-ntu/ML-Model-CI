@@ -19,6 +19,7 @@ from modelci.utils import Logger
 from modelci.utils.docker_api_utils import list_containers, get_image, check_container_status
 
 MODELCI_DOCKER_LABEL = 'modelci.container.label'
+MODELCI_GPU_LABEL = 'modelci.container.gpu'
 
 MODELCI_DOCKER_PORT_LABELS = {
     'mongo': 'modelci.mongo.port',
@@ -71,6 +72,9 @@ class DockerContainerManager(object):
 
     def start(self):
         """Start the ModelCI service."""
+
+        # remove incorrect containers with different GPU enabled flag
+        self._remove(filters={'label': [f'{MODELCI_GPU_LABEL}={not self.enable_gpu}']})
 
         containers_in_cluster = list_containers(
             docker_client=self.docker_client,
@@ -134,6 +138,23 @@ class DockerContainerManager(object):
         for container in containers:
             container.stop()
             self.logger.info(f'Container name={container.name} stopped.')
+
+    def remove_all(self):
+        containers = list_containers(
+            self.docker_client,
+            filters={'label': [f'{MODELCI_DOCKER_LABEL}={self.cluster_name}']}
+        )
+        for container in containers:
+            container.stop()
+            container.remove()
+            self.logger.info(f'Container {container.id} is removed.')
+
+    def _remove(self, filters):
+        containers = list_containers(self.docker_client, filters)
+        for container in containers:
+            container.stop()
+            container.remove()
+            self.logger.info(f'Container {container.id} is removed.')
 
     def _download_serving_containers(self):
         images = [
@@ -231,7 +252,11 @@ class DockerContainerManager(object):
         self.docker_client.containers.run(
             'google/cadvisor:latest', name=cadvisor_name, ports={'8080/tcp': self.cadvisor_port},
             privileged=True, volumes=volumes,
-            labels={**self.common_labels, MODELCI_DOCKER_PORT_LABELS['cadvisor']: str(self.cadvisor_port)},
+            labels={
+                **self.common_labels,
+                MODELCI_DOCKER_PORT_LABELS['cadvisor']: str(self.cadvisor_port),
+                MODELCI_GPU_LABEL: str(self.enable_gpu),
+            },
             **extra_container_kwargs
         )
 
@@ -246,7 +271,11 @@ class DockerContainerManager(object):
         # start dcgm-exporter
         self.docker_client.containers.run(
             'bgbiao/dcgm-exporter', runtime='nvidia', name=dcgm_name,
-            labels={**self.common_labels, MODELCI_DOCKER_PORT_LABELS['dcgm_node_exporter']: '-1'},
+            labels={
+                **self.common_labels,
+                MODELCI_DOCKER_PORT_LABELS['dcgm_node_exporter']: '-1',
+                MODELCI_GPU_LABEL: str(self.enable_gpu),
+            },
             **self.extra_container_kwargs
         )
 
@@ -265,7 +294,8 @@ class DockerContainerManager(object):
             ports={'9400/tcp': self.node_exporter_port}, volumes_from=[dcgm_container.id],
             labels={
                 **self.common_labels,
-                MODELCI_DOCKER_PORT_LABELS['gpu_metrics_node_exporter']: str(self.node_exporter_port)
+                MODELCI_DOCKER_PORT_LABELS['gpu_metrics_node_exporter']: str(self.node_exporter_port),
+                MODELCI_GPU_LABEL: str(self.enable_gpu),
             },
             **self.extra_container_kwargs
         )
