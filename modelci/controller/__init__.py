@@ -16,7 +16,7 @@ job_executor.start()
 @atexit.register
 def terminate_controllers():
     job_executor.join()
-    print(f'Exiting job executor.')
+    print('Exiting job executor.')
 
 
 __all__ = ['job_executor']

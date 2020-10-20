@@ -97,15 +97,11 @@ def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
 
 
 def model_detailed_view(model: dict):
-    def build_name_value_view(name, value):
-        return f'[{dim_color}]{name}:[/{dim_color}] {value}'
-
     dim_color = 'grey62'
 
     grid = Table.grid(padding=(0, 2))
     # Basic Info
-    grid.add_row('ID', 'Model Name', 'Framework', 'Version', 'Pretrained Dataset', 'Accuracy', 'Task',
-                 style='b')
+    grid.add_row('ID', 'Model Name', 'Framework', 'Version', 'Pretrained Dataset', 'Accuracy', 'Task', style='b')
     grid.add_row(
         model['id'], model['name'], model['framework'], str(model['version']), model['dataset'], str(model['acc']),
         model['task']
@@ -195,7 +191,7 @@ def model_detailed_view(model: dict):
 
             converted_grid.add_row(Text('Throughput', style='b', justify='left'))
             throughput = dpr['throughput']['inference_throughput']
-            converted_grid.add_row(f'Inference', f'{throughput:.3f} req/s')
+            converted_grid.add_row('Inference', f'{throughput:.3f} req/s')
 
     console.print(grid)
     console.print(converted_grid)
