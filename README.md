@@ -64,7 +64,7 @@ docker pull mlmodelci/mlmodelci
 
 ## Quick Start
 
-*The system is still under the active development. Welcome to join us!*
+*The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. Welcome to join in our development team!*
 
 MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services
 (MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
