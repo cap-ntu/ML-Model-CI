@@ -130,12 +130,13 @@ class ONNXConverter(object):
     class _Wrapper(object):
         @staticmethod
         def load_and_save(converter):
-            def wrap(save_path: Path, *args, optimize: bool = True, override: bool = False):
+            def wrap(*args, save_path: Path, optimize: bool = True, override: bool = False, **kwargs):
+                save_path = Path(save_path)
                 if save_path.with_suffix('.onnx').exists():
                     if not override:  # file exist yet override flag is not set
                         logger.info('Use cached model')
                         return True
-                onnx_model = converter(*args, save_path=save_path)
+                onnx_model = converter(*args, **kwargs)
                 save_path.parent.mkdir(parents=True, exist_ok=True)
                 save_path_with_ext = save_path.with_suffix('.onnx')
                 onnxmltools.utils.save_model(onnx_model, save_path_with_ext)
@@ -264,7 +265,8 @@ class ONNXConverter(object):
 
         initial_type = list()
         for input_ in inputs:
-            initial_type.append((input_.name, model_data_type_to_onnx([batch_size, *input_.shape[1:]])))
+            initial_type.append((input_.name, model_data_type_to_onnx(input_.dtype)([batch_size, *input_.shape[1:]])))
+        return initial_type
 
     @staticmethod
     def optim_onnx(onnx_path, verbose=True):

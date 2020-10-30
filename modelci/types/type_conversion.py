@@ -8,7 +8,7 @@ import torch
 from modelci.types.bo import DataType
 
 
-def type_to_data_type(tensor_type: type):
+def type_to_data_type(tensor_type):
     mapper = defaultdict(
         lambda: DataType.TYPE_INVALID, {
             bool: DataType.TYPE_BOOL,

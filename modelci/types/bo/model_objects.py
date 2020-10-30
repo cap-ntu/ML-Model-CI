@@ -7,6 +7,9 @@ This class contains utility classes used in model service for building model bus
 from enum import Enum, unique
 from typing import List, Union, Optional, BinaryIO
 
+import numpy as np
+import tensorflow as tf
+import torch
 from mongoengine import GridFSProxy
 
 from modelci.types.do import IOShapeDO
@@ -112,6 +115,8 @@ class IOShape(object):
                 dtype = DataType[dtype.upper()]
 
         elif isinstance(dtype, type):
+            dtype = type_to_data_type(dtype)
+        elif isinstance(dtype, (torch.dtype, tf.dtypes.DType, np.dtype)):
             dtype = type_to_data_type(dtype)
         elif isinstance(dtype, DataType):
             pass
