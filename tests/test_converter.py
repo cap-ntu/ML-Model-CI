@@ -4,6 +4,8 @@
 Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 10/11/2020
+
+TODO: Cover converter test from here: https://github.com/microsoft/hummingbird/tree/master/tests
 """
 import lightgbm as lgb
 import numpy as np
@@ -24,10 +26,10 @@ y = np.random.randint(num_classes, size=100000)
 inputs = [IOShape(shape=[-1, 28], dtype=X.dtype, name='input_0')]
 
 xgboost_model = xgt.XGBRegressor()
-# xgboost_model.fit(X, y)
+xgboost_model.fit(X, y)
 
 lgbm_model = lgb.LGBMClassifier()
-# lgbm_model.fit(X, y)
+lgbm_model.fit(X, y)
 
 X_bc, y_bc = load_breast_cancer(return_X_y=True)
 nrows = 15000
@@ -36,7 +38,7 @@ y_bc: np.ndarray = y_bc[0:nrows]
 
 sklearn_model = RandomForestClassifier(n_estimators=10, max_depth=10)
 sklearn_model.fit(X_bc, y_bc)
-inputs_bc = [IOShape(shape=[-1, nrows], dtype=X_bc.dtype, name='input_0')]
+inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=X_bc.dtype, name='input_0')]
 
 
 def test_xgboost_to_onnx():
@@ -93,7 +95,7 @@ def test_lightgbm_to_torch():
 
 def test_sklearn_to_torch():
     model = PyTorchConverter.from_sklearn(sklearn_model, extra_config={'tree_implementation': 'gemm'})
-    sample_input = X_bc[0:1]
+    sample_input = X_bc[0:1, :]
     out, probs = model(sample_input)
     assert tuple(out.shape) == (1,)
     assert tuple(probs.shape) == (1, 2)
@@ -125,9 +127,10 @@ def test_onnx_to_pytorch():
 
 
 if __name__ == '__main__':
-    # test_xgboost_to_torch()
-    # test_lightgbm_to_torch()
-    # test_sklearn_to_torch()
-    # test_lgbm_to_onnx()
-    # test_sklearn_to_onnx()
+    test_xgboost_to_onnx()
+    test_lgbm_to_onnx()
+    test_sklearn_to_onnx()
+    test_xgboost_to_torch()
+    test_lightgbm_to_torch()
+    test_sklearn_to_torch()
     test_onnx_to_pytorch()

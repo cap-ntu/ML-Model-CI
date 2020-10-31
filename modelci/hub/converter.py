@@ -12,6 +12,7 @@ from betterproto import Casing
 from google.protobuf import json_format
 from hummingbird.ml import constants as hb_constants
 from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
+from hummingbird.ml.operator_converters import constants as hb_op_constants
 from hummingbird.ml.supported import xgb_operator_list, lgbm_operator_list, sklearn_operator_list
 from onnx import optimizer
 from tensorflow import keras
@@ -102,11 +103,23 @@ class PyTorchConverter(object):
     @staticmethod
     def from_onnx(
             model: onnx.ModelProto,
+            opset: int = 10,
             device: str = 'cpu',
+            extra_config: dict = None,
     ):
-        return _convert_onnxml(
-            model, 'torch', test_input=None, device=device, extra_config=PyTorchConverter.hb_common_extra_config
-        )
+        if extra_config is None:
+            extra_config = dict()
+        inputs = {input_.name: input_ for input_ in model.graph.input}
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update({
+            hb_constants.ONNX_TARGET_OPSET: opset,
+            hb_op_constants.ONNX_INPUTS: inputs,
+            hb_op_constants.N_FEATURES: None
+        })
+        extra_config_.update(extra_config)
+
+        return _convert_onnxml(model, 'torch', test_input=None, device=device, extra_config=extra_config_)
 
 
 class TorchScriptConverter(object):
@@ -127,6 +140,10 @@ class TorchScriptConverter(object):
 
 
 class ONNXConverter(object):
+    """Convert model to ONNX format."""
+
+    DEFAULT_OPSET = 10
+
     class _Wrapper(object):
         @staticmethod
         def load_and_save(converter):
@@ -223,7 +240,7 @@ class ONNXConverter(object):
     @_Wrapper.load_and_save
     def from_keras(
             model: keras.models.Model,
-            opset: int = 10,
+            opset: int = DEFAULT_OPSET,
     ):
         return onnxmltools.convert_keras(model, target_opset=opset)
 
@@ -232,25 +249,25 @@ class ONNXConverter(object):
     def from_sklearn(
             model,
             inputs: Iterable[IOShape],
-            opset: int = 10,
+            opset: int = DEFAULT_OPSET,
     ):
-        initial_type = ONNXConverter._convert_initial_type(inputs)
+        initial_type = ONNXConverter.convert_initial_type(inputs)
         return onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
 
     @staticmethod
     @_Wrapper.load_and_save
-    def from_xgboost(model, inputs: Iterable[IOShape], opset: int = 10):
-        initial_type = ONNXConverter._convert_initial_type(inputs)
+    def from_xgboost(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
+        initial_type = ONNXConverter.convert_initial_type(inputs)
         return onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
 
     @staticmethod
     @_Wrapper.load_and_save
-    def from_lightgbm(model, inputs: Iterable[IOShape], opset: int = 10):
-        initial_type = ONNXConverter._convert_initial_type(inputs)
+    def from_lightgbm(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
+        initial_type = ONNXConverter.convert_initial_type(inputs)
         return onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
 
     @staticmethod
-    def _convert_initial_type(inputs: Iterable[IOShape]):
+    def convert_initial_type(inputs: Iterable[IOShape]):
         # assert batch size
         batch_sizes = list(map(lambda x: x.shape[0], inputs))
         if not all(batch_size == batch_sizes[0] for batch_size in batch_sizes):
