@@ -93,7 +93,7 @@ class IOShape(object):
     def __init__(
             self,
             shape: List[int],
-            dtype: Union[type, str, DataType],
+            dtype: Union[type, int, str, DataType],
             name: str = None,
             format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
     ):
@@ -113,8 +113,7 @@ class IOShape(object):
             except NameError:
                 # try if the dtype is `DataType`
                 dtype = DataType[dtype.upper()]
-
-        elif isinstance(dtype, type):
+        elif isinstance(dtype, (type, int)):
             dtype = type_to_data_type(dtype)
         elif isinstance(dtype, (torch.dtype, tf.dtypes.DType, np.dtype)):
             dtype = type_to_data_type(dtype)

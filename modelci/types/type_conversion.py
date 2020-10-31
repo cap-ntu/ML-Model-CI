@@ -4,6 +4,7 @@ import numpy as np
 import onnxconverter_common
 import tensorflow as tf
 import torch
+from onnx import TensorProto
 
 from modelci.types.bo import DataType
 
@@ -48,6 +49,20 @@ def type_to_data_type(tensor_type):
             np.dtype(np.float32): DataType.TYPE_FP32,
             np.dtype(np.float64): DataType.TYPE_FP64,
             np.dtype(np.str): DataType.TYPE_STRING,
+            TensorProto.UNDEFINED: DataType.TYPE_INVALID,
+            TensorProto.FLOAT: DataType.TYPE_FP32,
+            TensorProto.UINT8: DataType.TYPE_UINT8,
+            TensorProto.INT8: DataType.TYPE_INT8,
+            TensorProto.UINT16: DataType.TYPE_UINT16,
+            TensorProto.INT16: DataType.TYPE_INT16,
+            TensorProto.INT32: DataType.TYPE_INT32,
+            TensorProto.INT64: DataType.TYPE_INT64,
+            TensorProto.STRING: DataType.TYPE_STRING,
+            TensorProto.BOOL: DataType.TYPE_BOOL,
+            TensorProto.FLOAT16: DataType.TYPE_FP16,
+            TensorProto.DOUBLE: DataType.TYPE_FP64,
+            TensorProto.UINT32: DataType.TYPE_UINT32,
+            TensorProto.UINT64: DataType.TYPE_UINT64,
         }
     )
 
