@@ -20,7 +20,6 @@ spec:
       initContainers:
         - name: retrieve_model
           image: ferdinandzhong/s3-bucket-rw-docker:latest
-          args: ["read_file.py" ]
           env:
             - name: AWS_ACCESS_KEY_ID
               value: SAMPLEKEY
