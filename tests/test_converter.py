@@ -42,10 +42,9 @@ inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=X_bc.dtype, name='input_0'
 
 
 def test_xgboost_to_onnx():
-    ONNXConverter.from_xgboost(xgboost_model, inputs, save_path='test.onnx', optimize=False, override=True)
-    onnx_model = onnx.load('test.onnx')
+    onnx_model = ONNXConverter.from_xgboost(xgboost_model, inputs)
     onnx.checker.check_model(onnx_model)
-    ort_session = onnxruntime.InferenceSession('test.onnx')
+    ort_session = onnxruntime.InferenceSession(onnx_model.SerializeToString())
     ort_inputs = {ort_session.get_inputs()[0].name: X[0:2, :]}
     ort_outs = ort_session.run(None, ort_inputs)
     assert len(ort_outs) == 1
@@ -54,10 +53,9 @@ def test_xgboost_to_onnx():
 
 # noinspection DuplicatedCode
 def test_lgbm_to_onnx():
-    ONNXConverter.from_lightgbm(lgbm_model, inputs, opset=9, save_path='test.onnx', optimize=False, override=True)
-    onnx_model = onnx.load('test.onnx')
+    onnx_model = ONNXConverter.from_lightgbm(lgbm_model, inputs, opset=9, optimize=False)  # noqa
     onnx.checker.check_model(onnx_model)
-    ort_session = onnxruntime.InferenceSession('test.onnx')
+    ort_session = onnxruntime.InferenceSession(onnx_model.SerializeToString())
     ort_inputs = {ort_session.get_inputs()[0].name: X[0:2, :]}
     out, probs = ort_session.run(None, ort_inputs)
     assert tuple(out.shape) == (2,)
@@ -67,10 +65,9 @@ def test_lgbm_to_onnx():
 
 # noinspection DuplicatedCode
 def test_sklearn_to_onnx():
-    ONNXConverter.from_sklearn(sklearn_model, inputs_bc, save_path='test.onnx', optimize=False, override=True)
-    onnx_model = onnx.load('test.onnx')
+    onnx_model = ONNXConverter.from_sklearn(sklearn_model, inputs_bc, optimize=False)  # noqa
     onnx.checker.check_model(onnx_model)
-    ort_session = onnxruntime.InferenceSession('test.onnx')
+    ort_session = onnxruntime.InferenceSession(onnx_model.SerializeToString())
     ort_inputs = {ort_session.get_inputs()[0].name: X_bc[0:2, :]}
     out, probs = ort_session.run(None, ort_inputs)
     assert tuple(out.shape) == (2,)
@@ -102,7 +99,7 @@ def test_sklearn_to_torch():
 
 
 def test_onnx_to_pytorch():
-    onnx_model = onnx.load('test.onnx')
+    onnx_model = ONNXConverter.from_sklearn(sklearn_model, inputs_bc, optimize=False)  # noqa
     inputs = list()
     for input_ in onnx_model.graph.input:
         name = input_.name
@@ -121,16 +118,16 @@ def test_onnx_to_pytorch():
 
     dtype = model_data_type_to_torch(inputs[0].dtype)
     sample_input = torch.rand([2, *inputs[0].shape[1:]], dtype=dtype)
-    model = PyTorchConverter.from_onnx(onnx_model, extra_config={'tree_implementation': 'gemm'})
+    model = PyTorchConverter.from_onnx(onnx_model)
 
     model(sample_input)
 
 
 if __name__ == '__main__':
-    test_xgboost_to_onnx()
-    test_lgbm_to_onnx()
-    test_sklearn_to_onnx()
-    test_xgboost_to_torch()
-    test_lightgbm_to_torch()
-    test_sklearn_to_torch()
+    # test_xgboost_to_onnx()
+    # test_lgbm_to_onnx()
+    # test_sklearn_to_onnx()
+    # test_xgboost_to_torch()
+    # test_lightgbm_to_torch()
+    # test_sklearn_to_torch()
     test_onnx_to_pytorch()

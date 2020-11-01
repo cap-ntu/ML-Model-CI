@@ -146,23 +146,39 @@ class ONNXConverter(object):
 
     class _Wrapper(object):
         @staticmethod
-        def load_and_save(converter):
-            def wrap(*args, save_path: Path, optimize: bool = True, override: bool = False, **kwargs):
-                save_path = Path(save_path)
-                if save_path.with_suffix('.onnx').exists():
-                    if not override:  # file exist yet override flag is not set
+        def save(converter):
+            def wrap(
+                    *args,
+                    save_path: Path = None,
+                    optimize: bool = True,
+                    override: bool = False,
+                    **kwargs
+            ) -> 'onnx.ModelProto':
+                onnx_model = None
+                save_path_with_ext = None
+
+                if save_path is not None:
+                    save_path = Path(save_path)
+                    save_path_with_ext = save_path.with_suffix('.onnx')
+                    if save_path_with_ext.exists() and not override:
+                        # file exist yet override flag is not set
                         logger.info('Use cached model')
-                        return True
-                onnx_model = converter(*args, **kwargs)
-                save_path.parent.mkdir(parents=True, exist_ok=True)
-                save_path_with_ext = save_path.with_suffix('.onnx')
-                onnxmltools.utils.save_model(onnx_model, save_path_with_ext)
+                        onnx_model = onnx.load(str(save_path))
+
+                if onnx_model is None:
+                    # otherwise, convert model
+                    onnx_model = converter(*args, **kwargs)
 
                 if optimize:
-                    network = ONNXConverter.optim_onnx(save_path_with_ext)
-                    onnx.save(network, str(save_path_with_ext))
+                    # optimize ONNX model
+                    onnx_model = ONNXConverter.optim_onnx(onnx_model)
 
-                return True
+                if save_path_with_ext:
+                    # save to disk
+                    save_path.parent.mkdir(parents=True, exist_ok=True)
+                    onnxmltools.utils.save_model(onnx_model, save_path_with_ext)
+
+                return onnx_model
 
             return wrap
 
@@ -237,7 +253,7 @@ class ONNXConverter(object):
         return True
 
     @staticmethod
-    @_Wrapper.load_and_save
+    @_Wrapper.save
     def from_keras(
             model: keras.models.Model,
             opset: int = DEFAULT_OPSET,
@@ -245,7 +261,7 @@ class ONNXConverter(object):
         return onnxmltools.convert_keras(model, target_opset=opset)
 
     @staticmethod
-    @_Wrapper.load_and_save
+    @_Wrapper.save
     def from_sklearn(
             model,
             inputs: Iterable[IOShape],
@@ -255,13 +271,13 @@ class ONNXConverter(object):
         return onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
 
     @staticmethod
-    @_Wrapper.load_and_save
+    @_Wrapper.save
     def from_xgboost(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
         initial_type = ONNXConverter.convert_initial_type(inputs)
         return onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
 
     @staticmethod
-    @_Wrapper.load_and_save
+    @_Wrapper.save
     def from_lightgbm(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
         initial_type = ONNXConverter.convert_initial_type(inputs)
         return onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
@@ -286,12 +302,9 @@ class ONNXConverter(object):
         return initial_type
 
     @staticmethod
-    def optim_onnx(onnx_path, verbose=True):
-        """Optimize ONNX network
-        """
-
-        model = onnx.load(onnx_path)
-        print("Begin Simplify ONNX Model ...")
+    def optim_onnx(model: onnx.ModelProto, verbose=False):
+        """Optimize ONNX network"""
+        logger.info("Begin Simplify ONNX Model ...")
         passes = [
             'eliminate_deadend',
             'eliminate_identity',
@@ -305,7 +318,7 @@ class ONNXConverter(object):
 
         if verbose:
             for m in onnx.helper.printable_graph(model.graph).split("\n"):
-                print(m)
+                logger.debug(m)
 
         return model
 
