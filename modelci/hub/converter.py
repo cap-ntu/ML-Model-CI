@@ -1,17 +1,21 @@
-import json
-import re
 import subprocess
-from functools import reduce, partial
 from pathlib import Path
-from typing import Iterable, Union, List
+from typing import Iterable, Union, List, Sequence, Optional, Callable
 
+import numpy as np
 import onnx
+import onnxmltools as onnxmltools
 import torch
 import torch.jit
 import torch.onnx
 from betterproto import Casing
+from google.protobuf import json_format
+from hummingbird.ml import constants as hb_constants
+from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
+from hummingbird.ml.operator_converters import constants as hb_op_constants
+from hummingbird.ml.supported import xgb_operator_list, lgbm_operator_list, sklearn_operator_list
 from onnx import optimizer
-from torch import nn
+from tensorflow import keras
 
 from modelci.types.bo import IOShape
 from modelci.types.trtis_objects import (
@@ -23,16 +27,109 @@ from modelci.types.trtis_objects import (
     ModelInstanceGroupKind,
 )
 from ..hub.utils import GiB, parse_path, TensorRTPlatform
+from ..types.type_conversion import model_data_type_to_torch, model_data_type_to_onnx
+from ..utils import Logger
+
+logger = Logger('converter', welcome=False)
+
+
+class PyTorchConverter(object):
+    hb_common_extra_config = {hb_constants.CONTAINER: False}
+
+    @staticmethod
+    def from_xgboost(
+            model: Union.__getitem__(tuple(xgb_operator_list)),  # noqa
+            inputs: Sequence[IOShape],
+            device: str = 'cpu',
+            extra_config: Optional[dict] = None,
+    ) -> torch.nn.Module:
+        """Convert PyTorch module from XGBoost"""
+        # inputs for XGBoost should contains only 1 argument with 2 dim
+        if not (len(inputs) == 1 and len(inputs[0].shape) == 2):
+            raise RuntimeError(
+                'XGboost does not support such input data for inference. The input data should contains only 1\n'
+                'argument with exactly 2 dimensions.'
+            )
+
+        if extra_config is None:
+            extra_config = dict()
+
+        # assert batch size
+        batch_size = inputs[0].shape[0]
+        if batch_size == -1:
+            batch_size = 1
+        test_input = np.random.rand(batch_size, inputs[0].shape[1])
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update(extra_config)
+
+        return _convert_xgboost(
+            model, 'torch', test_input=test_input, device=device, extra_config=extra_config_
+        )
+
+    @staticmethod
+    def from_lightgbm(
+            model: Union.__getitem__(tuple(lgbm_operator_list)),  # noqa
+            inputs: Optional[Sequence[IOShape]] = None,
+            device: str = 'cpu',
+            extra_config: Optional[dict] = None
+    ):
+        if extra_config is None:
+            extra_config = dict()
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update(extra_config)
+
+        return _convert_lightgbm(
+            model, 'torch', test_input=None, device=device, extra_config=extra_config_
+        )
+
+    @staticmethod
+    def from_sklearn(
+            model: Union.__getitem__(tuple(sklearn_operator_list)),  # noqa
+            device: str = 'cpu',
+            extra_config: Optional[dict] = None,
+    ):
+        if extra_config is None:
+            extra_config = dict()
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update(extra_config)
+
+        return _convert_sklearn(
+            model, 'torch', test_input=None, device=device, extra_config=extra_config_
+        )
+
+    @staticmethod
+    def from_onnx(
+            model: onnx.ModelProto,
+            opset: int = 10,
+            device: str = 'cpu',
+            extra_config: dict = None,
+    ):
+        if extra_config is None:
+            extra_config = dict()
+        inputs = {input_.name: input_ for input_ in model.graph.input}
+
+        extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
+        extra_config_.update({
+            hb_constants.ONNX_TARGET_OPSET: opset,
+            hb_op_constants.ONNX_INPUTS: inputs,
+            hb_op_constants.N_FEATURES: None
+        })
+        extra_config_.update(extra_config)
+
+        return _convert_onnxml(model, 'torch', test_input=None, device=device, extra_config=extra_config_)
 
 
 class TorchScriptConverter(object):
     @staticmethod
-    def from_torch_module(model: nn.Module, save_path: Path, override: bool = False):
-        """Save a loaded model in TorchScript."""
+    def from_torch_module(model: torch.nn.Module, save_path: Path, override: bool = False):
+        """Convert a PyTorch nn.Module into TorchScript.
+        """
         if save_path.with_suffix('.zip').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
         model.eval()
         traced = torch.jit.script(model)
@@ -43,9 +140,51 @@ class TorchScriptConverter(object):
 
 
 class ONNXConverter(object):
+    """Convert model to ONNX format."""
+
+    DEFAULT_OPSET = 10
+
+    class _Wrapper(object):
+        @staticmethod
+        def save(converter: Callable[..., 'onnx.ModelProto']):
+            def wrap(
+                    *args,
+                    save_path: Path = None,
+                    optimize: bool = True,
+                    override: bool = False,
+                    **kwargs
+            ) -> 'onnx.ModelProto':
+                onnx_model = None
+                save_path_with_ext = None
+
+                if save_path is not None:
+                    save_path = Path(save_path)
+                    save_path_with_ext = save_path.with_suffix('.onnx')
+                    if save_path_with_ext.exists() and not override:
+                        # file exist yet override flag is not set
+                        logger.info('Use cached model')
+                        onnx_model = onnx.load(str(save_path))
+
+                if onnx_model is None:
+                    # otherwise, convert model
+                    onnx_model = converter(*args, **kwargs)
+
+                if optimize:
+                    # optimize ONNX model
+                    onnx_model = ONNXConverter.optim_onnx(onnx_model)
+
+                if save_path_with_ext:
+                    # save to disk
+                    save_path.parent.mkdir(parents=True, exist_ok=True)
+                    onnxmltools.utils.save_model(onnx_model, save_path_with_ext)
+
+                return onnx_model
+
+            return wrap
+
     @staticmethod
     def from_torch_module(
-            model: nn.Module,
+            model: torch.nn.Module,
             save_path: Path,
             inputs: Iterable[IOShape],
             opset: int = 10,
@@ -64,8 +203,7 @@ class ONNXConverter(object):
         """
         if save_path.with_suffix('.onnx').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         export_kwargs = dict()
@@ -89,9 +227,11 @@ class ONNXConverter(object):
         save_path.parent.mkdir(parents=True, exist_ok=True)
         save_path_with_ext = save_path.with_suffix('.onnx')
 
-        dummy_tensors = list()
+        dummy_tensors, input_names = list(), list()
         for input_ in inputs:
-            dummy_tensors.append(torch.rand(batch_size, *input_.shape[1:], requires_grad=True))
+            dtype = model_data_type_to_torch(input_.dtype)
+            dummy_tensors.append(torch.rand(batch_size, *input_.shape[1:], requires_grad=True, dtype=dtype))
+            input_names.append(input_.name)
 
         torch.onnx.export(
             model,  # model being run
@@ -100,41 +240,87 @@ class ONNXConverter(object):
             export_params=True,  # store the trained parameter weights inside the model file
             opset_version=opset,  # the ONNX version to export the model to
             do_constant_folding=True,  # whether to execute constant folding for optimization
-            input_names=['input'],  # the model's input names
+            input_names=input_names,  # the model's input names
             output_names=['output'],  # the model's output names
             keep_initializers_as_inputs=True,
             **export_kwargs
         )
 
         if optimize:
-            network = optim_onnx(save_path_with_ext)
+            network = ONNXConverter.optim_onnx(save_path_with_ext)
             onnx.save(network, str(save_path_with_ext))
 
         return True
 
+    @staticmethod
+    @_Wrapper.save
+    def from_keras(
+            model: keras.models.Model,
+            opset: int = DEFAULT_OPSET,
+    ):
+        return onnxmltools.convert_keras(model, target_opset=opset)
 
-def optim_onnx(onnx_path, verbose=True):
-    """Optimize ONNX network
-    """
+    @staticmethod
+    @_Wrapper.save
+    def from_sklearn(
+            model,
+            inputs: Iterable[IOShape],
+            opset: int = DEFAULT_OPSET,
+    ):
+        initial_type = ONNXConverter.convert_initial_type(inputs)
+        return onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
 
-    model = onnx.load(onnx_path)
-    print("Begin Simplify ONNX Model ...")
-    passes = [
-        'eliminate_deadend',
-        'eliminate_identity',
-        'extract_constant_to_initializer',
-        'eliminate_unused_initializer',
-        'fuse_add_bias_into_conv',
-        'fuse_bn_into_conv',
-        'fuse_matmul_add_bias_into_gemm'
-    ]
-    model = optimizer.optimize(model, passes)
+    @staticmethod
+    @_Wrapper.save
+    def from_xgboost(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
+        initial_type = ONNXConverter.convert_initial_type(inputs)
+        return onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
 
-    if verbose:
-        for m in onnx.helper.printable_graph(model.graph).split("\n"):
-            print(m)
+    @staticmethod
+    @_Wrapper.save
+    def from_lightgbm(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
+        initial_type = ONNXConverter.convert_initial_type(inputs)
+        return onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
 
-    return model
+    @staticmethod
+    def convert_initial_type(inputs: Iterable[IOShape]):
+        # assert batch size
+        batch_sizes = list(map(lambda x: x.shape[0], inputs))
+        if not all(batch_size == batch_sizes[0] for batch_size in batch_sizes):
+            raise ValueError(
+                'batch size for inputs (i.e. the first dimensions of `input.shape` are not consistent.')
+        batch_size = batch_sizes[0]
+
+        if batch_size == -1:
+            batch_size = None
+        else:
+            assert batch_size > 0
+
+        initial_type = list()
+        for input_ in inputs:
+            initial_type.append((input_.name, model_data_type_to_onnx(input_.dtype)([batch_size, *input_.shape[1:]])))
+        return initial_type
+
+    @staticmethod
+    def optim_onnx(model: onnx.ModelProto, verbose=False):
+        """Optimize ONNX network"""
+        logger.info("Begin Simplify ONNX Model ...")
+        passes = [
+            'eliminate_deadend',
+            'eliminate_identity',
+            'extract_constant_to_initializer',
+            'eliminate_unused_initializer',
+            'fuse_add_bias_into_conv',
+            'fuse_bn_into_conv',
+            'fuse_matmul_add_bias_into_gemm'
+        ]
+        model = optimizer.optimize(model, passes)
+
+        if verbose:
+            for m in onnx.helper.printable_graph(model.graph).split("\n"):
+                logger.debug(m)
+
+        return model
 
 
 class TFSConverter(object):
@@ -144,8 +330,7 @@ class TFSConverter(object):
 
         if save_path.with_suffix('.zip').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         tf.compat.v1.saved_model.save(model, str(save_path))
@@ -175,8 +360,7 @@ class TRTConverter(object):
 
         if save_path.with_suffix('.plan').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         onnx_path = Path(onnx_path)
@@ -374,6 +558,8 @@ class TRTConverter(object):
             instance_group (List[ModelInstanceGroup]): Model instance group (workers) definition. Default is to
                 create a single instance loading on the first available CUDA device.
         """
+        from tensorrtserver.api import model_config_pb2
+
         # assert batch size
         batch_sizes = list(map(lambda x: x.shape[0], inputs))
         if not all(batch_size == batch_sizes[0] for batch_size in batch_sizes):
@@ -401,142 +587,12 @@ class TRTConverter(object):
         )
 
         with open(str(save_path / 'config.pbtxt'), 'w') as cfg:
-            # to pretty JSON string
-            json_str = json.dumps(config.to_dict(casing=Casing.SNAKE), indent=2)
+            # to dict
+            config_dict = config.to_dict(casing=Casing.SNAKE)
             # to pbtxt format string
-            pbtxt_str = TRTConverter._format_json(json_str)
+            model_config_message = model_config_pb2.ModelConfig()
+            pbtxt_str = str(json_format.ParseDict(config_dict, model_config_message))
             cfg.write(pbtxt_str)
-
-    @staticmethod
-    def _format_json(json_str: str):
-        """Format pretty json string into the format of `config.pbtxt`.
-
-        Arguments:
-            json_str (str): JSON string in pretty format.
-        """
-
-        def remove_outer_parenthesis(pretty_json: str):
-            # remove { ... }
-            pretty_json = re.sub(r'{\n(.*)\n}', r'\1', pretty_json, flags=re.S | re.MULTILINE)
-            # remove over indentation
-            pretty_json = re.sub(r'(^\s{2})', '', pretty_json, flags=re.MULTILINE)
-
-            return pretty_json
-
-        def reformat_digit_list(pretty_json: str):
-            """Reformat digit list where digits are wrapped by `"`.
-
-            Examples:
-                >>> pretty_json = '{' \
-                ...     '  "name": "input0",' \
-                ...     '  "data_type": "TYPE_FP16",' \
-                ...     '  "dims": [' \
-                ...     '    "0",' \
-                ...     '    "2",' \
-                ...     '    "3"' \
-                ...     '  ]' \
-                ...     '}'
-                >>> reformat_digit_list(pretty_json)
-                {
-                  "name": "input0",
-                  "data_type": "TYPE_FP16",
-                  "dims": [ 0, 2, 3 ]
-                }
-            """
-
-            def repl(match_obj):
-                matched: str = match_obj.group(0)
-                return matched.replace('"', '') \
-                    .replace(' ', '') \
-                    .replace(',', ', ') \
-                    .replace('\n', '') \
-                    .replace('[', '[ ').replace(']', ' ]')
-
-            return re.sub(r'\[[^{}]*?\]', repl, pretty_json)
-
-        def reformat_json_key(pretty_json: str):
-            """Reformat key name by removing its wrapped quotation marks `"`, and remove ending `,` in each line.
-
-            Examples:
-                >>> pretty_json = '{' \
-                ...     '  "name": "resnet50"' \
-                ...     '  "input": []' \
-                ...     '}'
-                >>> reformat_json_key(pretty_json)
-                {
-                  name: "resnet50"
-                  input: []
-                }
-            """
-            pretty_json = re.sub(r'^(.*?),$', r'\1', pretty_json, flags=re.MULTILINE)
-            return re.sub(r'"(.*?)":', r'\1:', pretty_json)
-
-        def reformat_enum(pretty_json: str, keys: Iterable[str] = None):
-            """Reformat values of the given enum keys by removing the quotation marks wrapped around the values.
-
-            Arguments:
-                pretty_json (str): JSON-like string, could be formatted by other formatter.
-                keys (Iterable[str]): List of the key name of the enum to be formatted. Default to None.
-            Raise:
-                ValueError: Raised when `keys` is None or not a `Iterable` object.
-            Examples:
-                >>> pretty_json = '{' \
-                ...    '  data_type: "TYPE_FP16"' \
-                ...    '  kind: "KIND_GPU"' \
-                ...    '}'
-                >>> reformat_enum(pretty_json, enums=['data_type', 'kind'])
-                {
-                  data_type: TYPE_FP16
-                  kind: KIND_GPU
-                }
-            """
-            if keys is None:
-                raise ValueError('Expecting `Keys` to be an iterable object, but got `None`')
-            if not isinstance(keys, Iterable):
-                raise ValueError(f'Expecting `Keys` to be an iterable object, but got `{type(keys)}`')
-
-            for key in keys:
-                pretty_json = re.sub(rf'({key}:\s*)"(.*?)"$', r'\1\2', pretty_json, flags=re.MULTILINE)
-            return pretty_json
-
-        def reformat_object_colon(pretty_json: str, keys: Iterable[str] = None):
-            """Reformat by removing colon after given keys
-
-            >>> pretty_json = '{' \
-            ...     '  name: "resnet50"' \
-            ...     '  input: [' \
-            ...     '    {' \
-            ...     '      name: "input0"' \
-            ...     '      data_type: TYPE_FP16' \
-            ...     '      dims: [ 0, 1, 2]' \
-            ...     '    }' \
-            ...     '  ],' \
-            ...     '  output: []' \
-            ...     '  instance_group: []' \
-            ...     '}'
-            >>> keys = ['input', 'output']
-            >>> reformat_object_colon(pretty_json, keys)
-
-            """
-            if keys is None:
-                raise ValueError('Expecting `Keys` to be an iterable object, but got `None`')
-            if not isinstance(keys, Iterable):
-                raise ValueError(f'Expecting `Keys` to be an iterable object, but got `{type(keys)}`')
-
-            for key in keys:
-                pretty_json = re.sub(rf"({key}):\s*", r'\1 ', pretty_json)
-            return pretty_json
-
-        # call the format functions in a sequence
-        function_pipeline = [
-            remove_outer_parenthesis,
-            reformat_digit_list,
-            reformat_json_key,
-            partial(reformat_enum, keys=['data_type', 'kind', 'format']),
-            partial(reformat_object_colon, keys=['input', 'output', 'instance_group'])
-        ]
-
-        return reduce(lambda x, func: func(x), function_pipeline, json_str)
 
 
 def to_tvm(*args, **kwargs):
