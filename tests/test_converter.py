@@ -122,13 +122,3 @@ def test_onnx_to_pytorch():
     model = PyTorchConverter.from_onnx(onnx_model)
 
     model(sample_input)
-
-
-if __name__ == '__main__':
-    # test_xgboost_to_onnx()
-    # test_lgbm_to_onnx()
-    # test_sklearn_to_onnx()
-    # test_xgboost_to_torch()
-    # test_lightgbm_to_torch()
-    # test_sklearn_to_torch()
-    test_onnx_to_pytorch()
