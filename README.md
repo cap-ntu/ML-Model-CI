@@ -73,10 +73,20 @@ docker pull mlmodelci/mlmodelci
 
 ## Quick Start
 
-*The system is still under the active development. Welcome to join us!*
+*The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. Welcome to join in our development team!*
 
 MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services
-(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more clear start, we present the whole pipeline step by step as follows.
+(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
+clear start, we present the whole pipeline step by step as follows.
+
+### Start the ModelCI service
+
+Once you have installed, start ModelCI service by:
+```python
+import modelci.cli
+
+modelci.cli.start()
+```
 
 ### Register a Model
 
@@ -187,11 +197,21 @@ MLModelCI welcomes your contributions! Please refer to [here](CONTRIBUTING.md) t
 
 If you use MLModelCI in your work or use any functions published in MLModelCI, we would appreciate if you could cite:
 ```
-@article{zhang2020mlmodelci,
-  title={MLModelCI: An Automatic Cloud Platform for Efficient MLaaS},
-  author={Zhang, Huaizheng and Li, Yuanming and Huang, Yizheng and Wen, Yonggang and Yin, Jianxiong and Guan, Kyle},
-  journal={arXiv preprint arXiv:2006.05096},
-  year={2020}
+@inproceedings{10.1145/3394171.3414535,
+  author = {Zhang, Huaizheng and Li, Yuanming and Huang, Yizheng and Wen, Yonggang and Yin, Jianxiong and Guan, Kyle},
+  title = {MLModelCI: An Automatic Cloud Platform for Efficient MLaaS},
+  year = {2020},
+  isbn = {9781450379885},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/3394171.3414535},
+  doi = {10.1145/3394171.3414535},
+  booktitle = {Proceedings of the 28th ACM International Conference on Multimedia},
+  pages = {4453–4456},
+  numpages = {4},
+  keywords = {inference serving, profiling, conversion, model deployment},
+  location = {Seattle, WA, USA},
+  series = {MM '20}
 }
 ```
 

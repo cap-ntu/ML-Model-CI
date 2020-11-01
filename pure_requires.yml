@@ -1,0 +1,42 @@
+name: modelci
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - click=7.1.2
+  - cpuonly=1.0
+  - fastapi=0.61.1
+  - gputil=1.4.0
+  - grpcio=1.31.0
+  - humanize=3.1.0
+  - lightgbm=2.3.0
+  - mongoengine=0.19.1
+  - numpy=1.19.2
+  - onnx=1.6.0
+  - opencv=3.4.2
+  - pip=20.2.4
+  - py-cpuinfo=7.0.0
+  - pydantic=1.7.1
+  - pytest=6.1.2
+  - pytest-env=0.6.2
+  - python=3.7.7
+  - pytorch=1.5.0
+  - pyyaml=5.3.1
+  - requests=2.24.0
+  - rich=9.1.0
+  - scikit-learn=0.23.2
+  - setuptools=50.3.0
+  - starlette=0.13.6
+  - tensorflow=2.1.0
+  - torchvision=0.6.0
+  - uvicorn=0.12.2
+  - xgboost=1.2.0
+  - yaml=0.2.5
+  - pip:
+      - betterproto==1.2.5
+      - hummingbird-ml==0.1.0
+      - onnxconverter-common==1.7.0
+      - onnxmltools==1.7.0
+      - onnxruntime==1.2.0
+      - tensorflow-serving-api==2.1.0

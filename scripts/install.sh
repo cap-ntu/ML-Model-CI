@@ -57,14 +57,6 @@ error_capture scripts/install.trtis_client.sh all
 info_echo "Generating gRPC code..."
 python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. modelci/types/proto/service.proto
 
-# Pull docker images
-info_echo "Pulling Docker images..."
-error_capture scripts/install.pull_docker_images.sh none "${log_path}"
-
-# Start service
-info_echo "Starting services..."
-error_capture scripts/install.start_service.sh noen "${log_path}"
-
 if "${FLAG_ERROR}" = true ; then
   echo -e "${YELLOW}Some installation step has failed. Please see full log at ${log_path}."
 fi

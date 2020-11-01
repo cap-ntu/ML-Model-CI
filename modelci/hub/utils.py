@@ -4,7 +4,6 @@ from enum import unique, Enum
 from pathlib import Path
 from typing import Union
 
-import numpy as np
 import tensorflow as tf
 import torch
 
@@ -88,35 +87,6 @@ def type_to_trt_type(tensor_type: type):
     )
 
     return mapper[tensor_type]
-
-
-def model_dtype_to_np(model_dtype):
-    mapper = {
-        DataType.TYPE_INVALID: None,
-        DataType.TYPE_BOOL: np.bool,
-        DataType.TYPE_UINT8: np.uint8,
-        DataType.TYPE_UINT16: np.uint16,
-        DataType.TYPE_UINT32: np.uint32,
-        DataType.TYPE_UINT64: np.uint64,
-        DataType.TYPE_INT8: np.int8,
-        DataType.TYPE_INT16: np.int16,
-        DataType.TYPE_INT32: np.int32,
-        DataType.TYPE_INT64: np.int64,
-        DataType.TYPE_FP16: np.float16,
-        DataType.TYPE_FP32: np.float32,
-        DataType.TYPE_FP64: np.float64,
-        DataType.TYPE_STRING: np.dtype(object)
-    }
-
-    if isinstance(model_dtype, int):
-        model_dtype = DataType(model_dtype)
-    elif isinstance(model_dtype, str):
-        model_dtype = DataType[model_dtype]
-    elif not isinstance(model_dtype, DataType):
-        raise TypeError(
-            f'model_dtype is expecting one of the type: `int`, `str`, or `DataType` but got {type(model_dtype)}'
-        )
-    return mapper[model_dtype]
 
 
 @unique

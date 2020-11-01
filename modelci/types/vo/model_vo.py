@@ -23,32 +23,40 @@ from modelci.types.bo import (
 )
 
 
-class ModelInputFormat(str, Enum):
+class CaseInsensitiveEnum(Enum):
+    @classmethod
+    def _missing_(cls, name):
+        for member in cls:
+            if member.name.lower() == name.lower():
+                return member
+
+
+class ModelInputFormat(CaseInsensitiveEnum):
     FORMAT_NONE = 'FORMAT_NONE'
     FORMAT_NHWC = 'FORMAT_NHWC'
     FORMAT_NCHW = 'FORMAT_NCHW'
 
 
-class Framework(str, Enum):
-    TENSORFLOW = 'TENSORFLOW'
-    PYTORCH = 'PYTORCH'
+class Framework(CaseInsensitiveEnum):
+    TENSORFLOW = 'TensorFlow'
+    PYTORCH = 'PyTorch'
 
 
-class Engine(str, Enum):
-    NONE = 'NONE'
+class Engine(CaseInsensitiveEnum):
+    NONE = 'None'
     TFS = 'TFS'
-    TORCHSCRIPT = 'TORCHSCRIPT'
+    TORCHSCRIPT = 'TorchScript'
     ONNX = 'ONNX'
     TRT = 'TRT'
     TVM = 'TVM'
-    CUSTOMIZED = 'CUSTOMIZED'
+    CUSTOMIZED = 'Customized'
 
 
-class Status(str, Enum):
-    UNKNOWN = 'UNKNOWN'
-    PASS = 'PASS'
-    RUNNING = 'RUNNING'
-    FAIL = 'FAIL'
+class Status(CaseInsensitiveEnum):
+    UNKNOWN = 'Unknown'
+    PASS = 'Pass'
+    RUNNING = 'Running'
+    FAIL = 'Fail'
 
 
 class IOShapeVO(BaseModel):
@@ -219,6 +227,7 @@ class ModelDetailOut(BaseModel):
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
             status=Status(model_bo.status.name),
+            creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
 

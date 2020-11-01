@@ -1,10 +1,8 @@
-import argparse
 import os
 
 import tensorflow as tf
 from torchvision import models
 
-from modelci.controller import job_executor
 from modelci.hub.converter import TFSConverter
 from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
@@ -29,18 +27,19 @@ class ModelExporter(object):
     """
 
     @staticmethod
-    def ResNet50(framework: Framework, version: str = '1'):
+    def ResNet50(framework: Framework, version: str = '1', enable_trt=False):
         """Export, generate model family and register ResNet50
 
         Arguments:
             framework (Framework): Framework name.
             version (str): Model version.
+            enable_trt (bool): Flag for enabling TRT conversion.
         """
         if framework == Framework.TENSORFLOW:
             model = tf.keras.applications.ResNet50()
             # converting to trt
 
-            if not export_trt:
+            if not enable_trt:
                 tfs_dir = generate_path(
                     model_name='ResNet50', framework=framework, engine=Engine.TFS, version=str(version)
                 )
@@ -57,7 +56,7 @@ class ModelExporter(object):
                 architecture='ResNet50',
                 framework=framework,
                 version=ModelVersion(version),
-                convert=export_trt,
+                convert=enable_trt,
             )
         elif framework == Framework.PYTORCH:
             model = models.resnet50(pretrained=True)
@@ -132,12 +131,12 @@ class ModelExporter(object):
             raise ValueError('Framework not supported.')
 
 
-def export_model(args):
-    model_name = args.model.lower()
-    framework = Framework[args.framework.upper()]
+def export_model(model_name, framework, enable_trt=False):
+    model_name = model_name.lower()
+    framework = Framework[framework.upper()]
 
     if model_name == 'resnet50':
-        ModelExporter.ResNet50(framework)
+        ModelExporter.ResNet50(framework, enable_trt=enable_trt)
     elif model_name == 'resnet101':
         ModelExporter.ResNet101(framework)
     elif model_name == 'vgg16':
@@ -149,26 +148,4 @@ def export_model(args):
     else:
         exit('Model Not Found.')
 
-    print(f'Model {args.model} is exported.')
-
-    job_executor.finish()
-    job_executor.join()
-    print(f'Finish profiling {args.model}.')
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Initialize Model Database.')
-    subparsers = parser.add_subparsers(help='export model')
-
-    exporter_parser = subparsers.add_parser('export', help='Export a model')
-    exporter_parser.add_argument('--model', type=str, required=True, help='model name')
-    exporter_parser.add_argument('--framework', type=str, required=True, help='model framework')
-    exporter_parser.add_argument(
-        '--trt', action='store_true',
-        help='Flag for exporting TensorRT. Please make sure you have TensorRT installed in your machine.'
-    )
-    exporter_parser.set_defaults(func=export_model)
-
-    args = parser.parse_args()
-    export_trt = args.trt
-    args.func(args)
+    print(f'Model {model_name} is exported.')
