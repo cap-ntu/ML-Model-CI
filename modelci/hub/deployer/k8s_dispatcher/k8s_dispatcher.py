@@ -1,30 +1,28 @@
-import argparse
 import configparser
 from enum import Enum, unique
 
 from jinja2 import Environment, FileSystemLoader
 
-from modelci.hub.deployer import config
-from modelci.types.bo import Framework, Engine
-from modelci.utils.misc import remove_dict_null, get_device
+from modelci.types.bo import Engine
+from modelci.utils.misc import get_device
 
-jinja = Environment(loader = FileSystemLoader('./k8s/templates'), trim_blocks=True, lstrip_blocks=True)
+jinja = Environment(loader=FileSystemLoader('./k8s/templates'), trim_blocks=True, lstrip_blocks=True)
 
 @unique
-class Storage_Type(Enum):
+class StorageType(Enum):
     """Enumerator of remote storage type.
     """
     NONE = 0
     S3 = 1
 
-def generate_object_list(objects, uppercase_name:bool = False):
-        env_object_list = []
-        for name, value in objects.items():
-            env_object = {}
-            env_object['name'] = name.upper() if uppercase_name else name
-            env_object['value'] = value
-            env_object_list.append(env_object)
-        return env_object_list
+def generate_object_list(objects, uppercase_name: bool = False):
+    env_object_list = []
+    for name, value in objects.items():
+        env_object = {}
+        env_object['name'] = name.upper() if uppercase_name else name
+        env_object['value'] = value
+        env_object_list.append(env_object)
+    return env_object_list
 
 def serve(
         configuration: str = 'config.ini',
@@ -59,14 +57,14 @@ def serve(
     # for init container
     storage_config = dict(config['remote_storage'])
     remote_storage = storage_config.pop('storage_type').upper()
-    storage_type = Storage_Type[remote_storage]
+    storage_type = StorageType[remote_storage]
 
     init_env_object_list = generate_object_list(
         dict(**storage_config, **model_conf),
         uppercase_name=True
     )
 
-    if storage_type == Storage_Type.S3:
+    if storage_type == StorageType.S3:
         # S3 model pulling with a sample image
         init_container['image'] = 'ferdinandzhong/s3-bucket-rw-docker:latest'
         init_container['args'] = ['read_file.py']
@@ -130,21 +128,15 @@ def serve(
     env_object_list = generate_object_list(env_objects)
     port_object_list = generate_object_list(port_objects)
     if additional_environment:
-        env_object_list= env_object_list + generate_object_list(additional_environment)
+        env_object_list = env_object_list + generate_object_list(additional_environment)
 
     deployment_content = template.render(
-            init_container = init_container,
-            init_env_object_list = init_env_object_list,
-            deployment = deployment,
-            env_object_list = env_object_list,
-            port_object_list = port_object_list
-        )
-    with open(output_file_path, 'w+') as fp:
-        fp.write(deployment_content)
-
-
-if __name__ == "__main__":
-    serve(
-        configuration='./modelci/hub/deployer/k8s_dispatcher/sample.config',
-        output_file_path='./modelci/hub/deployer/k8s_dispatcher/sample_output.yaml'
+        init_container=init_container,
+        init_env_object_list=init_env_object_list,
+        deployment=deployment,
+        env_object_list=env_object_list,
+        port_object_list=port_object_list
     )
+
+    with open(output_file_path, 'w+') as output_target:
+        output_target.write(deployment_content)
