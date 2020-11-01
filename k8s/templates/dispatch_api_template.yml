@@ -20,7 +20,7 @@ spec:
       initContainers:
         - name: retrieve_model
           image: {{ init_container.image }}
-          args: {{ init_container.args }}
+          args: ["{{ init_container.args }}" ]
           {% if init_env_object_list is defined %}
           env:
             {% for env_object in init_env_object_list %}

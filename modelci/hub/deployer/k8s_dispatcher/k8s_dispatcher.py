@@ -6,7 +6,12 @@ from jinja2 import Environment, FileSystemLoader
 from modelci.types.bo import Engine
 from modelci.utils.misc import get_device
 
-jinja = Environment(loader=FileSystemLoader('./k8s/templates'), trim_blocks=True, lstrip_blocks=True)
+jinja = Environment(
+    loader=FileSystemLoader('./k8s/templates'),
+    autoescape=True,
+    trim_blocks=True,
+    lstrip_blocks=True
+)
 
 @unique
 class StorageType(Enum):
@@ -67,7 +72,7 @@ def serve(
     if storage_type == StorageType.S3:
         # S3 model pulling with a sample image
         init_container['image'] = 'ferdinandzhong/s3-bucket-rw-docker:latest'
-        init_container['args'] = ['read_file.py']
+        init_container['args'] = 'read_file.py'
     else:
         raise RuntimeError(f'`{remote_storage}` currently is not supported.')
 
@@ -112,16 +117,13 @@ def serve(
         if not cuda:
             raise RuntimeError('TensorRT cannot be run without CUDA. Please specify a CUDA device.')
 
-        deployment['image'] = f'nvcr.io/nvidia/tensorrtserver:19.10-py3'
+        deployment['image'] = 'nvcr.io/nvidia/tensorrtserver:19.10-py3'
+        # ulimits currently can't be set on kubernetes
+        #Check open issue: https://github.com/kubernetes/kubernetes/issues/3595
         deployment['trt_model_repo'] = model_conf['local_model_dir']
         port_objects['trt_http_port'] = 8000
         port_objects['trt_grpc_port'] = 8001
         port_objects['trt_prometheus_port'] = 8002
-
-        '''ulimits currently can't be set on kubernetes
-
-        Check open issue: https://github.com/kubernetes/kubernetes/issues/3595
-        '''
     else:
         raise RuntimeError(f"Not able to serve model with engine `{deployment['engine']}`.")
 
