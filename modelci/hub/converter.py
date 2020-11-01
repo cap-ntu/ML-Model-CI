@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import Iterable, Union, List, Sequence, Optional
+from typing import Iterable, Union, List, Sequence, Optional, Callable
 
 import numpy as np
 import onnx
@@ -146,7 +146,7 @@ class ONNXConverter(object):
 
     class _Wrapper(object):
         @staticmethod
-        def save(converter):
+        def save(converter: Callable[..., 'onnx.ModelProto']):
             def wrap(
                     *args,
                     save_path: Path = None,

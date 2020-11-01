@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# pylint: disable=unexpected-keyword-arg
 """
 Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
@@ -53,7 +54,7 @@ def test_xgboost_to_onnx():
 
 # noinspection DuplicatedCode
 def test_lgbm_to_onnx():
-    onnx_model = ONNXConverter.from_lightgbm(lgbm_model, inputs, opset=9, optimize=False)  # noqa
+    onnx_model = ONNXConverter.from_lightgbm(lgbm_model, inputs, opset=9, optimize=False)
     onnx.checker.check_model(onnx_model)
     ort_session = onnxruntime.InferenceSession(onnx_model.SerializeToString())
     ort_inputs = {ort_session.get_inputs()[0].name: X[0:2, :]}
@@ -65,7 +66,7 @@ def test_lgbm_to_onnx():
 
 # noinspection DuplicatedCode
 def test_sklearn_to_onnx():
-    onnx_model = ONNXConverter.from_sklearn(sklearn_model, inputs_bc, optimize=False)  # noqa
+    onnx_model = ONNXConverter.from_sklearn(sklearn_model, inputs_bc, optimize=False)
     onnx.checker.check_model(onnx_model)
     ort_session = onnxruntime.InferenceSession(onnx_model.SerializeToString())
     ort_inputs = {ort_session.get_inputs()[0].name: X_bc[0:2, :]}
@@ -99,7 +100,7 @@ def test_sklearn_to_torch():
 
 
 def test_onnx_to_pytorch():
-    onnx_model = ONNXConverter.from_sklearn(sklearn_model, inputs_bc, optimize=False)  # noqa
+    onnx_model = ONNXConverter.from_sklearn(sklearn_model, inputs_bc, optimize=False)
     inputs = list()
     for input_ in onnx_model.graph.input:
         name = input_.name
