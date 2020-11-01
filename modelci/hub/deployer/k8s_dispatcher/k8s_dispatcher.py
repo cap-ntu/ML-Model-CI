@@ -67,6 +67,7 @@ def serve(
     )
 
     if storage_type == Storage_Type.S3:
+        # S3 model pulling with a sample image
         init_container['image'] = 'ferdinandzhong/s3-bucket-rw-docker:latest'
         init_container['args'] = ['read_file.py']
     else:
