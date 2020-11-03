@@ -7,6 +7,9 @@ This class contains utility classes used in model service for building model bus
 from enum import Enum, unique
 from typing import List, Union, Optional, BinaryIO
 
+import numpy as np
+import tensorflow as tf
+import torch
 from mongoengine import GridFSProxy
 
 from modelci.types.do import IOShapeDO
@@ -81,7 +84,7 @@ class IOShape(object):
 
     Args:
         shape (List[int]): the shape of the input or output tensor.
-        dtype (Union[type, str]): The data type of the input or output tensor.
+        dtype (DataType, type, str): The data type of the input or output tensor.
         name (str): Tensor name. Default to None.
         format (ModelInputFormat): Input format, used for TensorRT currently.
             Default to `ModelInputFormat.FORMAT_NONE`.
@@ -90,7 +93,7 @@ class IOShape(object):
     def __init__(
             self,
             shape: List[int],
-            dtype: Union[type, str, DataType],
+            dtype: Union[type, int, str, DataType],
             name: str = None,
             format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
     ):
@@ -110,8 +113,9 @@ class IOShape(object):
             except NameError:
                 # try if the dtype is `DataType`
                 dtype = DataType[dtype.upper()]
-
-        elif isinstance(dtype, type):
+        elif isinstance(dtype, (type, int)):
+            dtype = type_to_data_type(dtype)
+        elif isinstance(dtype, (torch.dtype, tf.dtypes.DType, np.dtype)):
             dtype = type_to_data_type(dtype)
         elif isinstance(dtype, DataType):
             pass
