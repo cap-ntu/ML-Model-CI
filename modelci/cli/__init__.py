@@ -22,14 +22,18 @@ def cli():
     pass
 
 
-@cli.command()
-@click.option('--gpu', default=False, type=click.BOOL, is_flag=True)
-def start(gpu=False):
+def __start__(gpu=False):
     """Start the ModelCI service."""
     container_conn = DockerContainerManager(enable_gpu=gpu)
     if not container_conn.start():
         container_conn.connect()
     app_start()
+
+
+@cli.command()
+@click.option('--gpu', default=False, type=click.BOOL, is_flag=True)
+def start(gpu=False):
+    __start__(gpu)
 
 
 @cli.command()
