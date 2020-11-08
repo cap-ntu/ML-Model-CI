@@ -20,11 +20,13 @@ class StorageType(Enum):
     NONE = 0
     S3 = 1
 
-def generate_object_list(objects, uppercase_name: bool = False):
+def generate_object_list(objects, uppercase_name: bool = False, is_env = False):
     env_object_list = []
     for name, value in objects.items():
         env_object = {}
         env_object['name'] = name.upper() if uppercase_name else name
+        if is_env and str(value).isdigit():
+            value = f'"{str(value)}"' # Digit in env must be with quotes. Due to a known issue of kubernetes: https://github.com/kubernetes/kubernetes/issues/82296
         env_object['value'] = value
         env_object_list.append(env_object)
     return env_object_list
@@ -55,9 +57,8 @@ def serve(
 
     # mount volume specific setting.
     model_conf = dict(config['model'])
-    model_path = f"{model_conf['local_model_dir']}/{model_conf['local_model_name']}"
-    init_container['model_path'] = model_path
-    deployment['model_path'] = model_path
+    init_container['model_dir'] = model_conf['local_model_dir']
+    deployment['model_dir'] = model_conf['local_model_dir']
 
     # for init container
     storage_config = dict(config['remote_storage'])
@@ -66,7 +67,8 @@ def serve(
 
     init_env_object_list = generate_object_list(
         dict(**storage_config, **model_conf),
-        uppercase_name=True
+        uppercase_name=True,
+        is_env=True
     )
 
     if storage_type == StorageType.S3:
@@ -97,20 +99,24 @@ def serve(
     if engine == Engine.TFS:
         docker_tag = '2.1.0-gpu' if cuda else '2.1.0'
         deployment['image'] = f'tensorflow/serving:{docker_tag}'
-        port_objects['tfs_http_port'] = 8501
-        port_objects['tfs_grpc_port'] = 8500
+        port_objects['http-port'] = 8501
+        port_objects['grpc-port'] = 8500
         env_objects['MODEL_NAME'] = model_conf['local_model_name']
     elif engine == Engine.TORCHSCRIPT:
         docker_tag = 'latest-gpu' if cuda else 'latest'
         deployment['image'] = f'mlmodelci/pytorch-serving:{docker_tag}'
-        port_objects['torchscript_http_port'] = 8000
-        port_objects['torchscript_grpc_port'] = 8001
+        deployment['command'] = '["python"]'
+        deployment['args'] = f'["pytorch_serve.py", "{model_conf["local_model_name"]}"]'
+        port_objects['http-port'] = 8000
+        port_objects['grpc-port'] = 8001
         env_objects['MODEL_NAME'] = model_conf['local_model_name']
     elif engine == Engine.ONNX:
         docker_tag = 'latest-gpu' if cuda else 'latest'
+        deployment['command'] = '["python"]'
+        deployment['args'] = f'["onnx_serve.py", "{model_conf["local_model_name"]}"]'
         deployment['image'] = f'mlmodelci/onnx-serving:{docker_tag}'
-        port_objects['onnx_http_port'] = 8000
-        port_objects['onnx_grpc_port'] = 8001
+        port_objects['http-port'] = 8000
+        port_objects['grpc-port'] = 8001
         env_objects['MODEL_NAME'] = model_conf['local_model_name']
     elif engine == Engine.TRT:
         if not cuda:
@@ -119,17 +125,17 @@ def serve(
         deployment['image'] = 'nvcr.io/nvidia/tensorrtserver:19.10-py3'
         # ulimits currently can't be set on kubernetes
         #Check open issue: https://github.com/kubernetes/kubernetes/issues/3595
-        deployment['trt_model_repo'] = model_conf['local_model_dir']
-        port_objects['trt_http_port'] = 8000
-        port_objects['trt_grpc_port'] = 8001
-        port_objects['trt_prometheus_port'] = 8002
+        deployment['args'] = f'["trtserver", "--model-store={model_conf["local_model_dir"]}"]'
+        port_objects['http-port'] = 8000
+        port_objects['grpc-port'] = 8001
+        port_objects['prometheus-port'] = 8002
     else:
         raise RuntimeError(f"Not able to serve model with engine `{deployment['engine']}`.")
 
-    env_object_list = generate_object_list(env_objects)
+    env_object_list = generate_object_list(env_objects, is_env=True)
     port_object_list = generate_object_list(port_objects)
     if additional_environment:
-        env_object_list = env_object_list + generate_object_list(additional_environment)
+        env_object_list = env_object_list + generate_object_list(additional_environment, is_env=True)
 
     deployment_content = template.render(
         init_container=init_container,
