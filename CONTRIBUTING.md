@@ -11,12 +11,6 @@ To contribute to the ModelCI, you need to setup the developing environment first
 ```shell script
 # create environment
 conda env create -f environment.yml
-
-# install PyTorch with specific CUDA version
-conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
-# or install without CUDA available
-# conda install pytorch torchvision torchaudio cpuonly -c pytorch
-pip install tensorflow-serving-api
 ```
 
 ### Install Service
