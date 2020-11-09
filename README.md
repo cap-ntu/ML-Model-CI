@@ -75,8 +75,10 @@ clear start, we present the whole pipeline step by step as follows.
 Once you have installed, start ModelCI service by:
 ```python
 import modelci.cli
-
+# without GPU support
 modelci.cli.start()
+# with GPU avaliable
+modelci.cli.__start__(gpu=True)
 ```
 
 ### Register a Model
