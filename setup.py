@@ -4,6 +4,8 @@
 Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 9/19/2020
+
+# TODO: use pre-install to pip install requests first, may try this: https://stackoverflow.com/a/36902139
 """
 import platform
 import subprocess
@@ -110,4 +112,8 @@ setup(
     install_requires=install_requires,
     packages=find_packages(),
     python_requires='>=3.7',
+    entry_points='''
+        [console_scripts]
+        modelci=modelci.cli:cli
+    '''
 )

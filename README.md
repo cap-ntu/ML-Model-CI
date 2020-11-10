@@ -82,10 +82,8 @@ clear start, we present the whole pipeline step by step as follows.
 ### Start the ModelCI service
 
 Once you have installed, start ModelCI service by:
-```python
-import modelci.cli
-
-modelci.cli.start()
+```shell script
+modelci start
 ```
 
 ### Register a Model
