@@ -1,4 +1,5 @@
 import configparser
+from pathlib import Path
 from enum import Enum, unique
 
 from jinja2 import Environment, FileSystemLoader
@@ -6,8 +7,10 @@ from jinja2 import Environment, FileSystemLoader
 from modelci.types.bo import Engine
 from modelci.utils.misc import get_device
 
+template_path = Path(__file__).parent
+
 jinja = Environment(
-    loader=FileSystemLoader('./k8s/templates'),
+    loader=FileSystemLoader(template_path),
     autoescape=True,
     trim_blocks=True,
     lstrip_blocks=True
@@ -31,7 +34,7 @@ def generate_object_list(objects, uppercase_name: bool = False, is_env = False):
         env_object_list.append(env_object)
     return env_object_list
 
-def serve(
+def render(
         configuration: str = 'config.ini',
         output_file_path: str = './k8s/deployment.yaml',
         **additional_environment
@@ -147,3 +150,9 @@ def serve(
 
     with open(output_file_path, 'w+') as output_target:
         output_target.write(deployment_content)
+
+if __name__ == "__main__":
+    render(
+        './example/sample_k8s_deployment.conf',
+        './example/sample.yml'
+    )
