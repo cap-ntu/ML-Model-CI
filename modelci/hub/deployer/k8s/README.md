@@ -41,9 +41,9 @@ batch_size = 16
 <li> Generate deployment file to desired output path.
 
 ```
-from modelci.hub.deployer.k8s.k8s_dispatcher import serve
+from modelci.hub.deployer.k8s.dispatcher import render
 
-serve(
+render(
     configuration='example/sample_k8s_deployment.conf',
     output_file_path='example/output.yaml'
 )
