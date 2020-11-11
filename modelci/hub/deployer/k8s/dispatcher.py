@@ -150,9 +150,3 @@ def render(
 
     with open(output_file_path, 'w+') as output_target:
         output_target.write(deployment_content)
-
-if __name__ == "__main__":
-    render(
-        './example/sample_k8s_deployment.conf',
-        './example/sample.yml'
-    )
