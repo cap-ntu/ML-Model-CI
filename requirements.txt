@@ -31,3 +31,4 @@ toolz==0.10.0
 torch>=1.5.0
 uvicorn>=0.11.5
 xgboost==1.2.0
+Jinja2==2.11.2

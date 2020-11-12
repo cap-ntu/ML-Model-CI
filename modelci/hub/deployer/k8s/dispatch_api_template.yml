@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ deployment.name }}
+  namespace: {{ deployment.namespace }}
+  labels:
+    application: ml-model-ci-deployment
+spec:
+  replicas: {{ deployment.replicas }}
+  minReadySeconds: 15
+  selector:
+    matchLabels:
+        application: ml-model-ci-deployment
+  template:
+    metadata:
+      namespace: {{ deployment.namespace }}
+      labels:
+        application: ml-model-ci-deployment
+    spec:
+      initContainers:
+        - name: retrieve-model
+          image: {{ init_container.image }}
+          {% if init_env_object_list is defined %}
+          env:
+            {% for env_object in init_env_object_list %}
+            - name: {{ env_object.name }}
+              value: {{ env_object.value | safe}}
+            {% endfor %}
+          {% endif %}
+          volumeMounts:
+            - name: models-volume
+              mountPath: {{ init_container.model_dir }}
+      containers:
+        - name: {{ deployment.name }}
+          image: {{ deployment.image }}
+          {% if deployment.command is defined %}
+          command: {{ deployment.command | safe }}
+          {% endif %}
+          {% if deployment.args is defined %}
+          args: {{ deployment.args | safe }}
+          {% endif %}
+          {% if env_object_list is defined %}
+          env:
+            {% for env_object in env_object_list %}
+            - name: {{ env_object.name }}
+              value: {{ env_object.value | safe}}
+            {% endfor %}
+          {% endif %}
+          {% if cuda is defined %}
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          {% endif %}
+          ports:
+            {% for port_object in port_object_list %}
+            - name: {{ port_object.name }}
+              containerPort: {{ port_object.value }}
+            {% endfor %}
+          volumeMounts:
+            - name: models-volume
+              mountPath: {{ deployment.model_dir }}
+      {% if cuda is defined %}
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Equal
+          value: "present"
+          effect: NoSchedule
+      {% endif %}
+      volumes:
+        - name: models-volume
+          emptyDir: {}
