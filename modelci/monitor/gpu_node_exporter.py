@@ -42,7 +42,7 @@ class GPUNodeExporter(object):
         """format original text info from node exporter.
 
         Args:
-            text_info (str): information from node exporter
+            text_info (requests.Response): information from node exporter
 
         Returns:
             defaultdict: {gpu_num: list}

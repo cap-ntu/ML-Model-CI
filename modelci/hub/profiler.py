@@ -10,10 +10,10 @@ import time
 
 import docker
 
-from modelci.hub.client.onnx_client import CVONNXClient
-from modelci.hub.client.tfs_client import CVTFSClient
-from modelci.hub.client.torch_client import CVTorchClient
-from modelci.hub.client.trt_client import CVTRTClient
+from modelci.hub.client import CVONNXClient
+from modelci.hub.client import CVTFSClient
+from modelci.hub.client import CVTRTClient
+from modelci.hub.client import CVTorchClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.exceptions import ServiceException
 from modelci.types.bo import (

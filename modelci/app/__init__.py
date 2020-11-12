@@ -22,8 +22,10 @@ def start():
     # check if the process is running
     pid = check_process_running(SERVER_PORT)
     if not pid:
-        args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--host', SERVER_HOST, '--port',
+        args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--port',
                 str(SERVER_PORT)]
+        if SERVER_HOST != 'localhost':
+            args += ['--host', SERVER_HOST]
         backend_process = subprocess.Popen(args, preexec_fn=os.setsid)
         pid = backend_process.pid
         logger.info(f'Uvicorn server listening on {SERVER_PORT}')

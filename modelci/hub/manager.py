@@ -17,6 +17,9 @@ from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
+__all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
+           'retrieve_model_by_task']
+
 
 def register_model(
         origin_model,

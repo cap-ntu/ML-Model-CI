@@ -5,14 +5,21 @@ Desc: template client for TensorRT Serving of ResNet-50
 Date: 26/04/2020
 """
 import sys
+import warnings
 
 import cv2
-from tensorrtserver.api import InferContext, ProtocolType, ServerStatus, ServerStatusContext, InferenceServerException
 
-from modelci.hub.deployer.config import TRT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
 from modelci.types.type_conversion import model_data_type_to_np
+from ..deployer.config import TRT_GRPC_PORT
+
+try:
+    from tensorrtserver.api import (
+        InferContext, ProtocolType, ServerStatus, ServerStatusContext, InferenceServerException
+    )
+except ModuleNotFoundError:
+    warnings.warn('Module `tensorrtserver` not installed. You are not able to use TRT Client.')
 
 
 class CVTRTClient(BaseModelInspector):

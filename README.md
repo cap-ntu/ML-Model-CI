@@ -40,6 +40,15 @@
 
 ## Installation
 
+### Using Pip
+
+```shell script
+# need to install requests package first
+pip install setuptools requests==2.23.0
+# then install modelci
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
+```
+
 ### Command Line  
 
 ```shell script
@@ -73,10 +82,8 @@ clear start, we present the whole pipeline step by step as follows.
 ### Start the ModelCI service
 
 Once you have installed, start ModelCI service by:
-```python
-import modelci.cli
-
-modelci.cli.start()
+```shell script
+modelci start
 ```
 
 ### Register a Model

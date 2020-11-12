@@ -121,6 +121,8 @@ class PyTorchConverter(object):
 
         return _convert_onnxml(model, 'torch', test_input=None, device=device, extra_config=extra_config_)
 
+__all__ = ['TorchScriptConverter', 'TFSConverter', 'ONNXConverter', 'TRTConverter', 'to_tvm']
+
 
 class TorchScriptConverter(object):
     @staticmethod

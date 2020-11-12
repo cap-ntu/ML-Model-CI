@@ -1,0 +1,3 @@
+exclude_paths:
+  - 'modelci/types/proto/*.py'
+  - 'modelci/types/**/__init__.py'
