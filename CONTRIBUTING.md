@@ -66,14 +66,14 @@ We have some static checks when you filing a PR or pushing commits to the projec
 Firstly, you have to fork this repo: <https://github.com/cap-ntu/ML-Model-CI> and create a local clone of this fork
 
 ```shell
-git clone git@github.com:<YOUR-USERNAME>/ML-Model-CI.git
+git clone https://github.com/<YOUR-USERNAME>/ML-Model-CI.git
 ```
 
 Then add the original repository as upstream
 
 ```shell
 cd ML-Model-CI
-git remote add upstream git@github.com:cap-ntu/ML-Model-CI.git
+git remote add upstream https://github.com/cap-ntu/ML-Model-CI.git
 ```
 
 you can use the following command to verify that the remote is set
