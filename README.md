@@ -34,7 +34,7 @@
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 **News**
-- (2020-08) The work has been accepted as an opensource competation paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
+- (2020-08) The work has been accepted as an opensource competition paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
 - (2020-06) The docker image has been built.
 - (2020-05) The cAdvisor is applied to monitor the running containers.
 
@@ -186,6 +186,12 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
 - [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
+
+## Notebooks
+
+Besides, we provide a jupyter notebook which could provide users with runnable code and examples.
+
+[Register and convert Model](./example/notebook/register_and_convert_model.ipynb)
 
 ## Contributing
 
