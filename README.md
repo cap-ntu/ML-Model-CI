@@ -46,7 +46,7 @@
 # need to install requests package first
 pip install setuptools requests==2.23.0
 # then install modelci
-pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master --use-feature=2020-resolver
 ```
 
 ### Command Line  
@@ -191,7 +191,8 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 
 Besides, we provide a jupyter notebook which could provide users with runnable code and examples.
 
-[Register and convert Model](./example/notebook/register_and_convert_model.ipynb)
+- [A getting started tutorial of ModelCI installation, Register and convert Model](./example/notebook/installation_register_and_convert_model.ipynb)
+
 
 ## Contributing
 
