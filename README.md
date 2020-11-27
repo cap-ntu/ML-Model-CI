@@ -74,7 +74,13 @@ docker pull mlmodelci/mlmodelci
 ## Demo
 
 We have built a demo, check [here](./frontend) to run.
-![](https://i.loli.net/2020/05/12/WL2tQlf3ZpjrBPI.png)
+
+| BERT Application on Descriptive Text Sentiment Analysis | Mask R-CNN Application on Image Object Detection |
+|:-------------------------------------------------------:|:------------------------------------------------:|
+| ![BERT]                                                 | ![MaskRCNN]                                      |
+
+[BERT]: https://raw.githubusercontent.com/cap-ntu/mlmodelci_mm_demo/master/screenshots/bert.png
+[MaskRCNN]: https://raw.githubusercontent.com/cap-ntu/mlmodelci_mm_demo/master/screenshots/mrcnn.png 
 
 ## Quick Start
 
