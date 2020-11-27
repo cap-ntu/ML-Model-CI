@@ -71,6 +71,11 @@ docker pull mlmodelci/mlmodelci
 
 <!-- Please refer to [here](/integration/README.md) for more information. -->
 
+## Demo
+
+We have build a demo, check [here](./frontend) to run.
+![](https://i.loli.net/2020/05/12/WL2tQlf3ZpjrBPI.png)
+
 ## Quick Start
 
 *The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. Welcome to join in our development team!*
