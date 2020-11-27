@@ -73,7 +73,7 @@ docker pull mlmodelci/mlmodelci
 
 ## Demo
 
-We have build a demo, check [here](./frontend) to run.
+We have built a demo, check [here](./frontend) to run.
 ![](https://i.loli.net/2020/05/12/WL2tQlf3ZpjrBPI.png)
 
 ## Quick Start
