@@ -186,12 +186,7 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
 - [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
-
-## Notebooks
-
-Besides, we provide a jupyter notebook which could provide users with runnable code and examples.
-
-- [A getting started tutorial of ModelCI installation, Register and convert Model](./example/notebook/installation_register_and_convert_model.ipynb)
+- [A getting started jupyter notebook of ModelCI installation, Register and convert Model](./example/notebook/installation_register_and_convert_model.ipynb)[![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/installation_register_and_convert_model/installation_register_and_convert_model.ipynb)
 
 
 ## Contributing
