@@ -177,6 +177,10 @@ Now your model is an efficient cloud service!
 
 For more information please take a look at our tutorials.
 
+## Quickstart with Notebook
+
+- [A getting started jupyter notebook of ModelCI installation, Register and convert Model](./example/notebook/image_classification_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/image_classification_model_deployment.ipynb)
+
 ## Tutorial
 
 After the Quick Start, we provide detailed tutorials for users to understand our system.
@@ -186,7 +190,6 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
 - [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
-- [A getting started jupyter notebook of ModelCI installation, Register and convert Model](./example/notebook/installation_register_and_convert_model.ipynb)[![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/installation_register_and_convert_model/installation_register_and_convert_model.ipynb)
 
 
 ## Contributing
