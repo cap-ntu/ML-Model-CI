@@ -34,7 +34,7 @@
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 **News**
-- (2020-08) The work has been accepted as an opensource competation paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
+- (2020-08) The work has been accepted as an opensource competition paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
 - (2020-06) The docker image has been built.
 - (2020-05) The cAdvisor is applied to monitor the running containers.
 
@@ -46,7 +46,7 @@
 # need to install requests package first
 pip install setuptools requests==2.23.0
 # then install modelci
-pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master --use-feature=2020-resolver
 ```
 
 ### Command Line  
@@ -188,6 +188,10 @@ Now your model is an efficient cloud service!
 
 For more information please take a look at our tutorials.
 
+## Quickstart with Notebook
+
+- [A getting started jupyter notebook of ModelCI installation, Register and convert Model](./example/notebook/image_classification_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/image_classification_model_deployment.ipynb)
+
 ## Tutorial
 
 After the Quick Start, we provide detailed tutorials for users to understand our system.
@@ -197,6 +201,7 @@ After the Quick Start, we provide detailed tutorials for users to understand our
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
 - [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
+
 
 ## Contributing
 
