@@ -33,7 +33,10 @@
 - **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
+*The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
+
 **News**
+- (2020-10) You can install the system with pip.
 - (2020-08) The work has been accepted as an opensource competition paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
 - (2020-06) The docker image has been built.
 - (2020-05) The cAdvisor is applied to monitor the running containers.
@@ -75,16 +78,11 @@ docker pull mlmodelci/mlmodelci
 
 We have built a demo, check [here](./frontend) to run.
 
-| BERT Application on Descriptive Text Sentiment Analysis | Mask R-CNN Application on Image Object Detection |
-|:-------------------------------------------------------:|:------------------------------------------------:|
-| ![BERT]                                                 | ![MaskRCNN]                                      |
-
-[BERT]: https://raw.githubusercontent.com/cap-ntu/mlmodelci_mm_demo/master/screenshots/bert.png
-[MaskRCNN]: https://raw.githubusercontent.com/cap-ntu/mlmodelci_mm_demo/master/screenshots/mrcnn.png 
+| Web frontend |   Workflow     |
+|:------------:|:--------------:|
+| <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
 ## Quick Start
-
-*The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. Welcome to join in our development team!*
 
 MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services
 (MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
