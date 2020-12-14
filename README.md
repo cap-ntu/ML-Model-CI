@@ -27,10 +27,10 @@
 ## Features
 
 - **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
-- **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud.
+- **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud. Support **Tensorflow SavedModel**, **ONNX**, **TorchScript**, **TensorRT**
 - **Profiler** simulates the real service behavior by invoking a gRPC client and a model service, and provides a 
     detailed report about model runtime performance (e.g. P99-latency and throughput) in production environment.
-- **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device.
+- **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device. Support **Tensorflow Serving**, **Trion Inference Serving**, **ONNX runtime**, **Web Framework (e.g., FastAPI)**
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
 *The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
@@ -213,15 +213,11 @@ If you use MLModelCI in your work or use any functions published in MLModelCI, w
   author = {Zhang, Huaizheng and Li, Yuanming and Huang, Yizheng and Wen, Yonggang and Yin, Jianxiong and Guan, Kyle},
   title = {MLModelCI: An Automatic Cloud Platform for Efficient MLaaS},
   year = {2020},
-  isbn = {9781450379885},
-  publisher = {Association for Computing Machinery},
-  address = {New York, NY, USA},
   url = {https://doi.org/10.1145/3394171.3414535},
   doi = {10.1145/3394171.3414535},
   booktitle = {Proceedings of the 28th ACM International Conference on Multimedia},
   pages = {4453–4456},
   numpages = {4},
-  keywords = {inference serving, profiling, conversion, model deployment},
   location = {Seattle, WA, USA},
   series = {MM '20}
 }
