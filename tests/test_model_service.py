@@ -11,7 +11,7 @@ from modelci.types.bo import (
     ModelVersion,
     IOShape,
     Weight,
-    StaticProfileResultBO, InfoTuple,
+    StaticProfileResultBO, InfoTuple, Task, Metric,
 )
 from modelci.types.trtis_objects import ModelInputFormat
 
@@ -22,8 +22,13 @@ def test_init():
 
 def test_register_model():
     model = ModelBO(
-        'ResNet50', framework=Framework.PYTORCH, engine=Engine.TRT, version=ModelVersion(1),
-        dataset='ImageNet', acc=0.8, task='image classification',
+        'ResNet50',
+        framework=Framework.PYTORCH,
+        engine=Engine.TRT,
+        version=ModelVersion(1),
+        dataset='ImageNet',
+        metric={Metric.ACC: 0.80},
+        task=Task.IMAGE_CLASSIFICATION,
         inputs=[IOShape([-1, 3, 224, 224], dtype=float, format=ModelInputFormat.FORMAT_NCHW)],
         outputs=[IOShape([-1, 1000], dtype=int)],
         weight=Weight(bytes([123]))
@@ -43,7 +48,7 @@ def test_get_model_by_name():
 
 
 def test_get_model_by_task():
-    models = ModelService.get_models_by_task('image classification')
+    models = ModelService.get_models_by_task(Task.IMAGE_CLASSIFICATION)
 
     # check length
     assert len(models) == 1
@@ -62,7 +67,7 @@ def test_get_model_by_id():
 
 def test_update_model():
     model = ModelService.get_models('ResNet50')[0]
-    model.acc = 0.9
+    model.metric[Metric.ACC] = 0.9
     model.weight.weight = bytes([123, 255])
 
     # check if update success
@@ -71,7 +76,7 @@ def test_update_model():
     model_ = ModelService.get_models('ResNet50')[0]
 
     # check updated model
-    assert abs(model_.acc - 0.9) < 1e-6
+    assert abs(model_.metric[Metric.ACC] - 0.9) < 1e-6
     assert model_.weight.weight == model.weight.weight
 
 

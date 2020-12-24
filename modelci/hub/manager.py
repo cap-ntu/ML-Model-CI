@@ -2,7 +2,7 @@ import os
 import subprocess
 from functools import partial
 from pathlib import Path
-from typing import Iterable, Union, List
+from typing import Iterable, Union, List, Dict, Optional
 
 import cv2
 import tensorflow as tf
@@ -15,7 +15,7 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
-from modelci.types.bo import IOShape, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
+from modelci.types.bo import IOShape, Task, Metric, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task']
@@ -24,10 +24,11 @@ __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yam
 def register_model(
         origin_model,
         dataset: str,
-        acc: float,
-        task: str,
+        metric: Dict[Metric, float],
+        task: Task,
         inputs: List[IOShape],
         outputs: List[IOShape],
+        model_input: Optional[List] = None,
         architecture: str = None,
         framework: Framework = None,
         engine: Engine = None,
@@ -50,10 +51,11 @@ def register_model(
         framework (Framework): Framework name. Default to None.
         version (ModelVersion): Model version. Default to None.
         dataset (str): Model testing dataset.
-        acc (float): Model accuracy on the testing dataset.
-        task (str): Model task type.
+        metric (Dict[Metric,float]): Scoring metric and its corresponding score used for model evaluation
+        task (Task): Model task type.
         inputs (Iterable[IOShape]): Model input tensors.
         outputs (Iterable[IOShape]): Model output tensors.
+        model_input: specify sample model input data
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
@@ -69,9 +71,10 @@ def register_model(
         model_dir = Path(origin_model).absolute()
         assert model_dir.exists(), f'model weight does not exist at {origin_model}'
 
-        if all([architecture, framework, engine, version]):  # from explicit architecture, framework, engine and version
+        if all([architecture, task, framework, engine, version]):
+            # from explicit architecture, framework, engine and version
             ext = model_dir.suffix
-            path = generate_path(architecture, framework, engine, version).with_suffix(ext)
+            path = generate_path(architecture, task, framework, engine, version).with_suffix(ext)
             # if already in the destination folder
             if path == model_dir:
                 pass
@@ -94,16 +97,19 @@ def register_model(
         model_dir_list.extend(_generate_model_family(
             origin_model,
             architecture,
+            task,
             framework,
             filename=str(version),
             inputs=inputs,
-            outputs=outputs
+            outputs=outputs,
+            model_input=model_input
         ))
 
     # register
     for model_dir in model_dir_list:
         parse_result = parse_path(model_dir)
         architecture = parse_result['architecture']
+        task = parse_result['task']
         framework = parse_result['framework']
         engine = parse_result['engine']
         version = parse_result['version']
@@ -111,14 +117,26 @@ def register_model(
 
         with open(str(model_dir), 'rb') as f:
             model = ModelBO(
-                name=architecture, framework=framework, engine=engine, version=version,
-                dataset=dataset, acc=acc, task=task, inputs=inputs,
-                outputs=outputs, weight=Weight(f, filename=filename)
+                name=architecture,
+                task=task,
+                framework=framework,
+                engine=engine,
+                version=version,
+                dataset=dataset,
+                metric=metric,
+                inputs=inputs,
+                outputs=outputs,
+                weight=Weight(f, filename=filename)
             )
 
             ModelService.post_model(model)
         # TODO refresh
-        model = ModelService.get_models(name=architecture, framework=framework, engine=engine, version=version)[0]
+        model = ModelService.get_models(
+            name=architecture,
+            task=task,
+            framework=framework,
+            engine=engine,
+            version=version)[0]
 
         # profile registered model
         if profile:
@@ -177,11 +195,12 @@ def register_model_from_yaml(file_path: Union[Path, str]):
 
     origin_model = model_config['weight']
     dataset = model_config['dataset']
-    acc = model_config['acc']
-    task = model_config['task']
+    metric = model_config['metric']
     inputs_plain = model_config['inputs']
     outputs_plain = model_config['outputs']
+    model_input = model_config.get('model_input', None)
     architecture = model_config.get('architecture', None)
+    task = model_config.get('task', None)
     framework = model_config.get('framework', None)
     engine = model_config.get('engine', None)
     version = model_config.get('version', None)
@@ -192,6 +211,12 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain)))
 
     # wrap POJO
+    if model_input is not None:
+        model_input = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_input)))
+    if task is not None:
+        task = Task[task.upper()]
+    if metric is not None:
+        metric = {Metric[key.upper()]: val for key, val in metric[0].items()}
     if framework is not None:
         framework = Framework[framework.upper()]
     if engine is not None:
@@ -202,10 +227,11 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     register_model(
         origin_model=origin_model,
         dataset=dataset,
-        acc=acc,
+        metric=metric,
         task=task,
         inputs=inputs,
         outputs=outputs,
+        model_input=model_input,
         architecture=architecture,
         framework=framework,
         engine=engine,
@@ -217,14 +243,16 @@ def register_model_from_yaml(file_path: Union[Path, str]):
 def _generate_model_family(
         model,
         model_name: str,
+        task: Task,
         framework: Framework,
         filename: str,
         inputs: List[IOShape],
+        model_input: Optional[List] = None,
         outputs: List[IOShape] = None,
         max_batch_size: int = -1
 ):
     generated_dir_list = list()
-    generate_this_path = partial(generate_path, model_name=model_name, framework=framework, version=filename)
+    generate_this_path = partial(generate_path, task=task, model_name=model_name, framework=framework, version=filename)
     torchscript_dir = generate_this_path(engine=Engine.TORCHSCRIPT)
     tfs_dir = generate_this_path(engine=Engine.TFS)
     onnx_dir = generate_this_path(engine=Engine.ONNX)
@@ -236,7 +264,7 @@ def _generate_model_family(
         generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape
-        ONNXConverter.from_torch_module(model, onnx_dir, inputs, optimize=False)
+        ONNXConverter.from_torch_module(model, onnx_dir, inputs, outputs, model_input, optimize=False)
         generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
@@ -262,7 +290,7 @@ def get_remote_model_weight(model: ModelBO):
         1. set force insert config.pbtxt
         2. set other options in generation of config.pbtxt (e.g. max batch size, instance group...)
     This function will keep a local cache of the used model in the path:
-        `~/.modelci/<architecture_name>/<framework>-<engine>/version`
+        `~/.modelci/<architecture_name>/<framework>-<engine>/<task>-<version>`
     Arguments:
         model (ModelBO): Model business object.
     Return:
@@ -278,7 +306,7 @@ def get_remote_model_weight(model: ModelBO):
         if model.engine == Engine.TFS:
             subprocess.call(['unzip', save_path, '-d', '/'])
             os.remove(save_path)
-        elif Engine.TRT:
+        elif model.engine == Engine.TRT:
             subprocess.call(['unzip', save_path, '-d', '/'])
             os.remove(save_path)
 
@@ -295,13 +323,13 @@ def get_remote_model_weight(model: ModelBO):
 
 def _get_remote_model_weights(models: List[ModelBO]):
     """Get remote model weights from a list of models.
-    Only models with highest version of each unique architecture, framework, and engine pair are download.
+    Only models with highest version of each unique task, architecture, framework, and engine pair are download.
     """
 
-    # group by (architecture, framework, engine) pair
-    pairs = set(map(lambda x: (x.name, x.framework, x.engine), models))
+    # group by (task, architecture, framework, engine) pair
+    pairs = set(map(lambda x: (x.task, x.name, x.framework, x.engine), models))
     model_groups = [
-        [model for model in models if (model.name, model.framework, model.engine) == pair] for pair in pairs
+        [model for model in models if (model.task, model.name, model.framework, model.engine) == pair] for pair in pairs
     ]
 
     # get weights of newest version of each pair
@@ -320,15 +348,17 @@ def delete_remote_weight(model: ModelBO):
 
 def retrieve_model(
         architecture_name: str = 'ResNet50',
+        task: Task = None,
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
         download: bool = True,
 ) -> List[ModelBO]:
-    """Query a model by name, framework, engine or version.
+    """Query a model by name, task, framework, engine or version.
 
     Arguments:
         architecture_name (str): Model architecture name.
+        task (Task): which machine learn task is model used for,Default to None
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
         version (ModelVersion): Model version. Default to None.
@@ -338,7 +368,7 @@ def retrieve_model(
         List[ModelBO]: A list of model business object.
     """
     # retrieve
-    models = ModelService.get_models(architecture_name, framework=framework, engine=engine, version=version)
+    models = ModelService.get_models(architecture_name, task=task, framework=framework, engine=engine, version=version)
     # check if found
     if len(models) != 0 and download:
         _get_remote_model_weights(models)
@@ -346,12 +376,12 @@ def retrieve_model(
     return models
 
 
-def retrieve_model_by_task(task: str = 'image classification') -> List[ModelBO]:
+def retrieve_model_by_task(task: Task) -> List[ModelBO]:
     """Query a model by task.
     This function will download a cache model from the model DB.
 
     Arguments:
-        task (str): Task name. Default to "image classification"
+        task (Task): Task name the model is used for.
 
     Returns:
         List[ModelBO]: A list of model business object.

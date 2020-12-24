@@ -3,7 +3,8 @@ from typing import Union
 
 from bson import ObjectId
 
-from modelci.types.bo import DynamicProfileResultBO, ModelBO, Framework, Engine, StaticProfileResultBO, ModelVersion
+from modelci.types.bo import DynamicProfileResultBO, ModelBO, Task, Framework, Engine, StaticProfileResultBO, \
+    ModelVersion
 from . import mongo
 from .exceptions import ServiceException, DoesNotExistException, BadRequestValueException
 from .model_dao import ModelDAO
@@ -16,6 +17,7 @@ class ModelService(object):
     def get_models(
             cls,
             name: str = None,
+            task: Task = None,
             framework: Framework = None,
             engine: Engine = None,
             version: ModelVersion = None
@@ -24,6 +26,7 @@ class ModelService(object):
 
         Args:
             name (str): model name for searching
+            task (Task): model task for searching
             framework (Framework): model framework. Default to None, having no effect on the searching result.
             engine (Engine): model engine. Default to None, having no effect on the searching result.
             version (ModelVersion): model version. Default to None, having no effect on the searching result.
@@ -35,6 +38,8 @@ class ModelService(object):
         kwargs = dict()
         if name is not None:
             kwargs['name'] = name
+        if task is not None:
+            kwargs['task'] = task.value
         if framework is not None:
             kwargs['framework'] = framework.value
         if engine is not None:
@@ -47,16 +52,16 @@ class ModelService(object):
         return models
 
     @classmethod
-    def get_models_by_task(cls, task: str):
+    def get_models_by_task(cls, task: Task):
         """Get a list of model BO given task.
 
         Args:
-            task (str): model task for searching
+            task (Task): model task for searching
 
         Return:
             A list of `ModelBO`
         """
-        model_pos = cls.__model_DAO.get_models_by_task(task=task)
+        model_pos = cls.__model_DAO.get_models_by_task(task=task.value)
 
         return list(map(ModelBO.from_model_do, model_pos))
 
@@ -103,13 +108,14 @@ class ModelService(object):
         model_po = model.to_model_do()
         if cls.__model_DAO.exists_by_primary_keys(
                 name=model_po.name,
+                task=model_po.task,
                 framework=model_po.framework,
                 engine=model_po.engine,
                 version=model_po.version
         ):
             raise ServiceException(
-                f'Model business object with primary keys name={model_po.name}, framework={model_po.framework}, '
-                f'engine={model_po.engine}, version={model_po.version} has exists.'
+                f'Model business object with primary keys name={model_po.name}, task={model_po.task}, '
+                f'framework={model_po.framework}, engine={model_po.engine}, version={model_po.version} has exists.'
             )
 
         return bool(cls.__model_DAO.save_model(model_po))
@@ -143,8 +149,8 @@ class ModelService(object):
 
             # build arguments
             valid_keys = [
-                'name', 'framework', 'engine', 'version', 'dataset',
-                'accuracy', 'weight', 'task', 'inputs', 'outputs', 'status'
+                'name', 'framework', 'engine', 'version', 'dataset', 'metric',
+                'weight', 'task', 'inputs', 'outputs', 'status'
             ]
             kwargs = dict()
 

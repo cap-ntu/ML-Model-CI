@@ -103,14 +103,14 @@ Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud ser
 
 ```python
 from modelci.hub.manager import register_model
-from modelci.types.bo import IOShape
+from modelci.types.bo import IOShape, Task, Metric
 
 # Register a Trained ResNet50 Model to ModelHub.
 register_model(
     'home/ResNet50/pytorch/1.zip',
     dataset='ImageNet',
-    acc=0.76,
-    task='image classification',
+    metric={Metric.ACC: 0.76},
+    task=Task.IMAGE_CLASSIFICATION,
     inputs=[IOShape([-1, 3, 224, 224], float)],
     outputs=[IOShape([-1, 1000], float)],
     convert=True,
@@ -190,7 +190,8 @@ For more information please take a look at our tutorials.
 
 ## Quickstart with Notebook
 
-- [A getting started jupyter notebook of ModelCI installation, Register and convert Model](./example/notebook/image_classification_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/image_classification_model_deployment.ipynb)
+- [Installation, Converting and Registering Image Classification Model by ModelCI](./example/notebook/image_classification_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/image_classification_model_deployment.ipynb)
+- [Converting and Registering Object Detection model by ModelCI](./example/notebook/object_detection_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/object_detection_model_deployment.ipynb)
 
 ## Tutorial
 

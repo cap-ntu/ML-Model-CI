@@ -29,6 +29,7 @@ class ModelDAO(object):
         Args:
             **kwargs: Keyword arguments of primary keys. Supported values:
                 name (str): Model name.
+                task (str): Model task.
                 engine (int): Driving engine enum value.
                 framework (int): Model framework enum value.
                 version (int): Model version number.
@@ -57,25 +58,26 @@ class ModelDAO(object):
         Args:
             kwargs (dict): A dictionary of arguments:
                 name (str): model name.
+                task: Model task.
                 framework: Model framework.
                 engine: Model engine.
                 version: Model version.
         Return:
             List[ModelDO]: A list of model plain objects.
         """
-        return ModelDO.objects(**kwargs).order_by('name', 'framework', 'engine', '-version')
+        return ModelDO.objects(**kwargs).order_by('name', 'task', 'framework', 'engine', '-version')
 
     @staticmethod
-    def get_models_by_task(task: str) -> List[ModelDO]:
+    def get_models_by_task(task: int) -> List[ModelDO]:
         """Get a list of model plain objects given task.
 
         Args:
-            task (str): Model predictive or descriptive task name
+            task (Task): Model predictive or descriptive task name
 
         Return:
             List[ModelDO]: A list of model plain objects. An empty list will be returned if no such model.
         """
-        return ModelDO.objects(task=task)
+        return ModelDO.objects(Task=task)
 
     @staticmethod
     def save_model(model: ModelDO, force_insert=False) -> ModelDO:
