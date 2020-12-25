@@ -54,7 +54,7 @@ def test_get_model_by_task():
     assert len(models) == 1
     # check name
     for model in models:
-        assert model.task == 'image classification'
+        assert model.task == Task.IMAGE_CLASSIFICATION
 
 
 def test_get_model_by_id():

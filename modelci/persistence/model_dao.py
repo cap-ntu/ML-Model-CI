@@ -77,7 +77,7 @@ class ModelDAO(object):
         Return:
             List[ModelDO]: A list of model plain objects. An empty list will be returned if no such model.
         """
-        return ModelDO.objects(Task=task)
+        return ModelDO.objects(task=task)
 
     @staticmethod
     def save_model(model: ModelDO, force_insert=False) -> ModelDO:
