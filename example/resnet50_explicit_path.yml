@@ -1,5 +1,6 @@
 weight: ~/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip
 dataset: ImageNet
+task: IMAGE_CLASSIFICATION
 metric:
   - ACC: 0.76
 inputs:
@@ -10,7 +11,6 @@ outputs:
     dtype: TYPE_FP32
 architecture: ResNet50
 framework: PYTORCH
-task: IMAGE_CLASSIFICATION
 engine: TORCHSCRIPT
 version: 1
 convert: false

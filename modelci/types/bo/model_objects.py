@@ -59,6 +59,9 @@ class Status(Enum):
 @unique
 class Metric(Enum):
     """numerator of model evaluation metric
+    ACC for image classification tasks
+    MAP for object detection tasks
+    LOU for segmentation tasks
     """
     ACC = 0
     MAP = 1
