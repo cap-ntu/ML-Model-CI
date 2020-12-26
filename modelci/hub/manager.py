@@ -192,7 +192,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     # read yaml
     with open(file_path) as f:
         model_config = yaml.safe_load(f)
-
+    # TODO able to parse ~ in file path by os.path.expanduser
     origin_model = model_config['weight']
     dataset = model_config['dataset']
     metric = model_config['metric']
@@ -223,6 +223,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         engine = Engine[engine.upper()]
     if version is not None:
         version = ModelVersion(version)
+    # os.path.expanduser
 
     register_model(
         origin_model=origin_model,
@@ -290,7 +291,7 @@ def get_remote_model_weight(model: ModelBO):
         1. set force insert config.pbtxt
         2. set other options in generation of config.pbtxt (e.g. max batch size, instance group...)
     This function will keep a local cache of the used model in the path:
-        `~/.modelci/<architecture_name>/<framework>-<engine>/<task>-<version>`
+        `~/.modelci/<architecture_name>/<framework>-<engine>/<task>/<version>`
     Arguments:
         model (ModelBO): Model business object.
     Return:
@@ -311,7 +312,7 @@ def get_remote_model_weight(model: ModelBO):
             os.remove(save_path)
 
             TRTConverter.generate_trt_config(
-                save_path.parent,  # ~/.modelci/<model-arch-name>/<framework>-<engine>/
+                save_path.parent,  # ~/.modelci/<model-arch-name>/<framework>-<engine>/<task>/
                 inputs=model.inputs,
                 outputs=model.outputs,
                 arch_name=model.name,

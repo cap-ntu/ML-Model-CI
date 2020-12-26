@@ -203,6 +203,7 @@ class ONNXConverter(object):
             inputs (Iterable[IOShape]): Model input shapes. Batch size is indicated at the dimension.
             outputs (Iterable[IOShape]): Model output shapes.
             model_input (Optional[List]) : Sample Model input data
+            TODO reuse inputs to pass model_input parameter later
             opset (int): ONNX op set version.
             optimize (bool): Flag to optimize ONNX network. Default to `True`.
             override (bool): Flag to override if the file with path to `save_path` has existed. Default to `False`.

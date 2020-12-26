@@ -178,10 +178,10 @@ from modelci.types.bo import Framework, Engine
 model_info = ...
 
 # get saved model information
-mode_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
+model_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
 
 # deploy the model to cuda device 0.
-serve(save_path=model_info.saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
+serve(save_path=model_info[0].saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
 ```
 
 Now your model is an efficient cloud service!
