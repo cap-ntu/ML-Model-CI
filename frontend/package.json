@@ -9,7 +9,8 @@
     "axios": "^0.19.2",
     "moment": "^2.24.0",
     "react": "^16.4.1",
-    "react-dom": "^16.4.1"
+    "react-dom": "^16.4.1",
+    "reqwest": "^2.0.5"
   },
   "devDependencies": {
     "@ice/spec": "^1.0.0",
