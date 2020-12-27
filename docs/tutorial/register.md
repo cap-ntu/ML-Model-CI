@@ -51,7 +51,7 @@ Here is an example of the registration using `convert` mode.
 import torch.hub
 
 from modelci.hub.manager import register_model
-from modelci.types.bo.model_objects import IOShape, Framework, ModelVersion
+from modelci.types.bo.model_objects import IOShape, Framework, ModelVersion, Task, Metric
 from modelci.types.trtis_objects import ModelInputFormat
 
 model = torch.hub.load('pytorch/torchvision:v0.5.0', model='resnet50', pretrained=True)
@@ -61,8 +61,8 @@ outputs = [IOShape(shape=[-1, 1000], dtype=float)]
 register_model(
     model,
     dataset='ImageNet',
-    acc=0.76,
-    task='image classification',
+    metric={Metric.ACC: 0.76},
+    task=Task.IMAGE_CLASSIFICATION,
     inputs=inputs,
     outputs=outputs,
     architecture='ResNet50',
@@ -79,13 +79,13 @@ Assume we have a saved pre-trained ResNet50 model at the current working directo
 
 ```python
 from modelci.hub.manager import register_model
-from modelci.types.bo import Framework, IOShape, Engine, ModelVersion
+from modelci.types.bo import Framework, IOShape, Engine, ModelVersion, Task, Metric
 
 register_model(
     'path/to/model/1.zip',
     dataset='ImageNet',
-    acc=0.76,
-    task='image classification',
+    metric={Metric.ACC: 0.76},
+    task=Task.IMAGE_CLASSIFICATION,
     inputs=[IOShape([-1, 3, 224, 224], float)],
     outputs=[IOShape([1], int)],
     architecture='ResNet50',
@@ -99,18 +99,18 @@ register_model(
 
 *Trick: to save your time, you can follow the following rule to name your model:
 (See [Tricks with Model Saved Path](#tricks-with-model-saved-path))  
-`~/.modelci/<model name>/<framework>-<engine>/<version>.<extension>`
+`~/.modelci/<model name>/<framework>-<engine>/<task>/<version>.<extension>`
 In this case, we are only able to specify the path, without architecture, framework, engine and version.*
 
 ```python
 from modelci.hub.manager import register_model
-from modelci.types.bo.model_objects import IOShape
+from modelci.types.bo.model_objects import IOShape, Task, Metric
 
 register_model(
-    '~/.modelci/ResNet50/pytorch-torchscript/1.zip',
+    '~/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip',
     dataset='ImageNet',
-    acc=0.76,
-    task='image classification',
+    metric={Metric.ACC: 0.76},
+    task=Task.IMAGE_CLASSIFICATION,
     inputs=[IOShape([-1, 3, 224, 224], float)],
     outputs=[IOShape([-1, 1000], float)],
     convert=False,
@@ -121,7 +121,7 @@ register_model(
 ## Tricks with Model Saved Path
 
 If you use `modelci/hub/init_data.py` to download model, the default model local cache path is as the following form:  
-`~/.modelci/<model name>/<framework>-<engine>/<version>.<extension>`
+`~/.modelci/<model name>/<framework>-<engine>/<task>/<version>.<extension>`
 
 We can use `modelci.hub.utils.parse_path(...)` to extract model identification.
 
@@ -141,6 +141,7 @@ The extracted information is a dictionary containing:
     "architecture": architecture,
     "framework": framework,
     "engine": engine,
+    "task": task,
     "version": version,
     "filename": filename,
 }
@@ -150,9 +151,13 @@ Vice versa, we can generate a default path by `modelci.hub.utils.generate_path(.
 
 ```python
 from modelci.hub.utils import generate_path
-from modelci.types.bo import Framework, Engine
+from modelci.types.bo import Framework, Engine, Task
 
 saved_path = generate_path(
-    model_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT, version=1
+    model_name='ResNet50', 
+    framework=Framework.PYTORCH, 
+    task=Task.IMAGE_CLASSIFICATION,
+    engine=Engine.TORCHSCRIPT, 
+    version=1
 )
 ```

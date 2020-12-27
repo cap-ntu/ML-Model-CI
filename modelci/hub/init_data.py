@@ -6,7 +6,7 @@ from torchvision import models
 from modelci.hub.converter import TFSConverter
 from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
-from modelci.types.bo import Framework, IOShape, ModelVersion, Engine
+from modelci.types.bo import Framework, IOShape, ModelVersion, Engine, Task, Metric
 from modelci.types.trtis_objects import ModelInputFormat
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
@@ -41,7 +41,11 @@ class ModelExporter(object):
 
             if not enable_trt:
                 tfs_dir = generate_path(
-                    model_name='ResNet50', framework=framework, engine=Engine.TFS, version=str(version)
+                    model_name='ResNet50',
+                    framework=framework,
+                    task=Task.IMAGE_CLASSIFICATION,
+                    engine=Engine.TFS,
+                    version=str(version)
                 )
                 TFSConverter.from_tf_model(model, tfs_dir)
                 model = str(tfs_dir.with_suffix('.zip'))
@@ -49,8 +53,8 @@ class ModelExporter(object):
             register_model(
                 model,
                 dataset='imagenet',
-                acc=0.76,
-                task='image classification',
+                metric={Metric.ACC: 0.76},
+                task=Task.IMAGE_CLASSIFICATION,
                 inputs=[IOShape([-1, 224, 224, 3], dtype=float, name='input_1', format=ModelInputFormat.FORMAT_NHWC)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet50',
@@ -63,8 +67,8 @@ class ModelExporter(object):
             register_model(
                 model,
                 dataset='imagenet',
-                acc=0.76,
-                task='image classification',
+                metric={Metric.ACC: 0.76},
+                task=Task.IMAGE_CLASSIFICATION,
                 inputs=[IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NCHW)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet50',
@@ -81,8 +85,8 @@ class ModelExporter(object):
             register_model(
                 model,
                 dataset='imagenet',
-                acc=...,  # TODO: to be filled
-                task='image classification',
+                metric=...,  # TODO: to be filled
+                task=Task.IMAGE_CLASSIFICATION,
                 inputs=[IOShape([-1, 224, 224, 3], dtype=float, name='input_1', format=ModelInputFormat.FORMAT_NHWC)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet101',
@@ -94,8 +98,8 @@ class ModelExporter(object):
             register_model(
                 model,
                 dataset='imagenet',
-                acc=...,  # TODO
-                task='image classification',
+                metric=...,  # TODO
+                task=Task.IMAGE_CLASSIFICATION,
                 inputs=[IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NCHW)],
                 outputs=[IOShape([-1, 1000], dtype=float, name='probs')],
                 architecture='ResNet101',

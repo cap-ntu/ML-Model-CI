@@ -17,6 +17,15 @@ from modelci.types.trtis_objects import ModelInputFormat, DataType as TRTIS_Data
 
 
 @unique
+class Task(Enum):
+    """Enumerator of machine learning tasks saved model is used for
+    """
+    IMAGE_CLASSIFICATION = 0
+    OBJECT_DETECTION = 1
+    SEGMENTATION = 2
+
+
+@unique
 class Framework(Enum):
     """Enumerator of framework saved model is used.
     """
@@ -45,6 +54,18 @@ class Status(Enum):
     PASS = 1
     RUNNING = 2
     FAIL = 3
+
+
+@unique
+class Metric(Enum):
+    """numerator of model evaluation metric
+    ACC for image classification tasks
+    MAP for object detection tasks
+    LOU for segmentation tasks
+    """
+    ACC = 0
+    MAP = 1
+    LOU = 2
 
 
 # Generic data type (same as Triton::DataType)

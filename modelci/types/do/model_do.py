@@ -11,6 +11,7 @@ from mongoengine.fields import (
     IntField,
     ListField,
     StringField,
+    DictField
 )
 
 from .profile_result_do import ProfileResultDO
@@ -39,12 +40,12 @@ class ModelDO(Document):
     version = IntField(required=True)
     # Dataset
     dataset = StringField(required=True)
-    # Model accuracy
-    accuracy = FloatField(required=True)
+    # Model evaluation metric
+    metric = DictField(required=True)
     # Model weights
     weight = FileField()
     # Model task
-    task = StringField(required=True)
+    task = IntField(required=True)
     # inputs standard
     inputs = EmbeddedDocumentListField(IOShapeDO)
     # outputs standard
@@ -60,6 +61,6 @@ class ModelDO(Document):
 
     meta = {
         'indexes': [
-            {'fields': ('engine', 'name', 'framework', 'version'), 'unique': True}
+            {'fields': ('engine', 'name', 'framework', 'version', 'task'), 'unique': True}
         ]
     }

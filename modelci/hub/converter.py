@@ -189,6 +189,8 @@ class ONNXConverter(object):
             model: torch.nn.Module,
             save_path: Path,
             inputs: Iterable[IOShape],
+            outputs: Iterable[IOShape],
+            model_input: Optional[List] = None,
             opset: int = 10,
             optimize: bool = True,
             override: bool = False,
@@ -199,6 +201,9 @@ class ONNXConverter(object):
             model (nn.Module): PyTorch model.
             save_path (Path): ONNX saved path.
             inputs (Iterable[IOShape]): Model input shapes. Batch size is indicated at the dimension.
+            outputs (Iterable[IOShape]): Model output shapes.
+            model_input (Optional[List]) : Sample Model input data
+            TODO reuse inputs to pass model_input parameter later
             opset (int): ONNX op set version.
             optimize (bool): Flag to optimize ONNX network. Default to `True`.
             override (bool): Flag to override if the file with path to `save_path` has existed. Default to `False`.
@@ -229,27 +234,31 @@ class ONNXConverter(object):
         save_path.parent.mkdir(parents=True, exist_ok=True)
         save_path_with_ext = save_path.with_suffix('.onnx')
 
-        dummy_tensors, input_names = list(), list()
+        dummy_tensors, input_names, output_names = list(), list(), list()
         for input_ in inputs:
             dtype = model_data_type_to_torch(input_.dtype)
             dummy_tensors.append(torch.rand(batch_size, *input_.shape[1:], requires_grad=True, dtype=dtype))
             input_names.append(input_.name)
-
+        for output_ in outputs:
+            output_names.append(output_.name)
+        if model_input is None:
+            model_input = tuple(dummy_tensors)
         torch.onnx.export(
             model,  # model being run
-            tuple(dummy_tensors),  # model input (or a tuple for multiple inputs)
+            model_input,  # model input (or a tuple for multiple inputs)
             save_path_with_ext,  # where to save the model (can be a file or file-like object)
             export_params=True,  # store the trained parameter weights inside the model file
             opset_version=opset,  # the ONNX version to export the model to
             do_constant_folding=True,  # whether to execute constant folding for optimization
             input_names=input_names,  # the model's input names
-            output_names=['output'],  # the model's output names
+            output_names=output_names,  # the model's output names
             keep_initializers_as_inputs=True,
             **export_kwargs
         )
 
         if optimize:
-            network = ONNXConverter.optim_onnx(save_path_with_ext)
+            onnx_model = onnx.load(str(save_path_with_ext))
+            network = ONNXConverter.optim_onnx(onnx_model)
             onnx.save(network, str(save_path_with_ext))
 
         return True

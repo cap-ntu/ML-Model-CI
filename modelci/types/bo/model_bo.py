@@ -2,12 +2,12 @@ import getpass
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from bson import ObjectId
 
 from modelci.types.do import ModelDO
-from .model_objects import Framework, Engine, ModelVersion, IOShape, Status, Weight
+from .model_objects import Framework, Metric, Task, Engine, ModelVersion, IOShape, Status, Weight
 from .profile_result_bo import ProfileResultBO
 
 
@@ -22,10 +22,8 @@ class ModelBO(object):
         framework (Framework): Model framework. E.g. TensorFlow, PyTorch.
         engine (Engine): Model engine. E.g. ONNX, TensorRT.
         dataset (str): Model training dataset.
-        acc (float): Model accuracy.
-            TODO(lym): can be improved later Since different tasks use different metrics,
-                this arg is better to be a dict {metric(str, input by users): value(float)}.
-        task (str): Type of model detective or predictive task.
+        metric (Dict[Metric, float]): Scoring metrics used for model evaluation and corresponding evaluation scores
+        task (Task): Type of model detective or predictive task.
         inputs (List[IOShape]): Input shape and data type.
         outputs (List[IOShape]): Output shape and data type.
         weight (Weight): Model weight binary. Default to empty bytes.
@@ -56,8 +54,9 @@ class ModelBO(object):
             engine: Engine,
             version: ModelVersion,
             dataset: str,
-            acc: float,
-            task: str, inputs: List[IOShape],
+            metric: Dict[Metric, float],
+            task: Task,
+            inputs: List[IOShape],
             outputs: List[IOShape],
             weight: Weight = Weight(),
             profile_result: ProfileResultBO = None,
@@ -72,7 +71,7 @@ class ModelBO(object):
         self.engine = engine
         self.version = version
         self.dataset = dataset
-        self.acc = acc
+        self.metric = metric
         self.task = task
         self.inputs = inputs
         self.outputs = outputs
@@ -91,7 +90,7 @@ class ModelBO(object):
         from ...hub.utils import generate_path
 
         filename = Path(self.weight.filename)
-        save_path = generate_path(self.name, self.framework, self.engine, filename.stem)
+        save_path = generate_path(self.name, self.task, self.framework, self.engine, filename.stem)
         # add extension back
         save_path = save_path.with_suffix(filename.suffix)
 
@@ -108,10 +107,10 @@ class ModelBO(object):
             engine=self.engine.value,
             version=self.version.ver,
             dataset=self.dataset,
-            accuracy=self.acc,
+            metric={key.name.lower(): val for key, val in self.metric.items()},
             inputs=input_dos,
             outputs=output_dos,
-            task=self.task,
+            task=self.task.value,
             status=self.status.value,
             creator=self.creator,
             create_time=self.create_time,
@@ -160,10 +159,10 @@ class ModelBO(object):
             engine=Engine(model_do.engine),
             version=ModelVersion(model_do.version),
             dataset=model_do.dataset,
-            acc=model_do.accuracy,
+            metric={Metric[key.upper()]: val for key, val in model_do.metric.items()},
             inputs=inputs,
             outputs=outputs,
-            task=model_do.task,
+            task=Task(model_do.task),
             status=Status(model_do.status),
             creator=model_do.creator,
             create_time=model_do.create_time,
