@@ -38,3 +38,4 @@ dependencies:
   - pip:
       - onnx==1.6.0
       - typing-extensions==3.7.4.2
+      - ort-nightly==1.6.0.dev202101131
