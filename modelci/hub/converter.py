@@ -122,21 +122,6 @@ class PyTorchConverter(object):
 
 __all__ = ['TorchScriptConverter', 'TFSConverter', 'ONNXConverter', 'TRTConverter', 'to_tvm']
 
-class PYTConverter(object):
-    @staticmethod
-    def from_torch_module(model: torch.nn.Module, save_path: Path, override: bool = False):
-        """Save a PyTorch nn.Module by pickle
-        """
-        if save_path.with_suffix('.pth').exists():
-            if not override:  # file exist yet override flag is not set
-                logger.info('Use cached model')
-                return True
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-        save_path_with_ext = save_path.with_suffix('.pth')
-        torch.save(model, str(save_path_with_ext))
-
-        return True
-
 class TorchScriptConverter(object):
     @staticmethod
     def from_torch_module(model: torch.nn.Module, save_path: Path, override: bool = False):

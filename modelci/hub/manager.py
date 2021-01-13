@@ -12,7 +12,7 @@ from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
-from modelci.hub.converter import PYTConverter, TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
+from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, Task, Metric, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
@@ -259,12 +259,15 @@ def _generate_model_family(
     tfs_dir = generate_this_path(engine=Engine.TFS)
     onnx_dir = generate_this_path(engine=Engine.ONNX)
     trt_dir = generate_this_path(engine=Engine.TRT)
-    pyt_dir = generate_this_path(engine=Engine.PYT)
+    pytorch_dir = generate_this_path(engine=Engine.PYTORCH)
 
     if framework == Framework.PYTORCH:
-        # to PYT
-        PYTConverter.from_torch_module(model, pyt_dir)
-        generated_dir_list.append(pyt_dir.with_suffix('.pth'))
+        # save original pytorch model
+        import torch
+        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
+        save_path_with_ext = pytorch_dir.with_suffix('.pth')
+        torch.save(model, str(save_path_with_ext))
+        generated_dir_list.append(pytorch_dir.with_suffix('.pth'))
 
         # to TorchScript
         if TorchScriptConverter.from_torch_module(model, torchscript_dir):
