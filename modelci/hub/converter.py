@@ -114,7 +114,6 @@ class PyTorchConverter(object):
         extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
         extra_config_.update({
             hb_constants.ONNX_TARGET_OPSET: opset,
-            hb_op_constants.ONNX_INPUTS: inputs,
             hb_op_constants.N_FEATURES: None
         })
         extra_config_.update(extra_config)
