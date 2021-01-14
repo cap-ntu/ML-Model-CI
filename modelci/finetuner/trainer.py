@@ -11,7 +11,7 @@ from typing import Tuple
 
 import numpy as np
 import torch
-import tqdm
+from tqdm import tqdm
 import torch.utils.data
 from torch import nn
 from torch.optim.optimizer import Optimizer
@@ -38,8 +38,8 @@ class Trainer(abc.ABC):
         self.optimizer = optimizer
         self.train_data_loader = train_data_loader
         self.test_data_loader = test_data_loader
-        self.train_data_size = train_data_size or len(train_data_loader)
-        self.test_data_size = test_data_size or len(test_data_loader)
+        self.train_data_size = train_data_size or len(train_data_loader.dataset)
+        self.test_data_size = test_data_size or len(test_data_loader.dataset)
         self.criterion = nn.CrossEntropyLoss()
         self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -49,6 +49,10 @@ class Trainer(abc.ABC):
 
     @abc.abstractmethod
     def evaluate_one_batch(self, samples) -> Tuple[np.ndarray, np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def get_sample_size(self, samples) -> int:
         pass
 
 
@@ -67,6 +71,7 @@ def train_net(
         epochs (int):
         trainer (Callable):
         save_name (str): Optional. Saved name of model and training statistic result.
+        log_batch_num (int): Optional. Update loss and accuracy log frequency.
 
     Return:
         A dictionary containing statistic results: training and validation loss and accuracy, and training
@@ -83,51 +88,61 @@ def train_net(
     timestamp = datetime.now().strftime('%m%d-%H%M%S')
     save_path = OUTPUT_DIR / '{name}_{timestamp:s}.pth'.format(name=save_name, timestamp=timestamp)
 
-    val_loss, val_corrects = 0., 0.
-    t = tqdm.trange(epochs)
-    for epoch in t:
+    val_loss, val_corrects = 0., 0
+    pbar = tqdm(total=epochs * (len(trainer.train_data_loader) + len(trainer.test_data_loader)))
+    for epoch in range(epochs):
         trainer.net.train()
         num_samples = 0
-        train_loss, train_corrects = 0., 0.
-        running_loss, running_corrects = 0., 0.
+        train_loss, train_corrects = 0., 0
+        running_loss, running_corrects = 0., 0
 
         for batch_num, samples in enumerate(trainer.train_data_loader):
             trainer.optimizer.zero_grad()
-            loss, train_corrects = trainer.train_one_batch(samples)
-            num_samples += len(samples)
+            num_samples += trainer.get_sample_size(samples)
+            loss, corrects = trainer.train_one_batch(samples)
             running_loss += loss
             train_loss += loss
-            running_corrects += train_corrects
-            train_corrects += train_corrects
+            running_corrects += corrects
+            train_corrects += corrects
+
+            pbar.update(1)
 
             if log_batch_num is not None and batch_num % log_batch_num == 0:
-                t.set_description(
-                    f'[epoch {epoch:d}] step {batch_num:d} '
-                    f'| train loss {running_loss / num_samples:g} | acc {running_corrects / num_samples:g} '
-                    f'|| test loss {val_loss:g} | acc {val_corrects:g}'
+                pbar.set_description(
+                    f'[epoch {epoch:d}] [Training step {batch_num:d}] '
+                    f'train loss {running_loss / num_samples:2.5g} | acc {running_corrects / num_samples:2.5g} '
+                    f'|| test loss {val_loss:2.5g} | acc {val_corrects:2.5g}'
                 )
+                num_samples = 0
                 running_loss = 0.
-                running_corrects = 0.
+                running_corrects = 0
 
         train_loss /= trainer.train_data_size
         train_corrects /= trainer.train_data_size
 
-        t.set_description('[epoch {:d}] train loss {:g} | acc {:g} || test loss {:g} | acc {:g}'
-                          .format(epoch, train_loss, train_corrects, val_loss, val_corrects))
+        pbar.set_description(
+            f'[epoch {epoch:d}] [Evaluating] '
+            f'train loss {train_loss:2.5g} | acc {train_corrects:2.5g} '
+            f'|| test loss --- | acc ---'
+        )
 
         trainer.net.eval()
-        val_loss, val_corrects = 0., 0.
+        val_loss, val_corrects = 0., 0
 
         for samples in trainer.test_data_loader:
             loss, corrects = trainer.evaluate_one_batch(samples)
             val_loss += loss
             val_corrects += corrects
+            pbar.update(1)
 
         val_loss /= trainer.test_data_size
         val_corrects /= trainer.test_data_size
 
-        t.set_description('[epoch {:d}] train loss {:g} | acc {:g} || test loss {:g} | acc {:g}'
-                          .format(epoch, train_loss, train_corrects, val_loss, val_corrects))
+        pbar.set_description(
+            f'[epoch {epoch:d}] [Saving Model] '
+            f'train loss {train_loss:2.5g} | acc {train_corrects:2.5g} '
+            f'|| test loss {val_loss:2.5g} | acc {val_corrects:2.5g}'
+        )
 
         # process statistics
         train_losses[epoch], train_accs[epoch] = train_loss, train_corrects
@@ -135,6 +150,11 @@ def train_net(
 
         # save model
         if val_loss < best_val_loss:
+            pbar.set_description(
+                f'[epoch {epoch:d}] [Done] '
+                f'train loss {train_loss:2.5g} | acc {train_corrects:2.5g} '
+                f'|| test loss {val_loss:2.5g} | acc {val_corrects:2.5g}'
+            )
             best_val_loss = val_loss
             torch.save(net.state_dict(), save_path)
 
@@ -152,6 +172,7 @@ class CIFAR10Trainer(Trainer):
             test_data_loader: torch.utils.data.DataLoader,
             train_data_size: int = None,
             test_data_size: int = None,
+            device: torch.device = None,
     ):
         """
         Args:
@@ -166,7 +187,7 @@ class CIFAR10Trainer(Trainer):
         """
         super().__init__(
             net, optimizer=optimizer, train_data_loader=train_data_loader, test_data_loader=test_data_loader,
-            train_data_size=train_data_size, test_data_size=test_data_size,
+            train_data_size=train_data_size, test_data_size=test_data_size, device=device,
         )
 
     def train_one_batch(self, samples):
@@ -180,28 +201,32 @@ class CIFAR10Trainer(Trainer):
             Tuple of training loss and number of correctly predicted examples
         """
         inputs, labels = samples
-        inputs.to(self.device)
-        labels.to(self.device)
+        inputs = inputs.to(self.device)
+        labels = labels.to(self.device)
 
         # forward + backward + optimize
         outputs = self.net(inputs)
-        loss = self.criterion(outputs, labels).item()
+        loss = self.criterion(outputs, labels)
         loss.backward()
         self.optimizer.step()
         predicted_labels = torch.argmax(outputs, dim=1)
         corrects = torch.sum(predicted_labels == labels)
 
-        return loss, corrects
+        return loss.item(), corrects.item()
 
     def evaluate_one_batch(self, samples):
         inputs, labels = samples
-        inputs.to(self.device)
-        labels.to(self.device)
+        inputs = inputs.to(self.device)
+        labels = labels.to(self.device)
 
         # forward
         outputs = self.net(inputs)
-        loss = self.criterion(outputs, labels).item()
+        loss = self.criterion(outputs, labels)
         predicted_labels = torch.argmax(outputs, dim=1)
         corrects = torch.sum(predicted_labels == labels)
 
-        return loss, corrects
+        return loss.item(), corrects.item()
+
+    def get_sample_size(self, samples):
+        _, labels = samples
+        return len(labels)
