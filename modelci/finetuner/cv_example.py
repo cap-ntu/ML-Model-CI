@@ -28,9 +28,13 @@ test_set = torchvision.datasets.CIFAR10(root='./data', train=False, download=Tru
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=128, shuffle=False, num_workers=2)
 
 net = torchvision.models.resnet18(pretrained=True)
+for param in net.parameters():
+    param.requires_grad = False
+
 num_ftrs = net.fc.in_features
 net.fc = nn.Linear(num_ftrs, 10)
 net = net.to('cuda')
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 trainer = CIFAR10Trainer(net=net, optimizer=optimizer, train_data_loader=train_loader, test_data_loader=test_loader)
+
 print(train_net(net, 25, trainer=trainer, save_name='resnet18_ft', log_batch_num=4))
