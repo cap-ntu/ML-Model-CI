@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-Before getting start with the web application, you need to connect with your backend APIs (MLModelCI services). Currently, the address is hardcoded as http://localhost:5000. If you want to connect to your own MLModelCI service, you should modify the address before starting.
+Before getting start with the web application, you need to connect with your backend APIs (MLModelCI services). The default address is http://localhost:8000/api/v1/model. If you want to connect to your own MLModelCI service, you should modify the address before starting in `src/config.ts`.
 
 ```bash
 npm install
