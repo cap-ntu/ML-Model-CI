@@ -140,7 +140,7 @@ def register_model(
             version=version)[0]
 
         # profile registered model
-        if profile and engine != Engine.PYT:
+        if profile and engine != Engine.PYTORCH:
             file = tf.keras.utils.get_file(
                 "grace_hopper.jpg",
                 "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
