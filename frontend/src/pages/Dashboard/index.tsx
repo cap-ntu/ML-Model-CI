@@ -6,11 +6,6 @@ import reqwest from 'reqwest';
 import './index.css';
 
 const { Search } = Input;
-const renderTime = value => {
-  console.log(value)
-  return 'value';
-};
-
 const columns = [
   {
     title: 'Model Name',
