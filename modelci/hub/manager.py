@@ -56,6 +56,7 @@ def register_model(
         inputs (Iterable[IOShape]): Model input tensors.
         outputs (Iterable[IOShape]): Model output tensors.
         model_input: specify sample model input data
+        TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
@@ -139,7 +140,7 @@ def register_model(
             version=version)[0]
 
         # profile registered model
-        if profile:
+        if profile and engine != Engine.PYTORCH:
             file = tf.keras.utils.get_file(
                 "grace_hopper.jpg",
                 "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
@@ -258,15 +259,23 @@ def _generate_model_family(
     tfs_dir = generate_this_path(engine=Engine.TFS)
     onnx_dir = generate_this_path(engine=Engine.ONNX)
     trt_dir = generate_this_path(engine=Engine.TRT)
+    pytorch_dir = generate_this_path(engine=Engine.PYTORCH)
 
     if framework == Framework.PYTORCH:
-        # to TorchScript
-        TorchScriptConverter.from_torch_module(model, torchscript_dir)
-        generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
+        # save original pytorch model
+        import torch
+        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
+        save_path_with_ext = pytorch_dir.with_suffix('.pth')
+        torch.save(model, str(save_path_with_ext))
+        generated_dir_list.append(pytorch_dir.with_suffix('.pth'))
 
-        # to ONNX, TODO(lym): batch cache, input shape
-        ONNXConverter.from_torch_module(model, onnx_dir, inputs, outputs, model_input, optimize=False)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+        # to TorchScript
+        if TorchScriptConverter.from_torch_module(model, torchscript_dir):
+            generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
+
+        # to ONNX, TODO(lym): batch cache, input shape, opset version
+        if ONNXConverter.from_torch_module(model, onnx_dir, inputs, outputs, model_input, optimize=False):
+            generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
         # TRTConverter.from_onnx(

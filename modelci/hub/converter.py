@@ -114,7 +114,6 @@ class PyTorchConverter(object):
         extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
         extra_config_.update({
             hb_constants.ONNX_TARGET_OPSET: opset,
-            hb_op_constants.ONNX_INPUTS: inputs,
             hb_op_constants.N_FEATURES: None
         })
         extra_config_.update(extra_config)
@@ -122,7 +121,6 @@ class PyTorchConverter(object):
         return _convert_onnxml(model, 'torch', test_input=None, device=device, extra_config=extra_config_)
 
 __all__ = ['TorchScriptConverter', 'TFSConverter', 'ONNXConverter', 'TRTConverter', 'to_tvm']
-
 
 class TorchScriptConverter(object):
     @staticmethod
@@ -134,11 +132,16 @@ class TorchScriptConverter(object):
                 logger.info('Use cached model')
                 return True
         model.eval()
-        traced = torch.jit.script(model)
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-        traced.save(str(save_path.with_suffix('.zip')))
-
-        return True
+        try:
+            traced = torch.jit.script(model)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            traced.save(str(save_path.with_suffix('.zip')))
+            logger.info('Torchscript format converted successfully')
+            return True
+        except:
+            #TODO catch different types of error
+            logger.warning("This model is not supported as torchscript format")
+            return False
 
 
 class ONNXConverter(object):
@@ -243,25 +246,31 @@ class ONNXConverter(object):
             output_names.append(output_.name)
         if model_input is None:
             model_input = tuple(dummy_tensors)
-        torch.onnx.export(
-            model,  # model being run
-            model_input,  # model input (or a tuple for multiple inputs)
-            save_path_with_ext,  # where to save the model (can be a file or file-like object)
-            export_params=True,  # store the trained parameter weights inside the model file
-            opset_version=opset,  # the ONNX version to export the model to
-            do_constant_folding=True,  # whether to execute constant folding for optimization
-            input_names=input_names,  # the model's input names
-            output_names=output_names,  # the model's output names
-            keep_initializers_as_inputs=True,
-            **export_kwargs
-        )
+        try:
+            torch.onnx.export(
+                model,  # model being run
+                model_input,  # model input (or a tuple for multiple inputs)
+                save_path_with_ext,  # where to save the model (can be a file or file-like object)
+                export_params=True,  # store the trained parameter weights inside the model file
+                opset_version=opset,  # the ONNX version to export the model to
+                do_constant_folding=True,  # whether to execute constant folding for optimization
+                input_names=input_names,  # the model's input names
+                output_names=output_names,  # the model's output names
+                keep_initializers_as_inputs=True,
+                **export_kwargs
+            )
 
-        if optimize:
-            onnx_model = onnx.load(str(save_path_with_ext))
-            network = ONNXConverter.optim_onnx(onnx_model)
-            onnx.save(network, str(save_path_with_ext))
+            if optimize:
+                onnx_model = onnx.load(str(save_path_with_ext))
+                network = ONNXConverter.optim_onnx(onnx_model)
+                onnx.save(network, str(save_path_with_ext))
 
-        return True
+            logger.info('ONNX format converted successfully')
+            return True
+        except:
+            #TODO catch different types of error
+            logger.warning("This model is not supported as ONNX format")
+            return False
 
     @staticmethod
     @_Wrapper.save
