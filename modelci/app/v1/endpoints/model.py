@@ -10,20 +10,22 @@ from typing import List
 from fastapi import APIRouter
 
 from modelci.persistence.service import ModelService
-from modelci.types.bo import Framework, Engine
-from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_
+from modelci.types.bo import Framework, Engine, Task
+from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_, Task as Task_, Metric as Metric_
 
 router = APIRouter()
 
 
 @router.get('/', response_model=List[ModelListOut])
-def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, version: int = None):
+def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, task: Task_ = None, version: int = None):
     if framework is not None:
         framework = Framework[framework.value.upper()]
     if engine is not None:
         engine = Engine[engine.value.upper()]
+    if task is not None:
+        engine = Task[task.value.upper()]
 
-    models = ModelService.get_models(name=name, framework=framework, engine=engine, version=version)
+    models = ModelService.get_models(name=name, framework=framework, engine=engine, task=task, version=version)
     return list(map(ModelListOut.from_bo, models))
 
 

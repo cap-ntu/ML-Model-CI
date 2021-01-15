@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Table, Card, Divider, Input, Descriptions, Tag } from 'antd';
 import axios from 'axios';
+import { config } from 'ice';
 import reqwest from 'reqwest';
 import './index.css';
 
@@ -19,16 +20,30 @@ const columns = [
     className: 'column',
   },
   {
+    title: 'Engine',
+    dataIndex: 'engine',
+    key: 'engine',
+    className: 'column',
+  },
+  {
     title: 'Pre-trained Dataset',
     dataIndex: 'dataset',
     key: 'dataset',
     className: 'column',
   },
   {
-    title: 'Accuracy',
-    dataIndex: 'acc',
-    key: 'acc',
+    title: 'Metric',
+    dataIndex: 'metric',
+    key: 'metric',
     className: 'column',
+    render: (text) =>  Object.keys(text)[0]
+  },
+  {
+    title: 'Score',
+    dataIndex: 'metric',
+    key: 'score',
+    className: 'column',
+    render: (text) =>  text[Object.keys(text)[0]]
   },
   {
     title: 'Task',
@@ -100,7 +115,7 @@ export default class Dashboard extends React.Component {
   fetch = (params = {}) => {
     this.setState({ loading: true });
     reqwest({
-      url: 'http://localhost:5000',
+      url: config.dataURL,
       method: 'get',
       type: 'json',
       data: getRandomuserParams(params),
@@ -117,7 +132,7 @@ export default class Dashboard extends React.Component {
   };
 
   loadAllModels = () => {
-    const targetUrl = 'http://localhost:5000';
+    const targetUrl = config.dataURL;
     axios
       .get(targetUrl)
       .then((response) => {
@@ -335,7 +350,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.profile_result.dynamic_results[0].device_name}
+                      {record.profile_result ? record.profile_result.dynamic_results[0].device_name : ''}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -359,7 +374,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.profile_result.dynamic_results[0].batch}
+                      {record.profile_result ? record.profile_result.dynamic_results[0].batch : ''}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -383,7 +398,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {(record.profile_result.dynamic_results[0].memory.utilization * 100).toFixed(2)} %
+                      {record.profile_result ? (record.profile_result.dynamic_results[0].memory.utilization * 100).toFixed(2): ''} %
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -407,7 +422,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {(record.profile_result.dynamic_results[0].latency.preprocess_latency.avg * 1000).toFixed(2)} ms
+                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.preprocess_latency.avg * 1000).toFixed(2) : ''} ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -432,7 +447,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {(record.profile_result.dynamic_results[0].throughput.inference_throughput).toFixed(2)} req/sec
+                      {record.profile_result ? (record.profile_result.dynamic_results[0].throughput.inference_throughput).toFixed(2): ''} req/sec
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -456,7 +471,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {(record.profile_result.dynamic_results[0].latency.inference_latency.p50 * 1000).toFixed(2)} ms
+                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p50 * 1000).toFixed(2): ''} ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -480,7 +495,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {(record.profile_result.dynamic_results[0].latency.inference_latency.p95 * 1000).toFixed(2)} ms
+                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p95 * 1000).toFixed(2): ''} ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -504,7 +519,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {(record.profile_result.dynamic_results[0].latency.inference_latency.p99 * 1000).toFixed(2)} ms
+                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p99 * 1000).toFixed(2): ''} ms
                     </Tag>
                   </Descriptions.Item>
                 </Descriptions>
