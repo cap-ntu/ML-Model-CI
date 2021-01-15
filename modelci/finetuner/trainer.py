@@ -181,6 +181,10 @@ def train_net(
 
 
 class CIFAR10Trainer(Trainer):
+    """
+    TODO: remove, dataset name should be parameter
+    """
+
     def __init__(
             self,
             net: nn.Module,
