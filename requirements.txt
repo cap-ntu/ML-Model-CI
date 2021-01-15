@@ -30,6 +30,7 @@ torchviz==0.0.1
 tensorflow-serving-api>=2.1.0
 toolz==0.10.0
 torch>=1.5.0
+tqdm==4.55.1
 uvicorn>=0.11.5
 xgboost==1.2.0
 Jinja2==2.11.2

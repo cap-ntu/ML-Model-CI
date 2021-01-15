@@ -11,6 +11,7 @@ from typing import Tuple
 
 import numpy as np
 import torch
+import torch.optim as optim
 import torch.utils.data
 from torch import nn
 from tqdm import tqdm
@@ -26,7 +27,7 @@ class Trainer(abc.ABC):
     def __init__(
             self,
             net: nn.Module,
-            optimizer: torch.optim.optimizer.Optimizer,
+            optimizer: optim.Optimizer,  # noqa
             train_data_loader: torch.utils.data.DataLoader,
             test_data_loader: torch.utils.data.DataLoader,
             train_data_size: int = None,
@@ -188,7 +189,7 @@ class CIFAR10Trainer(Trainer):
     def __init__(
             self,
             net: nn.Module,
-            optimizer: torch.optim.optimizer.Optimizer,
+            optimizer: torch.optim.Optimizer,  # noqa
             train_data_loader: torch.utils.data.DataLoader,
             test_data_loader: torch.utils.data.DataLoader,
             train_data_size: int = None,
@@ -201,7 +202,7 @@ class CIFAR10Trainer(Trainer):
             net (nn.Module): PyTorch model.
             train_data_loader (torch.utils.data.DataLoader): Data loader for training.
             test_data_loader (torch.utils.data.DataLoader): Data loader for evaluating.
-            optimizer (torch.optim.optimizer.Optimizer): Optimizer.
+            optimizer (torch.optim.Optimizer): Optimizer.
             train_data_size (int): Size of training data. Optional. Needed when using a sampler to split
                 training and validation data.
             test_data_size (int): Size of evaluation data. Optional. Needed when using a sampler to split

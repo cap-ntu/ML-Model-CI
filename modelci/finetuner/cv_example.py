@@ -12,7 +12,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
 import torchvision
-from torch.optim import lr_scheduler
 from torchvision import transforms
 
 from modelci.finetuner.trainer import CIFAR10Trainer, train_net
@@ -29,14 +28,19 @@ test_set = torchvision.datasets.CIFAR10(root='./data', train=False, download=Tru
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=128, shuffle=False, num_workers=2)
 
 net = torchvision.models.resnet18(pretrained=True)
+num_ftrs = net.fc.in_features
+net.fc = nn.Linear(num_ftrs, 10)
+
 for param in net.parameters():
     param.requires_grad = False
 
-num_ftrs = net.fc.in_features
-net.fc = nn.Linear(num_ftrs, 10)
+for param in net.fc.parameters():
+    param.requires_grad = True
+
+
 net = net.to('cuda')
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 trainer = CIFAR10Trainer(net=net, optimizer=optimizer, train_data_loader=train_loader, test_data_loader=test_loader)
 
 print(train_net(net, 25, trainer=trainer, save_name='resnet18_ft', log_batch_num=4))
