@@ -5,7 +5,6 @@ channels:
   - conda-forge
 dependencies:
   - click=7.1.2
-  - cpuonly=1.0
   - docker-py>=4.2.0
   - fastapi<=0.61.2,>=0.58.0
   - gputil=1.4.0
@@ -22,15 +21,13 @@ dependencies:
   - pytest>=5.4.1
   - pytest-env=0.6.2
   - python=3.7.7
-  - pytorch=1.5.0
   - pyyaml=5.3.1
   - requests>=2.23.0
   - rich=9.1.0
   - setuptools>=46.4.0
   - scikit-learn=0.23.2
   - starlette<=0.13.6,>=0.13.4
-  - tensorflow>=2.1.0
-  - torchvision=0.6.0
+  - tensorflow-gpu>=2.1.0
   - uvicorn>=0.11.5
   - xgboost=1.2.0
   - pip:
