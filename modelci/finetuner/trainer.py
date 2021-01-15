@@ -11,10 +11,9 @@ from typing import Tuple
 
 import numpy as np
 import torch
-from tqdm import tqdm
 import torch.utils.data
 from torch import nn
-from torch.optim.optimizer import Optimizer
+from tqdm import tqdm
 
 from modelci.finetuner import OUTPUT_DIR
 
@@ -27,7 +26,7 @@ class Trainer(abc.ABC):
     def __init__(
             self,
             net: nn.Module,
-            optimizer: Optimizer,
+            optimizer: torch.optim.optimizer.Optimizer,
             train_data_loader: torch.utils.data.DataLoader,
             test_data_loader: torch.utils.data.DataLoader,
             train_data_size: int = None,
@@ -42,6 +41,18 @@ class Trainer(abc.ABC):
         self.test_data_size = test_data_size or len(test_data_loader.dataset)
         self.criterion = nn.CrossEntropyLoss()
         self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    def before_epoch_start(self):
+        pass
+
+    def after_epoch_finish(self):
+        pass
+
+    def before_batch_start(self):
+        pass
+
+    def after_batch_finish(self):
+        pass
 
     @abc.abstractmethod
     def train_one_batch(self, samples) -> Tuple[np.ndarray, np.ndarray]:
@@ -95,11 +106,15 @@ def train_net(
         num_samples = 0
         train_loss, train_corrects = 0., 0
         running_loss, running_corrects = 0., 0
+        trainer.before_epoch_start()
 
         for batch_num, samples in enumerate(trainer.train_data_loader):
-            trainer.optimizer.zero_grad()
             num_samples += trainer.get_sample_size(samples)
-            loss, corrects = trainer.train_one_batch(samples)
+            trainer.optimizer.zero_grad()
+            trainer.before_batch_start()
+            with torch.set_grad_enabled(True):
+                loss, corrects = trainer.train_one_batch(samples)
+            trainer.after_batch_finish()
             running_loss += loss
             train_loss += loss
             running_corrects += corrects
@@ -158,6 +173,8 @@ def train_net(
             best_val_loss = val_loss
             torch.save(net.state_dict(), save_path)
 
+        trainer.after_epoch_finish()
+
     stat = {'train_loss': train_losses, 'train_acc': train_accs, 'test_loss': val_losses, 'test_acc': val_accs}
 
     return {'stat': stat, 'info': {'save_name': save_path}}
@@ -167,11 +184,12 @@ class CIFAR10Trainer(Trainer):
     def __init__(
             self,
             net: nn.Module,
-            optimizer: Optimizer,
+            optimizer: torch.optim.optimizer.Optimizer,
             train_data_loader: torch.utils.data.DataLoader,
             test_data_loader: torch.utils.data.DataLoader,
             train_data_size: int = None,
             test_data_size: int = None,
+            scheduler: torch.optim.lr_scheduler._LRScheduler = None,  # noqa
             device: torch.device = None,
     ):
         """
@@ -189,9 +207,13 @@ class CIFAR10Trainer(Trainer):
             net, optimizer=optimizer, train_data_loader=train_data_loader, test_data_loader=test_data_loader,
             train_data_size=train_data_size, test_data_size=test_data_size, device=device,
         )
+        self.scheduler = scheduler
+
+    def after_batch_finish(self):
+        if self.scheduler:
+            self.scheduler.step()
 
     def train_one_batch(self, samples):
-
         """Train one epoch.
 
         Args:
