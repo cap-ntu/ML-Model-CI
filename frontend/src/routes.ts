@@ -3,7 +3,7 @@ import Dashboard from '@/pages/Dashboard';
 import About from '@/pages/About';
 import Setting from '@/pages/Setting';
 import User from '@/pages/User';
-import Visualization from '@/pages/Visualization';
+import Visualizer from '@/pages/Visualizer';
 
 const routerConfig = [
   {
@@ -28,8 +28,8 @@ const routerConfig = [
         component: Setting,
       },
       {
-        path: '/visualization/:id',
-        component: Visualization,
+        path: '/visualizer/:id',
+        component: Visualizer,
       },
     ],
   },

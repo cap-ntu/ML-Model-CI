@@ -73,7 +73,7 @@ const columns = [
         { record.engine=="PYTORCH" || record.engine=="TFS" ? 
         (
         <Button type="primary" size="large">
-          <Link to={'/visualization/'+text}>Finetune</Link>
+          <Link to={'/visualizer/'+text}>Finetune</Link>
         </Button>
         ) : "" }
       </div>

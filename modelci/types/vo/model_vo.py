@@ -58,7 +58,7 @@ class Engine(CaseInsensitiveEnum):
     ONNX = 'ONNX'
     TRT = 'TRT'
     TVM = 'TVM'
-    CUSTOMIZED = 'Customized'
+    CUSTOMIZED = 'CUSTOMIZED'
     PYTORCH = 'PYTORCH'
 
 

@@ -31,7 +31,7 @@ const onFinishFailed = (errorInfo: any) => {
 };
 
 
-export default class Visualization extends React.Component {
+export default class Visualizer extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -42,10 +42,9 @@ export default class Visualization extends React.Component {
 
 	componentDidMount() {
 		this.setState({ isFetching: true });
-		const targetUrl = config.graphURL;
+		const targetUrl = config.visualizerURL;
 		axios.get(`${targetUrl}/${this.props.match.params.id}`)
 			.then(res => {
-				console.log(res.data.dot);
 				this.setState({ data: res.data.dot });
 			})
 		}
