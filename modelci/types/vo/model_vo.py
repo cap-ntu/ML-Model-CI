@@ -59,6 +59,7 @@ class Engine(CaseInsensitiveEnum):
     TRT = 'TRT'
     TVM = 'TVM'
     CUSTOMIZED = 'Customized'
+    PYTORCH = 'PYTORCH'
 
 
 class Status(CaseInsensitiveEnum):
