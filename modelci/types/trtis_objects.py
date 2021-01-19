@@ -566,7 +566,7 @@ class ModelOptimizationPolicy(betterproto.Message):
     optimized and prioritized by the backend framework when@@   it is loaded.@@
     """
 
-    # @@  .. cpp:var:: Graph graph.py@@@@     The graph.py optimization setting for the
+    # @@  .. cpp:var:: Graph graph@@@@     The graph optimization setting for the
     # model. Optional.@@
     graph: "ModelOptimizationPolicyGraph" = betterproto.message_field(1)
     # @@  .. cpp:var:: ModelPriority priority@@@@     The priority setting for
@@ -585,7 +585,7 @@ class ModelOptimizationPolicy(betterproto.Message):
 @dataclass
 class ModelOptimizationPolicyGraph(betterproto.Message):
     """
-    @@@@  .. cpp:var:: message Graph@@@@     Enable generic graph.py optimization
+    @@@@  .. cpp:var:: message Graph@@@@     Enable generic graph optimization
     of the model. If not specified@@     the framework's default level of
     optimization is used. Currently@@     only supported for TensorFlow
     graphdef and savedmodel models and@@     causes XLA to be enabled/disabled
