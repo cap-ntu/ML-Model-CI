@@ -1,36 +1,37 @@
 name: modelci
 channels:
   - conda-forge
-  - pytorch
   - defaults
 dependencies:
   - _libgcc_mutex=0.1
   - _py-xgboost-mutex=2.0
-  - _pytorch_select=0.1
-  - _tflow_select=2.3.0
+  - _tflow_select=2.1.0
   - absl-py=0.11.0
   - aiofiles=0.6.0
-  - aiohttp=3.6.3
+  - appdirs=1.4.4
+  - asn1crypto=1.4.0
   - astor=0.8.1
-  - async-timeout=3.0.1
-  - attrs=20.2.0
+  - attrs=20.3.0
   - blas=1.0
   - blinker=1.4
   - brotlipy=0.7.0
   - bzip2=1.0.8
-  - c-ares=1.16.1
-  - ca-certificates=2020.10.14
-  - cachetools=4.1.1
+  - c-ares=1.17.1
+  - ca-certificates=2020.12.8
+  - cachetools=4.2.0
   - cairo=1.14.12
-  - certifi=2020.6.20
-  - cffi=1.14.3
-  - chardet=3.0.4
+  - certifi=2020.12.5
+  - cffi=1.14.4
+  - chardet=4.0.0
   - click=7.1.2
   - colorama=0.4.4
   - commonmark=0.9.1
-  - cpuonly=1.0
-  - cryptography=3.1.1
-  - fastapi=0.61.1
+  - cryptography=3.3.1
+  - cudnn=7.6.5
+  - cupti=10.1.168
+  - docker-py=4.4.1
+  - docker-pycreds=0.4.0
+  - fastapi=0.61.2
   - ffmpeg=4.0
   - fontconfig=2.13.0
   - freeglut=3.0.0
@@ -38,7 +39,7 @@ dependencies:
   - future=0.18.2
   - gast=0.2.2
   - glib=2.66.1
-  - google-auth=1.23.0
+  - google-auth=1.21.3
   - google-auth-oauthlib=0.4.2
   - google-pasta=0.2.0
   - gputil=1.4.0
@@ -52,7 +53,7 @@ dependencies:
   - harfbuzz=1.8.8
   - hdf5=1.10.2
   - httptools=0.1.1
-  - humanize=3.1.0
+  - humanize=3.2.0
   - icu=58.2
   - idna=2.10
   - importlib-metadata=2.0.0
@@ -62,7 +63,7 @@ dependencies:
   - itsdangerous=1.1.0
   - jasper=2.0.14
   - jinja2=2.11.2
-  - joblib=0.17.0
+  - joblib=1.0.0
   - jpeg=9b
   - keras-applications=1.0.8
   - keras-preprocessing=1.1.0
@@ -86,62 +87,61 @@ dependencies:
   - libxml2=2.9.10
   - lightgbm=2.3.0
   - lz4-c=1.9.2
-  - markdown=3.3.2
+  - markdown=3.3.3
   - markupsafe=1.1.1
   - mkl=2019.4
   - mkl-service=2.3.0
   - mkl_fft=1.2.0
   - mkl_random=1.1.0
-  - mongoengine=0.19.1
-  - more-itertools=8.5.0
-  - multidict=4.7.6
+  - mongoengine=0.22.1
+  - more-itertools=8.6.0
   - ncurses=6.2
-  - ninja=1.10.1
-  - numpy=1.19.2
-  - numpy-base=1.19.2
+  - ninja=1.10.2
+  - numpy=1.18.5
+  - numpy-base=1.18.5
   - oauthlib=3.1.0
   - olefile=0.46
   - onnx=1.6.0
   - opencv=3.4.2
-  - openssl=1.1.1h
+  - openssl=1.1.1i
   - opt_einsum=3.1.0
-  - packaging=20.4
+  - packaging=20.8
   - pcre=8.44
-  - pillow=8.0.1
+  - pillow=8.1.0
   - pip=20.2.4
   - pixman=0.40.0
   - pluggy=0.13.1
   - promise=2.3
   - protobuf=3.8.0
-  - py=1.9.0
+  - py=1.10.0
   - py-cpuinfo=7.0.0
   - py-opencv=3.4.2
   - py-xgboost=1.2.0
   - pyasn1=0.4.8
   - pyasn1-modules=0.2.8
   - pycparser=2.20
-  - pydantic=1.7.1
-  - pygments=2.7.2
+  - pydantic=1.7.3
+  - pygments=2.7.4
   - pyjwt=1.7.1
-  - pymongo=3.11.0
-  - pyopenssl=19.1.0
+  - pymongo=3.11.2
+  - pyopenssl=20.0.1
   - pyparsing=2.4.7
   - pysocks=1.7.1
-  - pytest=6.1.2
+  - pytest=6.2.1
   - pytest-env=0.6.2
   - python=3.7.7
   - python-dotenv=0.15.0
   - python-multipart=0.0.5
   - python_abi=3.7
-  - pytorch=1.5.0
   - pyyaml=5.3.1
   - readline=8.0
-  - requests=2.24.0
+  - requests=2.25.1
   - requests-oauthlib=1.3.0
   - rich=9.1.0
-  - rsa=4.6
+  - rsa=4.7
   - scikit-learn=0.23.2
-  - setuptools=50.3.0
+  - scipy=1.5.2
+  - setuptools=51.1.2
   - six=1.15.0
   - sqlite=3.33.0
   - starlette=0.13.6
@@ -150,45 +150,45 @@ dependencies:
   - tensorflow=2.1.0
   - tensorflow-base=2.1.0
   - tensorflow-estimator=2.1.0
+  - tensorflow-gpu=2.1.0
   - termcolor=1.1.0
   - threadpoolctl=2.1.0
   - tk=8.6.10
   - toml=0.10.1
-  - torchvision=0.6.0
+  - tqdm=4.55.1
   - typing-extensions=3.7.4.3
   - typing_extensions=3.7.4.3
   - ujson=4.0.1
-  - urllib3=1.25.11
-  - uvicorn=0.12.2
+  - urllib3=1.26.2
+  - uvicorn=0.13.3
   - uvloop=0.14.0
   - watchgod=0.6
+  - websocket-client=0.57.0
   - websockets=8.1
   - werkzeug=1.0.1
-  - wheel=0.35.1
+  - wheel=0.36.2
   - wrapt=1.12.1
   - xgboost=1.2.0
   - xz=5.2.5
   - yaml=0.2.5
-  - yarl=1.6.2
   - zipp=3.4.0
   - zlib=1.2.11
   - zstd=1.4.5
   - pip:
-      - betterproto==1.2.5
-      - fire==0.3.1
-      - grpclib==0.4.1
-      - h2==4.0.0
-      - hpack==4.0.0
-      - hummingbird-ml==0.1.0
-      - hyperframe==6.0.0
-      - keras2onnx==1.7.0
-      - onnxconverter-common==1.7.0
-      - onnxmltools==1.7.0
-      - onnxruntime==1.2.0
-      - psutil==5.7.3
-      - scipy==1.4.1
-      - skl2onnx==1.7.0
-      - stringcase==1.2.0
-      - tensorboard==2.1.1
-      - tensorflow-serving-api==2.1.0
-      - torchviz==0.0.1
+    - betterproto==1.2.5
+    - dill==0.3.3
+    - fire==0.3.1
+    - grpclib==0.4.1
+    - h2==4.0.0
+    - hpack==4.0.0
+    - hyperframe==6.0.0
+    - keras2onnx==1.7.0
+    - multidict==5.1.0
+    - onnxconverter-common==1.7.0
+    - onnxmltools==1.7.0
+    - onnxruntime==1.2.0
+    - psutil==5.8.0
+    - skl2onnx==1.7.0
+    - stringcase==1.2.0
+    - tensorboard==2.1.1
+    - tensorflow-serving-api==2.1.0
