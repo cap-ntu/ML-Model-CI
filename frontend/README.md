@@ -11,7 +11,10 @@ npm start
 
 ## Screentshot 
 
+### Dashboard
+
 ![](https://i.loli.net/2020/05/12/WL2tQlf3ZpjrBPI.png)
 
+### Model visualization
 
-
+![](screenshot/visualizer.png)

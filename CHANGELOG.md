@@ -2,6 +2,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## \[Unreleased\] - 2021-01-20
+
+### Added
+- PyTorch model visualization
+
+
 ## \[Unreleased\] - 2020-11-01
  
 Here we write upgrading notes for brands. It's a team effort to make them as
