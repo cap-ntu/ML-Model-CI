@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Table, Card, Divider, Input, Descriptions, Tag } from 'antd';
 import axios from 'axios';
-import { config } from 'ice';
+import { config, Link } from 'ice';
 import reqwest from 'reqwest';
 import './index.css';
 
@@ -59,10 +59,10 @@ const columns = [
   },
   {
     title: 'Action',
-    dataIndex: '',
-    key: 'x',
+    dataIndex: 'id',
+    key: 'id',
     className: 'column',
-    render: () => (
+    render: (text, record) => (
       <div>
         <Button type="primary" size="large">
           Edit
@@ -70,6 +70,12 @@ const columns = [
         <Button style={{ marginLeft: '3px' }} type="primary" size="large">
           Profile
         </Button>
+        { record.engine=="PYTORCH" || record.engine=="TFS" ? 
+        (
+        <Button type="primary" size="large">
+          <Link to={'/visualizer/'+text}>Finetune</Link>
+        </Button>
+        ) : "" }
       </div>
     ),
   },
@@ -115,7 +121,7 @@ export default class Dashboard extends React.Component {
   fetch = (params = {}) => {
     this.setState({ loading: true });
     reqwest({
-      url: config.dataURL,
+      url: config.modelURL,
       method: 'get',
       type: 'json',
       data: getRandomuserParams(params),
@@ -132,7 +138,7 @@ export default class Dashboard extends React.Component {
   };
 
   loadAllModels = () => {
-    const targetUrl = config.dataURL;
+    const targetUrl = config.modelURL;
     axios
       .get(targetUrl)
       .then((response) => {
@@ -257,7 +263,7 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.framework}
+                      {record.engine == 'PYTORCH' ? '' : record.framework}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -281,7 +287,15 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                      {record.engine}
+                    {(() => {
+                      switch (record.engine) {
+                          case "TorchScript": return "PyTorch JIT + FastAPI";
+                          case "ONNX":  return "ONNX Runtime + FastAPI";
+                          case "tensorrt": return "Triton Inference Server";
+                          case "TFS": return "TensorFlow Serving";
+                          default: return "FastAPI";
+                      }
+                    })()}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item

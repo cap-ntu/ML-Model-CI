@@ -3,6 +3,7 @@ import Dashboard from '@/pages/Dashboard';
 import About from '@/pages/About';
 import Setting from '@/pages/Setting';
 import User from '@/pages/User';
+import Visualizer from '@/pages/Visualizer';
 
 const routerConfig = [
   {
@@ -25,6 +26,10 @@ const routerConfig = [
       {
         path: '/setting',
         component: Setting,
+      },
+      {
+        path: '/visualizer/:id',
+        component: Visualizer,
       },
     ],
   },
