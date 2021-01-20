@@ -37,7 +37,7 @@ class TorchDataset(Dataset):
 
     def __getitem__(self, index: int) -> Tuple[object, int]:
         """
-
+        Reference: https://github.com/pytorch/vision/blob/master/torchvision/datasets/cifar.py#L105-L128
         Args:
             index (int): Index
         Returns:
