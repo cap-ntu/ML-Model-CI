@@ -37,4 +37,3 @@ dependencies:
       - onnxmltools>=1.6.0
       - onnxruntime==1.2.0
       - tensorflow-serving-api==2.1.0
-      - torchviz==0.0.1
