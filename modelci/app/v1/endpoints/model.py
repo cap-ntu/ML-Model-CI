@@ -33,3 +33,33 @@ def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine
 def get_model(*, id: str):  # noqa
     model = ModelService.get_model_by_id(id)
     return ModelDetailOut.from_bo(model)
+
+
+@router.get('/structure/{id}', response_model=...)
+async def get_model_structure(id: str):  # noqa
+    """
+    Get model structure as a DAG.
+
+    Arguments:
+        id (str): Model object ID.
+    """
+    model = ModelService.get_model_by_id(id)
+    ...
+    # return model DAG
+
+
+@router.patch('/structure/{id}', response_model=...)
+def update_model_structure_as_new(id: str, dry_run: bool = False):  # noqa
+    """
+    Update model structure and save as a new version.
+
+    Args:
+        id (str): Model object ID of the original structure.
+        dry_run (bool): Dry run update for validation.
+
+    Returns:
+
+    """
+    model = ModelService.get_model_by_id(id)
+    ...
+
