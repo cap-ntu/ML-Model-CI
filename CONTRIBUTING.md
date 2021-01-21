@@ -14,6 +14,7 @@ conda env create -f environment.yml
 
 # install PyTorch with specific CUDA version
 conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
+conda install pytorch-lightning -c conda-forge
 pip install hummingbird-ml==0.2.1 torchviz==0.0.1
 ```
 

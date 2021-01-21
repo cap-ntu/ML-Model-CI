@@ -18,6 +18,7 @@ py-cpuinfo>=6.0.0
 pydantic<2.0.0,>=0.32.2
 pytest>=5.4.1
 pytest-env==0.6.2
+pytorch-lighting==1.1.4
 PyYAML==5.3.1
 requests>=2.23.0
 rich==9.1.0
