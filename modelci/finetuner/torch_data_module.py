@@ -3,120 +3,94 @@
 """
 Author: Jiang Shanshan
 Email: univeroner@gmail.com
+Author: Li Yuanming
+Email: yli056@e.ntu.edu.sg
 Date: 2021/1/20
 
 """
 
-import numpy as np
+from typing import Any
+
 import pytorch_lightning as pl
 import torch
-from torch.utils.data import random_split, DataLoader, Dataset
-from PIL import Image
-from torchvision.transforms import Compose, transforms
-import tensorflow_datasets as tfds
-from typing import List, Optional, Tuple
+import torchvision
+from torch.utils.data import random_split, DataLoader
+from torchvision.transforms import transforms
 
-class TorchDataset(Dataset):
-    """Dataset with support of transforms for pytorch models.
-    """
+# transforms
+from modelci.finetuner import OUTPUT_DIR
 
-    def __init__(self, data: np.array, targets: List, transform: Optional[Compose] = None,
-                 target_transform: Optional[Compose] = None):
-        """
+input_size = (224, 224)
 
-        Args:
-            data (np.array): image data in numpy array format
-            targets (List): label data
-            transform (Optional[Compose]): data transform applied to image data
-            target_transform (Optional[Compose]):  data transform applied to label data
-        """
-        self.data = data
-        self.targets = targets
-        self.transform = transform
-        self.target_transform = target_transform
+train_transforms = transforms.Compose([
+    transforms.RandomResizedCrop(input_size),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
 
-    def __getitem__(self, index: int) -> Tuple[object, int]:
-        """
-        Reference: https://github.com/pytorch/vision/blob/master/torchvision/datasets/cifar.py#L105-L128
-        Args:
-            index (int): Index
-        Returns:
-            tuple: (Tuple[object, int]) where target is index of the target class.
-        """
-        img, target = self.data[index], self.targets[index]
-
-        # doing this so that it is consistent with all other datasets
-        # to return a PIL Image
-        img = Image.fromarray(img)
-
-        if self.transform is not None:
-            img = self.transform(img)
-
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return img, target
-
-    def __len__(self) -> int:
-        return len(self.data)
+test_transforms = transforms.Compose([
+    transforms.Resize(input_size),
+    transforms.CenterCrop(input_size),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
 
 
 class PyTorchDataModule(pl.LightningDataModule):
 
-    def __init__(self, dataset_name: str, input_size: Tuple[int, int]=(224,224), batch_size: int=8):
+    def __init__(self, dataset_name: str, batch_size: int = 8, num_workers=2, data_dir=OUTPUT_DIR):
         """
 
         Args:
-            dataset_name (str): name of dataset to be load, full lists of supported datasets: https://www.tensorflow.org/datasets/catalog/overview#all_datasets
-            input_size (Tuple[int, int]): input image size of target model
+            dataset_name (str): name of dataset to be load, full lists of supported datasets:
+                https://www.tensorflow.org/datasets/catalog/overview#all_datasets
             batch_size (int): samples per batch to load
         """
         super().__init__()
+        self.data_dir = data_dir
         self.dataset_name = dataset_name
-        self.input_size = input_size
         self.batch_size = batch_size
-        self.data_builder = tfds.builder(self.dataset_name)
+        self.num_workers = num_workers
 
-    def prepare_data(self):
-        self.data_builder.download_and_prepare()
+        if hasattr(torchvision.datasets, self.dataset_name):
+            self.dataset = getattr(torchvision.datasets, self.dataset_name)
+        else:
+            raise ValueError(f'torchvision.datasets does not have dataset name {self.dataset_name}')
+
+        self.train_dataset = None
+        self.val_dataset = None
+        self.test_dataset = None
+
+    def prepare_data(self, *args, **kwargs):
+        self.dataset(root=self.data_dir, train=True, download=True)
+        self.dataset(root=self.data_dir, train=False, download=True)
+
+    def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
+        for item in batch:
+            item.to(device)
 
     def setup(self, stage=None):
-        # transforms
-        train_transforms = transforms.Compose([
-                transforms.RandomResizedCrop(self.input_size),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-        test_transforms = transforms.Compose([
-                transforms.Resize(self.input_size),
-                transforms.CenterCrop(self.input_size),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
+
         # split dataset
         if stage == 'fit':
-            train_data = self.data_builder.as_dataset(split='train', batch_size=-1)
-            train_image = tfds.as_numpy(train_data)['image']
-            train_label = tfds.as_numpy(train_data)['label'].tolist()
-            train = TorchDataset(train_image, train_label, transform=train_transforms)
-            self.train, self.val = random_split(train, [int(len(train)*0.7), int(len(train)*0.3)], generator=torch.Generator().manual_seed(42))
+            full = self.dataset(root=self.data_dir, train=True, transform=train_transforms)
+            train_size = int(len(full) * 0.7)
+            test_size = len(full) - train_size
+            self.train_dataset, self.val_dataset = random_split(full, [train_size, test_size])
 
         if stage == 'test':
-            test_data = self.data_builder.as_dataset(split='test', batch_size=-1)
-            test_image = tfds.as_numpy(test_data)['image']
-            test_label = tfds.as_numpy(test_data)['label'].tolist()
-            self.test = TorchDataset(test_image, test_label, transform=test_transforms)
+            self.test_dataset = self.dataset(root=self.data_dir, train=False, transform=test_transforms)
 
     # return the dataloader for each split
     def train_dataloader(self):
-        train = DataLoader(self.train, batch_size=self.batch_size, num_workers=2)
+        train = DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
         return train
 
     def val_dataloader(self):
-        val = DataLoader(self.val, batch_size=self.batch_size, num_workers=2)
+        val = DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
         return val
 
     def test_dataloader(self):
-        test = DataLoader(self.test, batch_size=self.batch_size, num_workers=2)
+        test = DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
         return test

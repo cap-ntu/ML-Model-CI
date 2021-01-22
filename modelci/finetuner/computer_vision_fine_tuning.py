@@ -1,18 +1,11 @@
-# Reference : https://github.com/PyTorchLightning/pytorch-lightning/blob/master/pl_examples/domain_templates/computer_vision_fine_tuning.py
-# Copyright The PyTorch Lightning team.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""Computer vision example on Transfer Learning.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""
+Author: Li Yuanming
+Email: yli056@e.ntu.edu.sg
+Date: 2021/1/22
+
+Computer vision example on Transfer Learning.
 
 This computer vision example illustrates how one could fine-tune a pre-trained
 network (by default, a ResNet50 is used) using pytorch-lightning. For the sake
@@ -38,22 +31,26 @@ the classifier is trained with lr = 1e-4.
 
 Note:
     See: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
+
+Reference:
+    https://github.com/PyTorchLightning/pytorch-lightning/blob/master/pl_examples/domain_templates/computer_vision_fine_tuning.py
 """
 
 import argparse
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Generator, Optional, Union
+from typing import Generator, Optional, Callable
 
 import pytorch_lightning as pl
 import torch
-import torch.nn.functional as F
 from pl_examples import cli_lightning_logo
 from torch import optim
 from torch.nn import Module
-from torch.optim.lr_scheduler import MultiStepLR
+from torch.optim.lr_scheduler import StepLR
 from torch.optim.optimizer import Optimizer
-from torchvision import models
+
+from modelci.finetuner.torch_data_module import PyTorchDataModule
+from modelci.finetuner.trainer import PyTorchTrainer
 
 BN_TYPES = (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d, torch.nn.BatchNorm3d)
 
@@ -135,7 +132,7 @@ def filter_params(module: Module, train_bn: bool = True) -> Generator:
 
 
 def _unfreeze_and_add_param_group(
-    module: Module, optimizer: Optimizer, lr: Optional[float] = None, train_bn: bool = True
+        module: Module, optimizer: Optimizer, lr: Optional[float] = None, train_bn: bool = True
 ):
     """Unfreezes a module and adds its parameters to an optimizer."""
     _make_trainable(module)
@@ -152,106 +149,35 @@ def _unfreeze_and_add_param_group(
 
 
 class TransferLearningModel(pl.LightningModule):
-    """Transfer Learning with pre-trained ResNet50.
-
-    >>> with TemporaryDirectory(dir='.') as tmp_dir:
-    ...     TransferLearningModel(tmp_dir)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    TransferLearningModel(
-      (feature_extractor): Sequential(...)
-      (fc): Sequential(...)
-    )
-    """
+    """Transfer Learning with pre-trained ResNet50."""
 
     def __init__(
-        self,
-        dl_path: Union[str, Path],
-        backbone: str = "resnet50",
-        train_bn: bool = True,
-        milestones: tuple = (5, 10),
-        batch_size: int = 8,
-        lr: float = 1e-2,
-        lr_scheduler_gamma: float = 1e-1,
-        num_workers: int = 6,
-        **kwargs,
+            self,
+            net: torch.nn.Module,
+            loss: Callable,
+            batch_size: int = 8,
+            lr: float = 1e-2,
+            lr_scheduler_gamma: float = 1e-1,
+            step_size: int = 7,
+            num_workers: int = 6,
+            **kwargs,
     ) -> None:
-        """
-        Args:
-            dl_path: Path where the data will be downloaded
-        """
         super().__init__()
-        self.dl_path = dl_path
-        self.backbone = backbone
-        self.train_bn = train_bn
-        self.milestones = milestones
+        self.net = net
+        self.loss = loss
         self.batch_size = batch_size
         self.lr = lr
         self.lr_scheduler_gamma = lr_scheduler_gamma
+        self.step_size = step_size
         self.num_workers = num_workers
-
-        self.dl_path = dl_path
-        self.__build_model()
 
         self.train_acc = pl.metrics.Accuracy()
         self.valid_acc = pl.metrics.Accuracy()
         self.save_hyperparameters()
 
-    def __build_model(self):
-        """Define model layers & loss."""
-
-        # 1. Load pre-trained network:
-        model_func = getattr(models, self.backbone)
-        backbone = model_func(pretrained=True)
-
-        _layers = list(backbone.children())[:-1]
-        self.feature_extractor = torch.nn.Sequential(*_layers)
-        freeze(module=self.feature_extractor, train_bn=self.train_bn)
-
-        # 2. Classifier:
-        _fc_layers = [torch.nn.Linear(2048, 256), torch.nn.Linear(256, 32), torch.nn.Linear(32, 1)]
-        self.fc = torch.nn.Sequential(*_fc_layers)
-
-        # 3. Loss:
-        self.loss_func = F.binary_cross_entropy_with_logits
-
-    def forward(self, x):
-        """Forward pass. Returns logits."""
-
-        # 1. Feature extraction:
-        x = self.feature_extractor(x)
-        x = x.squeeze(-1).squeeze(-1)
-
-        # 2. Classifier (returns logits):
-        x = self.fc(x)
-
-        return x
-
-    def loss(self, logits, labels):
-        return self.loss_func(input=logits, target=labels)
-
-    def train(self, mode=True):
-        super().train(mode=mode)
-
-        epoch = self.current_epoch
-        if epoch < self.milestones[0] and mode:
-            # feature extractor is frozen (except for BatchNorm layers)
-            freeze(module=self.feature_extractor, train_bn=self.train_bn)
-
-        elif self.milestones[0] <= epoch < self.milestones[1] and mode:
-            # Unfreeze last two layers of the feature extractor
-            freeze(module=self.feature_extractor, n=-2, train_bn=self.train_bn)
-
     def on_epoch_start(self):
         """Use `on_epoch_start` to unfreeze layers progressively."""
         optimizer = self.trainer.optimizers[0]
-        if self.current_epoch == self.milestones[0]:
-            _unfreeze_and_add_param_group(
-                module=self.feature_extractor[-2:], optimizer=optimizer, train_bn=self.train_bn
-            )
-
-        elif self.current_epoch == self.milestones[1]:
-            _unfreeze_and_add_param_group(
-                module=self.feature_extractor[:-2], optimizer=optimizer, train_bn=self.train_bn
-            )
 
     def training_step(self, batch, batch_idx):
 
@@ -265,16 +191,16 @@ class TransferLearningModel(pl.LightningModule):
         accuracy = self.train_acc(y_logits, y_true)
 
         # 3. Outputs:
-        tqdm_dict = {"train_loss": train_loss}
+        tqdm_dict = {'train_loss': train_loss, 'train_acc': accuracy}
         self.log_dict(tqdm_dict, prog_bar=True)
         return {"loss": train_loss}
 
     def training_epoch_end(self, outputs):
         """Compute and log training loss and accuracy at the epoch level."""
 
-        train_loss_mean = torch.stack([output["loss"] for output in outputs]).mean()
+        train_loss_mean = torch.stack([output['loss'] for output in outputs]).mean()
         train_acc_mean = self.train_acc.compute()
-        self.log_dict({"train_loss": train_loss_mean, "train_acc": train_acc_mean, "step": self.current_epoch})
+        self.log_dict({'train_loss': train_loss_mean, 'train_acc': train_acc_mean, 'step': self.current_epoch})
 
     def validation_step(self, batch, batch_idx):
 
@@ -287,66 +213,23 @@ class TransferLearningModel(pl.LightningModule):
         val_loss = self.loss(y_logits, y_true)
         accuracy = self.valid_acc(y_logits, y_true)
 
-        return {"val_loss": val_loss}
+        return {"val_loss": val_loss, 'val_acc': accuracy}
 
     def validation_epoch_end(self, outputs):
         """Compute and log validation loss and accuracy at the epoch level."""
 
-        val_loss_mean = torch.stack([output["val_loss"] for output in outputs]).mean()
+        val_loss_mean = torch.stack([output['val_loss'] for output in outputs]).mean()
         train_acc_mean = self.valid_acc.compute()
-        log_dict = {"val_loss": val_loss_mean, "val_acc": train_acc_mean}
+        log_dict = {'val_loss': val_loss_mean, 'val_acc': train_acc_mean}
         self.log_dict(log_dict, prog_bar=True)
-        self.log_dict({"step": self.current_epoch})
+        self.log_dict({'step': self.current_epoch})
 
     def configure_optimizers(self):
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=self.lr)
 
-        scheduler = MultiStepLR(optimizer, milestones=self.milestones, gamma=self.lr_scheduler_gamma)
+        scheduler = StepLR(optimizer, step_size=self.step_size, gamma=self.lr_scheduler_gamma)
 
         return [optimizer], [scheduler]
-
-
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(parents=[parent_parser])
-        parser.add_argument(
-            "--backbone",
-            default="resnet50",
-            type=str,
-            metavar="BK",
-            help="Name (as in ``torchvision.models``) of the feature extractor",
-        )
-        parser.add_argument(
-            "--epochs", default=15, type=int, metavar="N", help="total number of epochs", dest="nb_epochs"
-        )
-        parser.add_argument("--batch-size", default=8, type=int, metavar="B", help="batch size", dest="batch_size")
-        parser.add_argument("--gpus", type=int, default=1, help="number of gpus to use")
-        parser.add_argument(
-            "--lr", "--learning-rate", default=1e-2, type=float, metavar="LR", help="initial learning rate", dest="lr"
-        )
-        parser.add_argument(
-            "--lr-scheduler-gamma",
-            default=1e-1,
-            type=float,
-            metavar="LRG",
-            help="Factor by which the learning rate is reduced at each milestone",
-            dest="lr_scheduler_gamma",
-        )
-        parser.add_argument(
-            "--num-workers", default=6, type=int, metavar="W", help="number of CPU workers", dest="num_workers"
-        )
-        parser.add_argument(
-            "--train-bn",
-            default=True,
-            type=bool,
-            metavar="TB",
-            help="Whether the BatchNorm layers should be trainable",
-            dest="train_bn",
-        )
-        parser.add_argument(
-            "--milestones", default=[5, 10], type=list, metavar="M", help="List of two epochs milestones"
-        )
-        return parser
 
 
 def main(args: argparse.Namespace) -> None:
@@ -360,28 +243,35 @@ def main(args: argparse.Namespace) -> None:
         to a temporary directory.
     """
 
-    with TemporaryDirectory(dir=args.root_data_path) as tmp_dir:
+    with TemporaryDirectory(dir=args.root_data_path):
+        net = torch.hub.load('pytorch/vision:v0.6.0', args.backbone, pretrained=True)
+        freeze(module=net, train_bn=True)
 
-        model = TransferLearningModel(dl_path=tmp_dir, **vars(args))
+        num_ftrs = net.fc.in_features
+        net.fc = torch.nn.Linear(num_ftrs, 10)
 
-        trainer = pl.Trainer(
-            weights_summary=None,
-            progress_bar_refresh_rate=1,
-            num_sanity_val_steps=0,
-            gpus=args.gpus,
-            min_epochs=args.nb_epochs,
-            max_epochs=args.nb_epochs,
+        model = TransferLearningModel(**vars(args), net=net, loss=torch.nn.CrossEntropyLoss())
+        data_module = PyTorchDataModule('CIFAR10', batch_size=args.batch_size, data_dir=args.root_data_path)
+
+        trainer = PyTorchTrainer(
+            model=model,
+            data_loader_kwargs={'datamodule': data_module},
+            trainer_kwargs={
+                'weights_summary': None,
+                'progress_bar_refresh_rate': 1,
+                'num_sanity_val_steps': 0,
+                'gpus': args.gpus,
+                'min_epochs': args.nb_epochs,
+                'max_epochs': args.nb_epochs,
+            }
         )
-
-        from torch_data_module import PyTorchDataModule
-        dm = PyTorchDataModule('cifar10', (224, 224))
-
-        trainer.fit(model, dm)
+        trainer.start()
+        trainer.join()
 
 
 def get_args() -> argparse.Namespace:
-    parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument(
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
         "--root-data-path",
         metavar="DIR",
         type=str,
@@ -389,7 +279,38 @@ def get_args() -> argparse.Namespace:
         help="Root directory where to download the data",
         dest="root_data_path",
     )
-    parser = TransferLearningModel.add_model_specific_args(parent_parser)
+    parser.add_argument(
+        "--backbone",
+        default="resnet50",
+        type=str,
+        metavar="BK",
+        help="Name (as in ``torchvision.models``) of the feature extractor",
+    )
+    parser.add_argument(
+        "--epochs", default=15, type=int, metavar="N", help="total number of epochs", dest="nb_epochs"
+    )
+    parser.add_argument("--batch-size", default=8, type=int, metavar="B", help="batch size", dest="batch_size")
+    parser.add_argument("--gpus", type=int, default=1, help="number of gpus to use")
+    parser.add_argument(
+        "--lr", "--learning-rate", default=1e-2, type=float, metavar="LR", help="initial learning rate", dest="lr"
+    )
+    parser.add_argument(
+        "--lr-scheduler-gamma",
+        default=1e-1,
+        type=float,
+        metavar="LRG",
+        help="Factor by which the learning rate is reduced at each milestone",
+    )
+    parser.add_argument(
+        "--step-size",
+        default=7,
+        type=int,
+        metavar="SS",
+        help="Step size used in step scheduler",
+    )
+    parser.add_argument(
+        "--num-workers", default=6, type=int, metavar="W", help="number of CPU workers", dest="num_workers"
+    )
     return parser.parse_args()
 
 
