@@ -60,7 +60,6 @@ class PyTorchTrainer(BaseTrainer):
         self._task: Optional[Future] = None
 
     def start(self):
-        # self.trainer_engine.fit(self.model, **self._data_loader_kwargs)
         self._task = self._executor.submit(self.trainer_engine.fit, self.model, **self._data_loader_kwargs)
 
     def join(self, timeout=None):

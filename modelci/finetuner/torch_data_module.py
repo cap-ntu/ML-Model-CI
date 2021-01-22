@@ -9,7 +9,7 @@ Date: 2021/1/20
 
 """
 
-from typing import Any
+from typing import Any, Iterable
 
 import pytorch_lightning as pl
 import torch
@@ -67,8 +67,14 @@ class PyTorchDataModule(pl.LightningDataModule):
         self.dataset(root=self.data_dir, train=False, download=True)
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        for item in batch:
-            item.to(device)
+        if isinstance(batch, Iterable):
+            batch_to_new_device = list()
+            for item in batch:
+                batch_to_new_device.append(item.to(device))
+        else:
+            raise NotImplementedError(f'no transfer method for batch type {type(batch)}')
+        del batch
+        return batch_to_new_device
 
     def setup(self, stage=None):
 

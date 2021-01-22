@@ -173,45 +173,45 @@ class TransferLearningModel(pl.LightningModule):
 
         self.train_acc = pl.metrics.Accuracy()
         self.valid_acc = pl.metrics.Accuracy()
-        self.save_hyperparameters()
+        self.save_hyperparameters('loss', 'batch_size', 'lr', 'lr_scheduler_gamma', 'step_size', 'num_workers')
 
-    def on_epoch_start(self):
-        """Use `on_epoch_start` to unfreeze layers progressively."""
-        optimizer = self.trainer.optimizers[0]
+    def forward(self, x):
+
+        return self.net(x)
 
     def training_step(self, batch, batch_idx):
 
         # 1. Forward pass:
         x, y = batch
-        y_logits = self.forward(x)
-        y_true = y.view((-1, 1)).type_as(x)
+        outputs = self.forward(x)
+        preds = torch.argmax(outputs, dim=1)
 
         # 2. Compute loss & accuracy:
-        train_loss = self.loss(y_logits, y_true)
-        accuracy = self.train_acc(y_logits, y_true)
+        train_loss = self.loss(outputs, y)
+        accuracy = self.train_acc(preds, y)
 
         # 3. Outputs:
-        tqdm_dict = {'train_loss': train_loss, 'train_acc': accuracy}
+        tqdm_dict = {'sloss': train_loss, 'train_acc': accuracy}
         self.log_dict(tqdm_dict, prog_bar=True)
-        return {"loss": train_loss}
+        return {"loss": train_loss, 'acc': accuracy}
 
     def training_epoch_end(self, outputs):
         """Compute and log training loss and accuracy at the epoch level."""
 
         train_loss_mean = torch.stack([output['loss'] for output in outputs]).mean()
         train_acc_mean = self.train_acc.compute()
-        self.log_dict({'train_loss': train_loss_mean, 'train_acc': train_acc_mean, 'step': self.current_epoch})
+        self.log_dict({'loss': train_loss_mean, 'train_acc': train_acc_mean, 'step': self.current_epoch})
 
     def validation_step(self, batch, batch_idx):
 
         # 1. Forward pass:
         x, y = batch
-        y_logits = self.forward(x)
-        y_true = y.view((-1, 1)).type_as(x)
+        outputs = self.forward(x)
+        preds = torch.argmax(outputs, dim=1)
 
         # 2. Compute loss & accuracy:
-        val_loss = self.loss(y_logits, y_true)
-        accuracy = self.valid_acc(y_logits, y_true)
+        val_loss = self.loss(outputs, y)
+        accuracy = self.valid_acc(preds, y)
 
         return {"val_loss": val_loss, 'val_acc': accuracy}
 
@@ -289,7 +289,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--epochs", default=15, type=int, metavar="N", help="total number of epochs", dest="nb_epochs"
     )
-    parser.add_argument("--batch-size", default=8, type=int, metavar="B", help="batch size", dest="batch_size")
+    parser.add_argument("--batch-size", default=128, type=int, metavar="B", help="batch size", dest="batch_size")
     parser.add_argument("--gpus", type=int, default=1, help="number of gpus to use")
     parser.add_argument(
         "--lr", "--learning-rate", default=1e-2, type=float, metavar="LR", help="initial learning rate", dest="lr"
@@ -315,5 +315,4 @@ def get_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    cli_lightning_logo()
     main(get_args())
