@@ -46,7 +46,7 @@ class BaseTrainer(abc.ABC):
 
 class PyTorchTrainer(BaseTrainer):
     """
-    PyTorch Trainer inherited from `pytorch_lighting`.
+    PyTorch Trainer utilize :class:`pytorch_lighting.Trainer` as the engine.
     """
 
     def __init__(self, model: pl.LightningModule, data_loader_kwargs: dict = None, trainer_kwargs: dict = None):

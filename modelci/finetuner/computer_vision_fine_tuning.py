@@ -43,7 +43,6 @@ from typing import Generator, Optional, Callable
 
 import pytorch_lightning as pl
 import torch
-from pl_examples import cli_lightning_logo
 from torch import optim
 from torch.nn import Module
 from torch.optim.lr_scheduler import StepLR
