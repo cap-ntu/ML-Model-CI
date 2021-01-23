@@ -7,9 +7,11 @@ Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 2021/1/20
 
+References:
+    https://pytorch-lightning.readthedocs.io/en/stable/datamodules.html
 """
 
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 import pytorch_lightning as pl
 import torch
@@ -37,6 +39,7 @@ test_transforms = transforms.Compose([
 ])
 
 
+# noinspection PyAbstractClass
 class PyTorchDataModule(pl.LightningDataModule):
 
     def __init__(self, dataset_name: str, batch_size: int = 8, num_workers=2, data_dir=OUTPUT_DIR):
@@ -65,16 +68,6 @@ class PyTorchDataModule(pl.LightningDataModule):
     def prepare_data(self, *args, **kwargs):
         self.dataset(root=self.data_dir, train=True, download=True)
         self.dataset(root=self.data_dir, train=False, download=True)
-
-    def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        if isinstance(batch, Iterable):
-            batch_to_new_device = list()
-            for item in batch:
-                batch_to_new_device.append(item.to(device))
-        else:
-            raise NotImplementedError(f'no transfer method for batch type {type(batch)}')
-        del batch
-        return batch_to_new_device
 
     def setup(self, stage=None):
 
