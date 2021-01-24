@@ -6,253 +6,85 @@ Email: yli056@e.ntu.edu.sg
 Date: 1/12/2021
 """
 import abc
-from datetime import datetime
-from typing import Tuple
+import threading
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
+from typing import Optional
 
-import numpy as np
-import torch
-import torch.utils.data
-from torch import nn
-from tqdm import tqdm
-
-from modelci.finetuner import OUTPUT_DIR
+import pytorch_lightning as pl
 
 
-class Trainer(abc.ABC):
+class BaseTrainer(abc.ABC):
+    """Trainer interface."""
+
+    def start(self):
+        raise NotImplementedError('Method `start` not implemented.')
+
+    def join(self, timeout=None):
+        """Wait for the trainer to finish training."""
+
+        raise NotImplementedError('Method `join` not implemented.')
+
+    def terminate(self):
+        raise NotImplementedError('Method `terminate` not implemented.')
+
+    def resume_soon(self):
+        """Resume from a pause."""
+
+        raise NotImplementedError('Method `resume_soon` not implemented.')
+
+    def pause_soon(self):
+        """Pause training for a while"""
+        raise NotImplementedError('Method `pause_soon` not implemented.')
+
+    def export_model(self):
+        raise NotImplementedError('Method `export_model` not implemented.')
+
+    def set_device(self):
+        raise NotImplementedError('Method `set_device` not implemented.')
+
+
+class PyTorchTrainer(BaseTrainer):
     """
-    Trainer base class. When used train_net API, a customer trainer should extend from this class.
-    """
-
-    def __init__(
-            self,
-            net: nn.Module,
-            optimizer: torch.optim.optimizer.Optimizer,
-            train_data_loader: torch.utils.data.DataLoader,
-            test_data_loader: torch.utils.data.DataLoader,
-            train_data_size: int = None,
-            test_data_size: int = None,
-            device: torch.device = None,
-    ):
-        self.net = net
-        self.optimizer = optimizer
-        self.train_data_loader = train_data_loader
-        self.test_data_loader = test_data_loader
-        self.train_data_size = train_data_size or len(train_data_loader.dataset)
-        self.test_data_size = test_data_size or len(test_data_loader.dataset)
-        self.criterion = nn.CrossEntropyLoss()
-        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    def before_epoch_start(self):
-        pass
-
-    def after_epoch_finish(self):
-        pass
-
-    def before_batch_start(self):
-        pass
-
-    def after_batch_finish(self):
-        pass
-
-    @abc.abstractmethod
-    def train_one_batch(self, samples) -> Tuple[np.ndarray, np.ndarray]:
-        pass
-
-    @abc.abstractmethod
-    def evaluate_one_batch(self, samples) -> Tuple[np.ndarray, np.ndarray]:
-        pass
-
-    @abc.abstractmethod
-    def get_sample_size(self, samples) -> int:
-        pass
-
-
-def train_net(
-        net: nn.Module,
-        epochs: int,
-        trainer: Trainer,
-        save_name: str = '',
-        log_batch_num: int = None,
-):
-    """
-    Train model general utility functions.
-
-    Args:
-        net (nn.Module):
-        epochs (int):
-        trainer (Callable):
-        save_name (str): Optional. Saved name of model and training statistic result.
-        log_batch_num (int): Optional. Update loss and accuracy log frequency.
-
-    Return:
-        A dictionary containing statistic results: training and validation loss and accuracy, and training
-            parameters.
-    """
-    # statistics
-    train_losses = np.zeros(epochs, dtype=np.float)
-    train_accs = np.zeros(epochs, dtype=np.float)
-    val_losses = np.zeros(epochs, dtype=np.float)
-    val_accs = np.zeros(epochs, dtype=np.float)
-    best_val_loss = float('inf')
-
-    # misc
-    timestamp = datetime.now().strftime('%m%d-%H%M%S')
-    save_path = OUTPUT_DIR / '{name}_{timestamp:s}.pth'.format(name=save_name, timestamp=timestamp)
-
-    val_loss, val_corrects = 0., 0
-    pbar = tqdm(total=epochs * (len(trainer.train_data_loader) + len(trainer.test_data_loader)))
-    for epoch in range(epochs):
-        trainer.net.train()
-        num_samples = 0
-        train_loss, train_corrects = 0., 0
-        running_loss, running_corrects = 0., 0
-        trainer.before_epoch_start()
-
-        for batch_num, samples in enumerate(trainer.train_data_loader):
-            num_samples += trainer.get_sample_size(samples)
-            trainer.optimizer.zero_grad()
-            trainer.before_batch_start()
-            with torch.set_grad_enabled(True):
-                loss, corrects = trainer.train_one_batch(samples)
-            trainer.after_batch_finish()
-            running_loss += loss
-            train_loss += loss
-            running_corrects += corrects
-            train_corrects += corrects
-
-            pbar.update(1)
-
-            if log_batch_num is not None and batch_num % log_batch_num == 0:
-                pbar.set_description(
-                    f'[epoch {epoch:d}] [Training step {batch_num:d}] '
-                    f'train loss {running_loss / num_samples:2.5g} | acc {running_corrects / num_samples:2.5g} '
-                    f'|| test loss {val_loss:2.5g} | acc {val_corrects:2.5g}'
-                )
-                num_samples = 0
-                running_loss = 0.
-                running_corrects = 0
-
-        train_loss /= trainer.train_data_size
-        train_corrects /= trainer.train_data_size
-
-        pbar.set_description(
-            f'[epoch {epoch:d}] [Evaluating] '
-            f'train loss {train_loss:2.5g} | acc {train_corrects:2.5g} '
-            f'|| test loss --- | acc ---'
-        )
-
-        trainer.net.eval()
-        val_loss, val_corrects = 0., 0
-
-        for samples in trainer.test_data_loader:
-            loss, corrects = trainer.evaluate_one_batch(samples)
-            val_loss += loss
-            val_corrects += corrects
-            pbar.update(1)
-
-        val_loss /= trainer.test_data_size
-        val_corrects /= trainer.test_data_size
-
-        pbar.set_description(
-            f'[epoch {epoch:d}] [Saving Model] '
-            f'train loss {train_loss:2.5g} | acc {train_corrects:2.5g} '
-            f'|| test loss {val_loss:2.5g} | acc {val_corrects:2.5g}'
-        )
-
-        # process statistics
-        train_losses[epoch], train_accs[epoch] = train_loss, train_corrects
-        val_losses[epoch], val_accs[epoch] = val_loss, val_corrects
-
-        # save model
-        if val_loss < best_val_loss:
-            pbar.set_description(
-                f'[epoch {epoch:d}] [Done] '
-                f'train loss {train_loss:2.5g} | acc {train_corrects:2.5g} '
-                f'|| test loss {val_loss:2.5g} | acc {val_corrects:2.5g}'
-            )
-            best_val_loss = val_loss
-            torch.save(net.state_dict(), save_path)
-
-        trainer.after_epoch_finish()
-
-    stat = {'train_loss': train_losses, 'train_acc': train_accs, 'test_loss': val_losses, 'test_acc': val_accs}
-
-    return {'stat': stat, 'info': {'save_name': save_path}}
-
-
-class CIFAR10Trainer(Trainer):
-    """
-    TODO: remove, dataset name should be parameter
+    PyTorch Trainer utilize :class:`pytorch_lighting.Trainer` as the engine.
     """
 
-    def __init__(
-            self,
-            net: nn.Module,
-            optimizer: torch.optim.optimizer.Optimizer,
-            train_data_loader: torch.utils.data.DataLoader,
-            test_data_loader: torch.utils.data.DataLoader,
-            train_data_size: int = None,
-            test_data_size: int = None,
-            scheduler: torch.optim.lr_scheduler._LRScheduler = None,  # noqa
-            device: torch.device = None,
-    ):
-        """
-        Args:
-            net (nn.Module): PyTorch model.
-            train_data_loader (torch.utils.data.DataLoader): Data loader for training.
-            test_data_loader (torch.utils.data.DataLoader): Data loader for evaluating.
-            optimizer (torch.optim.optimizer.Optimizer): Optimizer.
-            train_data_size (int): Size of training data. Optional. Needed when using a sampler to split
-                training and validation data.
-            test_data_size (int): Size of evaluation data. Optional. Needed when using a sampler to split
-                training and validation data.
-        """
-        super().__init__(
-            net, optimizer=optimizer, train_data_loader=train_data_loader, test_data_loader=test_data_loader,
-            train_data_size=train_data_size, test_data_size=test_data_size, device=device,
-        )
-        self.scheduler = scheduler
+    def __init__(self, model: pl.LightningModule, data_loader_kwargs: dict = None, trainer_kwargs: dict = None):
+        self.model = model
+        trainer_kwargs = trainer_kwargs or dict()
+        self.trainer_engine = pl.Trainer(**trainer_kwargs)
+        self._data_loader_kwargs = data_loader_kwargs or dict()
 
-    def after_batch_finish(self):
-        if self.scheduler:
-            self.scheduler.step()
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        self._event_pause = threading.Event()
+        self._task: Optional[Future] = None
 
-    def train_one_batch(self, samples):
-        """Train one epoch.
+    def start(self):
+        self._task = self._executor.submit(self.trainer_engine.fit, self.model, **self._data_loader_kwargs)
 
-        Args:
-            samples: One batch of data
+    def join(self, timeout=None):
+        if self._task:
+            self._task.result(timeout=timeout)
 
-        Returns:
-            Tuple of training loss and number of correctly predicted examples
-        """
-        inputs, labels = samples
-        inputs = inputs.to(self.device)
-        labels = labels.to(self.device)
+    def terminate(self):
+        if self._task:
+            # trigger pytorch lighting training graceful shutdown via a ^C
+            self._task.set_exception(KeyboardInterrupt())
 
-        # forward + backward + optimize
-        outputs = self.net(inputs)
-        loss = self.criterion(outputs, labels)
-        loss.backward()
-        self.optimizer.step()
-        predicted_labels = torch.argmax(outputs, dim=1)
-        corrects = torch.sum(predicted_labels == labels)
+    def export_model(self):
+        return self.model.cpu()
 
-        return loss.item(), corrects.item()
+    def resume_soon(self):
+        if self._event_pause.is_set():
+            self._event_pause.clear()
+            return True
+        return False
 
-    def evaluate_one_batch(self, samples):
-        inputs, labels = samples
-        inputs = inputs.to(self.device)
-        labels = labels.to(self.device)
+    def pause_soon(self):
+        if not self._event_pause.is_set():
+            self._event_pause.set()
+            return True
+        return False
 
-        # forward
-        outputs = self.net(inputs)
-        loss = self.criterion(outputs, labels)
-        predicted_labels = torch.argmax(outputs, dim=1)
-        corrects = torch.sum(predicted_labels == labels)
-
-        return loss.item(), corrects.item()
-
-    def get_sample_size(self, samples):
-        _, labels = samples
-        return len(labels)
+    def set_device(self):
+        pass

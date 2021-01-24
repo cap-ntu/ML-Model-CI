@@ -18,6 +18,7 @@ py-cpuinfo>=6.0.0
 pydantic<2.0.0,>=0.32.2
 pytest>=5.4.1
 pytest-env==0.6.2
+pytorch-lightning==1.1.4
 PyYAML==5.3.1
 requests>=2.23.0
 rich==9.1.0
@@ -30,6 +31,7 @@ torchviz==0.0.1
 tensorflow-serving-api>=2.1.0
 toolz==0.10.0
 torch>=1.5.0
+tqdm==4.55.1
 uvicorn>=0.11.5
 xgboost==1.2.0
 Jinja2==2.11.2
