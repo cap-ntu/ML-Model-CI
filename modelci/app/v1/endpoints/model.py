@@ -35,7 +35,7 @@ def get_model(*, id: str):  # noqa
     return ModelDetailOut.from_bo(model)
 
 
-@router.get('/structure/{id}', response_model=...)
+@router.get('/structure/{id}')  # TODO: add response_model
 async def get_model_structure(id: str):  # noqa
     """
     Get model structure as a DAG.
@@ -43,12 +43,11 @@ async def get_model_structure(id: str):  # noqa
     Arguments:
         id (str): Model object ID.
     """
-    model = ModelService.get_model_by_id(id)
-    ...
     # return model DAG
+    raise NotImplementedError('Method `get_model_structure` not implemented.')
 
 
-@router.patch('/structure/{id}', response_model=...)
+@router.patch('/structure/{id}')  # TODO: add response_model
 def update_model_structure_as_new(id: str, dry_run: bool = False):  # noqa
     """
     Update model structure and save as a new version.
@@ -60,6 +59,5 @@ def update_model_structure_as_new(id: str, dry_run: bool = False):  # noqa
     Returns:
 
     """
-    model = ModelService.get_model_by_id(id)
-    ...
+    raise NotImplementedError('Method `update_model_structure_as_new` not implemented.')
 

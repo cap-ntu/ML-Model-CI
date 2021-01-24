@@ -20,6 +20,6 @@ def submit(model_id: str, other_body: ...):
         other_body: Other required parameters for training.
 
     Returns:
-        Submit status.
+        Job data class object.
     """
-    pass
+    raise NotImplementedError('Method `submit` not implemented')

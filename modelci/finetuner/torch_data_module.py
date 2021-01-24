@@ -11,10 +11,7 @@ References:
     https://pytorch-lightning.readthedocs.io/en/stable/datamodules.html
 """
 
-from typing import Any, Iterable, Sequence
-
 import pytorch_lightning as pl
-import torch
 import torchvision
 from torch.utils.data import random_split, DataLoader
 from torchvision.transforms import transforms
@@ -46,8 +43,8 @@ class PyTorchDataModule(pl.LightningDataModule):
         """
 
         Args:
-            dataset_name (str): name of dataset to be load, full lists of supported datasets:
-                https://www.tensorflow.org/datasets/catalog/overview#all_datasets
+            dataset_name (str): name of vision dataset to be load, full lists of supported datasets:
+                https://pytorch.org/docs/stable/torchvision/datasets.html
             batch_size (int): samples per batch to load
         """
         super().__init__()
