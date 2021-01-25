@@ -13,13 +13,13 @@ router = APIRouter()
 @router.post('/')
 def submit(model_id: str, other_body: ...):
     """
-    Submit a training job.
+    Submit a training job to the controller.
 
     Args:
         model_id (str): Model ID for training.
         other_body: Other required parameters for training.
 
     Returns:
-        Job data class object.
+        Submitted training job data class object.
     """
     raise NotImplementedError('Method `submit` not implemented')

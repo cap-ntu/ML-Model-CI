@@ -11,7 +11,8 @@ from fastapi import APIRouter
 
 from modelci.persistence.service import ModelService
 from modelci.types.bo import Framework, Engine, Task
-from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_, Task as Task_, Metric as Metric_
+from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_, \
+    Task as Task_
 
 router = APIRouter()
 
@@ -38,7 +39,7 @@ def get_model(*, id: str):  # noqa
 @router.get('/structure/{id}')  # TODO: add response_model
 async def get_model_structure(id: str):  # noqa
     """
-    Get model structure as a DAG.
+    Get model structure as a model structure graph (connection between layer as edge, layers as nodes)
 
     Arguments:
         id (str): Model object ID.
@@ -48,12 +49,30 @@ async def get_model_structure(id: str):  # noqa
 
 
 @router.patch('/structure/{id}')  # TODO: add response_model
-def update_model_structure_as_new(id: str, dry_run: bool = False):  # noqa
+def update_model_structure_as_new(id: str, structure, dry_run: bool = False):  # noqa
     """
-    Update model structure and save as a new version.
+    Update model layer and save as a new version.
+
+    Currently, this function can only support change of last layer (i.e. fine-tune). You can indicate the
+    modified layer in parameter `structure`.
+
+    Examples:
+        Fine-tune the model by modify the layer with name 'fc' (last layer) of model id=123. The layer
+        has a changed argument out_features = 10. _op='M' indicates the operation to this layer ('fc')
+        is 'Modify'. There is no changes in layer connections.
+
+        >>> from modelci.types.bo.model_objects import IOShape
+        ... import numpy as np
+        ...
+        ... structure = {'node': {'fc': {'out_features': 10, '_op': 'M'}}}
+        ... update_model_structure_as_new(id=..., structure=structure)
+
+    TODO:
+        Add new layers and rewire the connections.
 
     Args:
         id (str): Model object ID of the original structure.
+        structure: A model structure graph indicating changed layer (node) and layer connection (edge).
         dry_run (bool): Dry run update for validation.
 
     Returns:

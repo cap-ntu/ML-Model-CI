@@ -190,16 +190,16 @@ class TransferLearningModel(pl.LightningModule):
         accuracy = self.train_acc(preds, y)
 
         # 3. Outputs:
-        tqdm_dict = {'sloss': train_loss, 'train_acc': accuracy}
+        tqdm_dict = {'train_loss': train_loss, 'train_acc': accuracy}
         self.log_dict(tqdm_dict, prog_bar=True)
-        return {"loss": train_loss, 'acc': accuracy}
+        return {"loss": train_loss}
 
     def training_epoch_end(self, outputs):
         """Compute and log training loss and accuracy at the epoch level."""
 
         train_loss_mean = torch.stack([output['loss'] for output in outputs]).mean()
         train_acc_mean = self.train_acc.compute()
-        self.log_dict({'loss': train_loss_mean, 'train_acc': train_acc_mean, 'step': self.current_epoch})
+        self.log_dict({'train_loss': train_loss_mean, 'train_acc': train_acc_mean, 'step': self.current_epoch})
 
     def validation_step(self, batch, batch_idx):
 
@@ -243,6 +243,7 @@ def main(args: argparse.Namespace) -> None:
     """
 
     with TemporaryDirectory(dir=args.root_data_path):
+        # TODO: Done in editor (L247-251)
         net = torch.hub.load('pytorch/vision:v0.6.0', args.backbone, pretrained=True)
         freeze(module=net, train_bn=True)
 
