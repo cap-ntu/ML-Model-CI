@@ -11,9 +11,9 @@ from tempfile import TemporaryDirectory
 
 import torch
 
-from modelci.finetuner.tl_algorithm import freeze, FineTuneModule
-from modelci.finetuner.torch_data_module import PyTorchDataModule
+from modelci.finetuner.pytorch_datamodule import PyTorchDataModule
 from modelci.finetuner.trainer import PyTorchTrainer
+from modelci.finetuner.transfer_learning import freeze, FineTuneModule
 
 
 def main(args: argparse.Namespace) -> None:

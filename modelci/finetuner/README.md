@@ -5,17 +5,20 @@
 Finetuner **packs the training job** with specified Transfer Learning algorithm, dataset, and pre-trained model 
 written on various ML framework (e.g. PyTorch). Such training jobs are **managed and schedules** by a coordinator. 
 We are to support various training environment, such as local machine, private cluster, and public cloud platform. 
-
-We leverage [PyTorch Lihgtning](https://github.com/PyTorchLightning/pytorch-lightning) as the training backend for
-PyTorch models.
+Besides, we plan to adopt auto tuning platforms such as NNI and AutoKeras into the system. Users are enjoying an
+automated hyper-parameter tuning to improve model accuracy.
 
 ## Structure
 ```text
-├── coordinator           # manages and schedules training jobs
-├── torch_data_module.py  # creates data loader from dataset
-├── tl_module.py          # defines transfer learning algorithm
-└── trainer.py            # controls and abstract the training job for various framework, dataset, TL algorithm
+├── coordinator            # manages and schedules training jobs
+├── pytorch_datamodule.py  # creates data loader from dataset
+├── transfer_learning.py   # defines transfer learning algorithm
+└── trainer.py             # controls and abstract the training job for various framework, dataset, TL algorithm
 ```
+
+## Workflow
+
+To be updated.
 
 ## Capability
 
@@ -32,6 +35,9 @@ PyTorch models.
             </td>
             <td>
                 <b>Dataset</b>
+            </td>
+            <td>
+                <b>Auto Tuning</b>
             </td>
             <td>
                 <b>Training Environment</b>
@@ -69,6 +75,12 @@ PyTorch models.
             </td>
             <td>
                 <ul>
+                    <li>NNI</li>
+                    <li>AutoKeras</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
                     <li> Local Machine (CPU / Single GPU) </li>
                     <li> Private Cluster </li>
                     <li> Public Cluster </li>
@@ -82,3 +94,9 @@ PyTorch models.
 
 1. Fine tune a ResNet18
 2. Fine tune a BERT-base-cased
+
+## Roadmap
+
+- [ ] Add the workflow figure
+- [ ] DQN support
+- [ ] NNI support
