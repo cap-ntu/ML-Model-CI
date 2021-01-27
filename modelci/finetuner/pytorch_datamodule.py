@@ -13,24 +13,26 @@ References:
 
 import pytorch_lightning as pl
 import torchvision
+from py._log import warning
 from torch.utils.data import random_split, DataLoader
 from torchvision.transforms import transforms
 
 # transforms
 from modelci.finetuner import OUTPUT_DIR
 
-input_size = (224, 224)
+INPUT_SIZE = (224, 224)
+TRAIN_VAL_SPLIT_RATIO = 0.7
 
 train_transforms = transforms.Compose([
-    transforms.RandomResizedCrop(input_size),
+    transforms.RandomResizedCrop(INPUT_SIZE),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
 test_transforms = transforms.Compose([
-    transforms.Resize(input_size),
-    transforms.CenterCrop(input_size),
+    transforms.Resize(INPUT_SIZE),
+    transforms.CenterCrop(INPUT_SIZE),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
@@ -56,6 +58,8 @@ class PyTorchDataModule(pl.LightningDataModule):
         if hasattr(torchvision.datasets, self.dataset_name):
             self.dataset = getattr(torchvision.datasets, self.dataset_name)
         else:
+            # TODO: support user local dataset folder
+            warning.warn('If you are using customized dataset, please specify a dataset type.')
             raise ValueError(f'torchvision.datasets does not have dataset name {self.dataset_name}')
 
         self.train_dataset = None
@@ -71,7 +75,7 @@ class PyTorchDataModule(pl.LightningDataModule):
         # split dataset
         if stage == 'fit':
             full = self.dataset(root=self.data_dir, train=True, transform=train_transforms)
-            train_size = int(len(full) * 0.7)
+            train_size = int(len(full) * TRAIN_VAL_SPLIT_RATIO)
             test_size = len(full) - train_size
             self.train_dataset, self.val_dataset = random_split(full, [train_size, test_size])
 
