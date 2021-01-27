@@ -61,8 +61,9 @@ def update_model_structure_as_new(id: str, structure, dry_run: bool = False):  #
         Therefore, the structure change summary is
             [M] fc: (...) out_features=10
 
-        >>> structure = {'layer': {'fc': {'out_features': 10, '_op': 'M'}}}
-        ... update_model_structure_as_new(id=..., structure=structure)
+        >>> from collections import OrderedDict
+        ... structure_data = {'layer': OrderedDict({'fc': {'out_features': 10, '_op': 'M'}})}
+        ... update_model_structure_as_new(id=..., structure=structure_data)
 
         Use original model as a feature extractor. The new model delete the last layer named 'fc', and add two
         layers as following:
@@ -78,7 +79,7 @@ def update_model_structure_as_new(id: str, structure, dry_run: bool = False):  #
             [A] fc1 -> fc2
 
         >>>
-        ... structure = {
+        ... structure_data = {
         ...     'layer': {
         ...         'fc': {'_op': 'D'},
         ...         'fc1': {'in_features': 1024, 'out_features': 512, '_type': 'nn.Linear', '_op': 'A'},
@@ -114,8 +115,9 @@ def update_finetune_model_as_new(id: str, updated_layer: dict, dry_run: bool = F
         Therefore, the structure change summary is
             [M] fc: (...) out_features=10
 
-        >>> updated_layer = {'fc': {'out_features': 10, '_op': 'M'}}
-        ... update_finetune_model_as_new(id=..., structure=updated_layer)
+        >>> from collections import OrderedDict
+        ... structure = {'layer': OrderedDict({'fc': {'out_features': 10, '_op': 'M'}})}
+        ... update_finetune_model_as_new(id=..., updated_layer=structure)
 
     Args:
         id (str): ID of the model to be updated.
