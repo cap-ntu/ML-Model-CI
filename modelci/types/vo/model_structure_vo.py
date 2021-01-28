@@ -9,7 +9,7 @@ import abc
 from enum import Enum
 from typing import Optional, Union, Tuple, Dict, OrderedDict
 
-from pydantic import BaseModel, PositiveInt, conint, PositiveFloat, Field
+from pydantic import BaseModel, PositiveInt, conint, PositiveFloat, Field, validator
 from typing_extensions import Literal
 
 
@@ -45,19 +45,37 @@ class ModelLayer(BaseModel, abc.ABC):
 
     Attributes:
         _op (Operation): Operation to the layer.
-        _type (LayerType): Indicates the type of this layer. This field also provides hint for :class:`pydantic`
+        layer_type (LayerType): Indicates the type of this layer. This field also provides hint for :class:`pydantic`
             model conversion.
     """
 
     _op: Operation
-    _type: LayerType
+    layer_type: LayerType
+
+    class Config:
+        fields = {'layer_type': '_type'}
+
+
+def check_layer_type_factory(required_value: LayerType):
+    """
+    Factory that checks layer type value provided is the same as the required value.
+    This is to generate validator for check :code:`layer_type` field of subclasses of :class:`ModelLayer`.
+    """
+
+    def check_layer_type(layer_type: LayerType) -> LayerType:
+        if layer_type != required_value:
+            raise ValueError(f'Expected {required_value} but got {layer_type}')
+        return layer_type
+
+    return check_layer_type
 
 
 class LinearLayer(ModelLayer):
-    _type = Field(LayerType.LINEAR, const=True)
     in_features: Optional[PositiveInt]
     out_features: Optional[PositiveInt]
     bias: Optional[bool]
+
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.LINEAR))
 
 
 class _ConvNd(ModelLayer, abc.ABC):
@@ -73,24 +91,27 @@ class _ConvNd(ModelLayer, abc.ABC):
 
 
 class Conv1d(_ConvNd):
-    _type = Field(LayerType.CONV_1D, const=True)
     kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt]]]
     stride: Optional[Union[PositiveInt, Tuple[PositiveInt]]]
 
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.CONV_1D))
+
 
 class Conv2d(_ConvNd):
-    _type = Field(LayerType.CONV_2D, const=True)
     kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt, PositiveInt]]]
     stride: Optional[Union[PositiveInt, Tuple[PositiveInt, PositiveInt]]]
 
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.CONV_2D))
+
 
 class ReLU(ModelLayer):
-    _type = Field(LayerType.RELU, const=True)
     inplace: Optional[bool]
+
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.RELU))
 
 
 class Tanh(ModelLayer):
-    _type = Field(LayerType.TANH, const=True)
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.TANH))
 
 
 class _BatchNorm(ModelLayer, abc.ABC):
@@ -102,11 +123,11 @@ class _BatchNorm(ModelLayer, abc.ABC):
 
 
 class BatchNorm1d(_BatchNorm):
-    _type = Field(LayerType.BN_1D, const=True)
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.BN_1D))
 
 
 class BatchNorm2d(_BatchNorm):
-    _type = Field(LayerType.BN_2D, const=True)
+    _check_type = validator('layer_type', allow_reuse=True)(check_layer_type_factory(LayerType.BN_2D))
 
 
 _LayerType = Union[LinearLayer, Conv1d, Conv2d, ReLU, Tanh, BatchNorm1d, BatchNorm2d]
@@ -149,5 +170,11 @@ class Structure(BaseModel):
         connection={'conv1': {'fc1': <Operation.ADD: 'A'>}})
 
     """
-    layer: OrderedDict[str, _LayerType] = Field(default_factory=OrderedDict)
-    connection: Optional[Dict[str, Dict[str, Operation]]] = Field(default_factory=dict)
+    layer: OrderedDict[str, _LayerType] = Field(
+        default_factory=OrderedDict,
+        example={'fc': {'out_features': 10, '_type': 'nn.Linear', '_op': 'M'}}
+    )
+    connection: Optional[Dict[str, Dict[str, Operation]]] = Field(
+        default_factory=dict,
+        example={'conv1': {'fc1': 'A'}}
+    )
