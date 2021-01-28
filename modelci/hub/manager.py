@@ -6,6 +6,7 @@ from typing import Iterable, Union, List, Dict, Optional
 
 import cv2
 import tensorflow as tf
+import torch
 import yaml
 
 from modelci.hub.client.onnx_client import CVONNXClient
@@ -56,7 +57,7 @@ def register_model(
         inputs (Iterable[IOShape]): Model input tensors.
         outputs (Iterable[IOShape]): Model output tensors.
         model_input: specify sample model input data
-        TODO: specify more model conversion related params
+            TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
@@ -66,9 +67,9 @@ def register_model(
     from modelci.controller.executor import Job
 
     model_dir_list = list()
-    if not convert:
-        # type and existence check
-        assert isinstance(origin_model, str)
+
+    # type and existence check
+    if isinstance(origin_model, str):
         model_dir = Path(origin_model).absolute()
         assert model_dir.exists(), f'model weight does not exist at {origin_model}'
 
@@ -91,7 +92,21 @@ def register_model(
         else:  # from implicit extracted from path, check validity of the path later at registration
             path = model_dir
         model_dir_list.append(path)
-    else:
+    elif framework == Framework.PYTORCH and engine == Engine.PYTORCH:
+        # save original pytorch model
+        pytorch_dir = generate_path(
+            task=task,
+            model_name=architecture,
+            framework=framework,
+            engine=Engine.PYTORCH,
+            version=str(version),
+        )
+        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
+        save_path_with_ext = pytorch_dir.with_suffix('.pth')
+        torch.save(origin_model, str(save_path_with_ext))
+        model_dir_list.append(pytorch_dir.with_suffix('.pth'))
+
+    if convert:
         # TODO: generate from path name
 
         # generate model variant
@@ -259,16 +274,8 @@ def _generate_model_family(
     tfs_dir = generate_this_path(engine=Engine.TFS)
     onnx_dir = generate_this_path(engine=Engine.ONNX)
     trt_dir = generate_this_path(engine=Engine.TRT)
-    pytorch_dir = generate_this_path(engine=Engine.PYTORCH)
 
     if framework == Framework.PYTORCH:
-        # save original pytorch model
-        import torch
-        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
-        save_path_with_ext = pytorch_dir.with_suffix('.pth')
-        torch.save(model, str(save_path_with_ext))
-        generated_dir_list.append(pytorch_dir.with_suffix('.pth'))
-
         # to TorchScript
         if TorchScriptConverter.from_torch_module(model, torchscript_dir):
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
