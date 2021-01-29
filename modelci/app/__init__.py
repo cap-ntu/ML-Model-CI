@@ -23,7 +23,7 @@ def start():
     pid = check_process_running(SERVER_PORT)
     if not pid:
         args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--port',
-                str(SERVER_PORT)]
+                str(SERVER_PORT), '--host', '0.0.0.0']
         if SERVER_HOST != 'localhost':
             args += ['--host', SERVER_HOST]
         backend_process = subprocess.Popen(args, preexec_fn=os.setsid)

@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from modelci.app import config
+from modelci.app.experimental.api import api_router as api_rounter_exp
 from modelci.app.v1.api import api_router
 
 app = FastAPI(title=config.PROJECT_NAME, openapi_url="/api/v1/openapi.json")
@@ -32,6 +33,7 @@ if config.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=config.API_V1_STR)
+app.include_router(api_rounter_exp, prefix=config.API_EXP_STR)
 
 if __name__ == '__main__':
     import uvicorn
