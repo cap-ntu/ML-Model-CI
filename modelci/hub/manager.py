@@ -45,6 +45,9 @@ def register_model(
         and `version` could be None. If any of the above arguments is `None`, all of them will be auto induced
         from the origin_model path. An `ValueError` will be raised if the mata info cannot be induced.
 
+    TODO:
+        This function has a super comprehensive logic, need to be simplified.
+
     Arguments:
         origin_model: The uploaded model without optimization. When `no_generate` flag is set, this parameter should
             be a str indicating model file path.
