@@ -3,11 +3,13 @@
   "version": "0.1.6",
   "description": "Lightweight template, using TypeScript, contains only the basic Layout. ",
   "dependencies": {
-    "@alifd/next": "^1.19.4",
+    "@alifd/next": "^1.18.16",
     "@alifd/theme-design-pro": "^0.x",
+    "@gitgraph/react": "^1.5.4",
     "antd": "^4.2.0",
     "axios": "^0.19.2",
     "moment": "^2.24.0",
+    "prop-types": "^15.7.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "reqwest": "^2.0.5"

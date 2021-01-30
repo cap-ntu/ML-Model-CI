@@ -84,6 +84,20 @@ class ModelService(object):
         return ModelBO.from_model_do(cls.__model_DAO.get_model_by_id(ObjectId(id_)))
 
     @classmethod
+    def get_models_by_parent_id(cls, parent_id: str):
+        """
+
+        Args:
+            parent_id ():
+
+        Returns:
+            A list of model BO if found.
+        """
+        model_pos = cls.__model_DAO.get_models_by_parent_id(parent_id=parent_id)
+
+        return list(map(ModelBO.from_model_do, model_pos))
+
+    @classmethod
     def post_model(cls, model: ModelBO):
         """Register a model into ModelDB and GridFS. `model.id` should be set as `None`, otherwise, the function will
         raise a `ValueError`.

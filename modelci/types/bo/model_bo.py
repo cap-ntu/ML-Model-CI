@@ -56,6 +56,7 @@ class ModelBO(object):
             dataset: str,
             metric: Dict[Metric, float],
             task: Task,
+            parent_model_id: str,
             inputs: List[IOShape],
             outputs: List[IOShape],
             weight: Weight = Weight(),
@@ -73,6 +74,7 @@ class ModelBO(object):
         self.dataset = dataset
         self.metric = metric
         self.task = task
+        self.parent_model_id = parent_model_id
         self.inputs = inputs
         self.outputs = outputs
         self.weight = weight
@@ -111,6 +113,7 @@ class ModelBO(object):
             inputs=input_dos,
             outputs=output_dos,
             task=self.task.value,
+            parent_model_id = self.parent_model_id,
             status=self.status.value,
             creator=self.creator,
             create_time=self.create_time,
@@ -163,6 +166,7 @@ class ModelBO(object):
             inputs=inputs,
             outputs=outputs,
             task=Task(model_do.task),
+            parent_model_id=model_do.parent_model_id,
             status=Status(model_do.status),
             creator=model_do.creator,
             create_time=model_do.create_time,

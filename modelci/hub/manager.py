@@ -18,7 +18,7 @@ from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, Task, Metric, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
-           'retrieve_model_by_task']
+           'retrieve_model_by_task', 'retrieve_model_by_parent_id']
 
 
 def register_model(
@@ -33,8 +33,9 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-        convert=True,
-        profile=True,
+        parent_model_id: str = "",
+        convert: bool = True,
+        profile: bool = True,
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
@@ -58,6 +59,7 @@ def register_model(
         model_input: specify sample model input data
         TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
+        parent_model_id (Optional[str]): the parent model id of current model if this model is derived from a pre-existing one
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
@@ -125,9 +127,10 @@ def register_model(
                 version=version,
                 dataset=dataset,
                 metric=metric,
+                parent_model_id=parent_model_id,
                 inputs=inputs,
                 outputs=outputs,
-                weight=Weight(f, filename=filename)
+                weight=Weight(f, filename=filename),
             )
 
             ModelService.post_model(model)
@@ -138,7 +141,8 @@ def register_model(
             framework=framework,
             engine=engine,
             version=version)[0]
-
+        if model.engine == Engine.PYTORCH or model.engine == Engine.TFS:
+            parent_model_id = model.id
         # profile registered model
         if profile and engine != Engine.PYTORCH:
             file = tf.keras.utils.get_file(
@@ -199,6 +203,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     metric = model_config['metric']
     inputs_plain = model_config['inputs']
     outputs_plain = model_config['outputs']
+    parent_model_id = model_config.get('parent_model_id', '')
     model_input = model_config.get('model_input', None)
     architecture = model_config.get('architecture', None)
     task = model_config.get('task', None)
@@ -231,6 +236,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         dataset=dataset,
         metric=metric,
         task=task,
+        parent_model_id=parent_model_id,
         inputs=inputs,
         outputs=outputs,
         model_input=model_input,
@@ -398,6 +404,26 @@ def retrieve_model_by_task(task: Task) -> List[ModelBO]:
     """
     # retrieve
     models = ModelService.get_models_by_task(task)
+    # check if found
+    if len(models) == 0:
+        raise FileNotFoundError('Model not found!')
+
+    _get_remote_model_weights(models)
+
+    return models
+
+
+def retrieve_model_by_parent_id(parent_id: str) -> List[ModelBO]:
+    """
+    Query models by specifying the parent model id
+
+    Args:
+        parent_id (str): : the parent model id of current model if this model is derived from a pre-existing one
+
+    Returns:
+        List[ModelBO]: A list of model business object.
+    """
+    models = ModelService.get_models_by_parent_id(parent_id)
     # check if found
     if len(models) == 0:
         raise FileNotFoundError('Model not found!')

@@ -4,6 +4,7 @@ import About from '@/pages/About';
 import Setting from '@/pages/Setting';
 import User from '@/pages/User';
 import Visualizer from '@/pages/Visualizer';
+import GitTree from '@/pages/GitTree';
 
 const routerConfig = [
   {
@@ -30,6 +31,10 @@ const routerConfig = [
       {
         path: '/visualizer/:id',
         component: Visualizer,
+      },
+      {
+        path: '/gittree',
+        component: GitTree,
       },
     ],
   },

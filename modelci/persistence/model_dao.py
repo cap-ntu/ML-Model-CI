@@ -29,10 +29,11 @@ class ModelDAO(object):
         Args:
             **kwargs: Keyword arguments of primary keys. Supported values:
                 name (str): Model name.
-                task (str): Model task.
+                task (int): Model task enum value.
                 engine (int): Driving engine enum value.
                 framework (int): Model framework enum value.
                 version (int): Model version number.
+                parent_id (str): the ID of Model parent
 
         Returns:
             bool: Existence of the model.
@@ -78,6 +79,18 @@ class ModelDAO(object):
             List[ModelDO]: A list of model plain objects. An empty list will be returned if no such model.
         """
         return ModelDO.objects(task=task)
+
+    @staticmethod
+    def get_models_by_parent_id(parent_id: str) -> List[ModelDO]:
+        """Get a list of model plain objects given parent id.
+
+        Args:
+            parent_id (str): the parent model id of current model if this model is derived from a pre-existing one
+
+        Return:
+            List[ModelDO]: A list of model plain objects. An empty list will be returned if no such model.
+        """
+        return ModelDO.objects(parent_model_id=parent_id)
 
     @staticmethod
     def save_model(model: ModelDO, force_insert=False) -> ModelDO:
