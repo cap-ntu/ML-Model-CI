@@ -11,6 +11,7 @@ from fastapi import APIRouter
 
 from modelci.persistence.service import ModelService
 from modelci.types.bo import Framework, Engine, Task
+from modelci.types.vo.model_structure import Structure
 from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_, \
     Task as Task_
 
@@ -18,7 +19,8 @@ router = APIRouter()
 
 
 @router.get('/', response_model=List[ModelListOut])
-def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, task: Task_ = None, version: int = None):
+def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, task: Task_ = None,
+                  version: int = None):
     if framework is not None:
         framework = Framework[framework.value.upper()]
     if engine is not None:
@@ -49,20 +51,23 @@ async def get_model_structure(id: str):  # noqa
 
 
 @router.patch('/structure/{id}')  # TODO: add response_model
-def update_model_structure_as_new(id: str, structure, dry_run: bool = False):  # noqa
+def update_model_structure_as_new(id: str, structure: Structure, dry_run: bool = False):  # noqa
     """
     TODO: Update model structure by adjusting layers (add, modify, delete) or rewiring the
         connections between layers.
 
     Examples:
         Fine-tune the model by modify the layer with name 'fc' (last layer). The layer
-        has a changed argument out_features = 10. _op='M' indicates the operation to this layer ('fc')
+        has a changed argument out_features = 10. op_='M' indicates the operation to this layer ('fc')
         is 'Modify'. There is no changes in layer connections.
         Therefore, the structure change summary is
             [M] fc: (...) out_features=10
 
-        >>> structure = {'layer': {'fc': {'out_features': 10, '_op': 'M'}}}
-        ... update_model_structure_as_new(id=..., structure=structure)
+        >>> from collections import OrderedDict
+        >>> structure_data = {
+        ...     'layer': OrderedDict({'fc': {'out_features': 10, 'op_': 'M', 'type_': 'torch.nn.Linear'}})
+        ... }
+        >>> update_model_structure_as_new(id=..., structure=Structure.parse_obj(structure_data))
 
         Use original model as a feature extractor. The new model delete the last layer named 'fc', and add two
         layers as following:
@@ -78,11 +83,11 @@ def update_model_structure_as_new(id: str, structure, dry_run: bool = False):  #
             [A] fc1 -> fc2
 
         >>>
-        ... structure = {
+        ... structure_data = {
         ...     'layer': {
-        ...         'fc': {'_op': 'D'},
-        ...         'fc1': {'in_features': 1024, 'out_features': 512, '_type': 'nn.Linear', '_op': 'A'},
-        ...         'fc2': {'in_features': 512, 'out_features': 10, '_type': 'nn.Linear', '_op': 'A'},
+        ...         'fc': {'op_': 'D'},
+        ...         'fc1': {'in_features': 1024, 'out_features': 512, 'type_': 'torch.nn.Linear', 'op_': 'A'},
+        ...         'fc2': {'in_features': 512, 'out_features': 10, 'type_': 'torch.nn.Linear', 'op_': 'A'},
         ...     },
         ...     'connection': {
         ...         'conv1': {'fc': 'D', 'fc1': 'A'},
@@ -99,31 +104,3 @@ def update_model_structure_as_new(id: str, structure, dry_run: bool = False):  #
 
     """
     raise NotImplementedError('Method `update_model_structure_as_new` not implemented.')
-
-
-@router.patch('/structure/{id}/finetune')
-def update_finetune_model_as_new(id: str, updated_layer: dict, dry_run: bool = False):  # noqa
-    """
-    Temporary function for finetune models. The function's functionality is overlapped with
-    `update_model_structure_as_new`. Please use the `update_model_structure_as_new` in next release.
-
-    Examples:
-        Fine-tune the model by modify the layer with name 'fc' (last layer). The layer
-        has a changed argument out_features = 10. _op='M' indicates the operation to this layer ('fc')
-        is 'Modify'. There is no changes in layer connections.
-        Therefore, the structure change summary is
-            [M] fc: (...) out_features=10
-
-        >>> updated_layer = {'fc': {'out_features': 10, '_op': 'M'}}
-        ... update_finetune_model_as_new(id=..., structure=updated_layer)
-
-    Args:
-        id (str): ID of the model to be updated.
-        updated_layer (dict): Layers to be fine-tuned.
-        dry_run (bool): Test run for verify if the provided parameter (i.e. model specified in `id`
-            and updated layers) is valid.
-
-    Returns:
-
-    """
-    raise NotImplementedError('Method `update_finetune_model_as_new` not implemented.')
