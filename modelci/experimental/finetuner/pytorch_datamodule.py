@@ -10,15 +10,15 @@ Date: 2021/1/20
 References:
     https://pytorch-lightning.readthedocs.io/en/stable/datamodules.html
 """
+import warnings
 
 import pytorch_lightning as pl
 import torchvision
-from py._log import warning
 from torch.utils.data import random_split, DataLoader
 from torchvision.transforms import transforms
 
 # transforms
-from modelci.finetuner import OUTPUT_DIR
+from modelci.experimental.finetuner import OUTPUT_DIR
 
 INPUT_SIZE = (224, 224)
 TRAIN_VAL_SPLIT_RATIO = 0.7
@@ -59,7 +59,7 @@ class PyTorchDataModule(pl.LightningDataModule):
             self.dataset = getattr(torchvision.datasets, self.dataset_name)
         else:
             # TODO: support user local dataset folder
-            warning.warn('If you are using customized dataset, please specify a dataset type.')
+            warnings.warn('If you are using customized dataset, please specify a dataset type.')
             raise ValueError(f'torchvision.datasets does not have dataset name {self.dataset_name}')
 
         self.train_dataset = None
