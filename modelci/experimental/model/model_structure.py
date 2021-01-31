@@ -4,6 +4,8 @@
 Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 1/27/2021
+
+ML model structure definitions.
 """
 import abc
 import inspect

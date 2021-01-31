@@ -11,11 +11,11 @@ import torch
 from fastapi import APIRouter
 from tensorflow import Operation
 
+from modelci.experimental.model.model_structure import Structure
 from modelci.hub.manager import register_model, get_remote_model_weight
 from modelci.persistence.service import ModelService
 from modelci.types.bo import ModelVersion, Engine, IOShape
 from modelci.types.type_conversion import model_data_type_to_torch, type_to_data_type
-from modelci.types.vo.model_structure import Structure
 from modelci.utils.exceptions import ModelStructureError
 
 router = APIRouter()
