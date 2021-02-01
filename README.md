@@ -46,10 +46,10 @@ Several features are in beta testing and will be available in the next release s
 ### Using Pip
 
 ```shell script
-# need to install requests package first
-pip install setuptools requests==2.23.0
-# then install modelci
-pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master --use-feature=2020-resolver
+# upgrade installation packages first
+pip install -U setuptools requests
+# install modelci from GitHub
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
 ```
 
 ### Command Line  
