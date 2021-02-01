@@ -43,7 +43,7 @@ Several features are in beta testing and will be available in the next release s
 
 ## Installation
 
-### Using Pip
+### using pip
 
 ```shell script
 # upgrade installation packages first
@@ -52,17 +52,16 @@ pip install -U setuptools requests
 pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
 ```
 
-### Command Line  
+### create conda workspace 
+
+**Note**
+- Conda and Docker are required to run this installation script.
+- To use TensorRT, you have to manually install TensorRT (`sudo` is required). See instruction 
+[here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html). 
 
 ```shell script
 bash scripts/install.sh
 ```
-
-**Note**
-
-- Conda and Docker are required to run this installation script.
-- To use TensorRT, you have to manually install TensorRT (`sudo` is required). See instruction 
-[here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html).
 
 ### Docker
 
