@@ -15,6 +15,7 @@
 </p>
 
 <p align="center">
+    <a href="README.md">English Version</a> •
     <a href="#系统简介">系统简介</a> •
     <a href="#简易安装">简易安装</a> •
     <a href="#快速使用">快速使用</a> •
