@@ -13,6 +13,8 @@ from typing import Optional, Union, Tuple, List
 
 from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator
 
+from modelci.types.vo import Status
+
 
 class DataModuleProperty(BaseModel):
     dataset: str
@@ -140,6 +142,7 @@ class TrainingJob(BaseModel):
     lr_scheduler_type: LRSchedulerType
     lr_scheduler_property: _LRSchedulerProperty
     loss_function: LossFunctionType
+    status: Status
 
     @root_validator(pre=True)
     def optimizer_type_inject(cls, values):  # noqa
