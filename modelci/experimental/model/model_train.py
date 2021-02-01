@@ -63,6 +63,8 @@ class AdagradProperty(OptimizerPropertyBase):
     weight_decay: Optional[PositiveFloat]
     eps: Optional[PositiveFloat]
 
+    __required_type__ = OptimizerType.ADAGRAD
+
 
 class AdamProperty(OptimizerPropertyBase):
     betas: Optional[Tuple[PositiveFloat, PositiveFloat]]
@@ -70,12 +72,15 @@ class AdamProperty(OptimizerPropertyBase):
     weight_decay: Optional[PositiveFloat]
     amsgrad: Optional[bool]
 
+    __required_type__ = OptimizerType.ADAM
+
 
 _OptimizerProperty = Union[SGDProperty, AdagradProperty, AdamProperty]
 
 
 class LRSchedulerType(Enum):
     STEP_LR = 'StepLR'
+    MULTI_STEP_LR = 'MultiStepLR'
     EXPONENTIAL_LR = 'ExponentialLR'
 
 
@@ -97,7 +102,7 @@ class LRSchedulerPropertyBase(BaseModel, abc.ABC):
     def check_required_type(cls, values):  # pylint: disable=no-self-use
         required_type = values.get('__required_type__')
         if isinstance(required_type, str):
-            required_type = OptimizerType(required_type)
+            required_type = LRSchedulerType(required_type)
         if required_type != cls.__required_type__:
             raise ValueError(f'Given type {required_type}, required {cls.__required_type__}')
         return values
@@ -107,10 +112,14 @@ class StepLRProperty(LRSchedulerPropertyBase):
     step_size: PositiveInt
     gamma: Optional[PositiveFloat]
 
+    __required_type__ = LRSchedulerType.STEP_LR
+
 
 class MultiStepLRProperty(LRSchedulerPropertyBase):
     milestones: List[PositiveInt]
     gamma: Optional[PositiveFloat]
+
+    __required_type__ = LRSchedulerType.MULTI_STEP_LR
 
     @validator('milestones')
     def check_list_increasing(cls, v):  # pylint: disable=no-self-use
@@ -120,6 +129,8 @@ class MultiStepLRProperty(LRSchedulerPropertyBase):
 
 class ExponentialLRProperty(LRSchedulerPropertyBase):
     gamma: Optional[PositiveFloat]
+
+    __required_type__ = LRSchedulerType.EXPONENTIAL_LR
 
 
 _LRSchedulerProperty = Union[StepLRProperty, MultiStepLRProperty, ExponentialLRProperty]
