@@ -16,7 +16,7 @@
 
 <p align="center">
     <a href="CHINESE_README.md">中文简介</a> •
-    <a href="#features">Features</a> •
+    <a href="#introduction">Features</a> •
     <a href="#installation">Installation</a> •
     <a href="#quick-start">Quick Start</a> •
     <a href="#tutorial">Tutorial</a> •
@@ -25,7 +25,10 @@
     <a href="#license">License</a>
 </p>
 
-## Features
+## Introduction
+Machine Learning Model CI is a **one-stop machine learning MLOps platform on clouds**, aiming to solve the "last mile" problem between model training and model serving. We implement a highly automated pipeline between the trained models and the online machine learning applications.
+
+The system is currently under rapid iterative development. We offer the following features and users 1) can register models to our system and enjoy the automated pipeline, 2) or use them individually.
 
 - **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
 - **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud. Support **Tensorflow SavedModel**, **ONNX**, **TorchScript**, **TensorRT**
@@ -34,13 +37,9 @@
 - **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device. Support **Tensorflow Serving**, **Trion Inference Serving**, **ONNX runtime**, **Web Framework (e.g., FastAPI)**
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
-*The system is still under the active development. Please go to [[CHANGELOG.md]](CHANGELOG.md) to check our latest update information. If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
+Several features are in beta testing and will be available in the next release soon. You are welcome to discuss them with us in the issueS.
 
-**News**
-- (2020-10) You can install the system with pip.
-- (2020-08) The work has been accepted as an opensource competition paper at ACMMM2020! The full paper is available at https://arxiv.org/abs/2006.05096.
-- (2020-06) The docker image has been built.
-- (2020-05) The cAdvisor is applied to monitor the running containers.
+*If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
 
 ## Installation
 
