@@ -19,9 +19,10 @@
     <a href="#introduction">Features</a> •
     <a href="#installation">Installation</a> •
     <a href="#quick-start">Quick Start</a> •
+    <a href="#quickstart-with-notebook">Notebook</a> •
     <a href="#tutorial">Tutorial</a> •
     <a href="#contributing">Contributing</a> •
-    <a href="#Citation">Citation</a> •
+    <a href="#citation">Citation</a> •
     <a href="#license">License</a>
 </p>
 
@@ -37,7 +38,10 @@ The system is currently under rapid iterative development. We offer the followin
 - **Dispatcher** launches a serving system to load a model in a containerized manner and dispatches the MLaaS to a device. Support **Tensorflow Serving**, **Trion Inference Serving**, **ONNX runtime**, **Web Framework (e.g., FastAPI)**
 - **Controller** receives data from the monitor and node exporter, and controls the whole workflow of our system.
 
-Several features are in beta testing and will be available in the next release soon. You are welcome to discuss them with us in the issueS.
+Several features are in beta testing and will be available in the next release soon. You are welcome to discuss them with us in the issues.
+
+- [ ] **Automatic model quantization and pruning.** 
+- [ ] **Model visulization and fine-tune.**
 
 *If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
 
@@ -73,19 +77,13 @@ docker pull mlmodelci/mlmodelci
 
 <!-- Please refer to [here](/integration/README.md) for more information. -->
 
-## Demo
-
-We have built a demo, check [here](./frontend) to run.
-
-| Web frontend |   Workflow     |
-|:------------:|:--------------:|
-| <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
 ## Quick Start
 
-MLModelCI provides a complete platform for managing, converting, profiling, and deploying models as cloud services
-(MLaaS). You just need to register your models to our platform and it will take over the rest tasks. To give a more 
-clear start, we present the whole pipeline step by step as follows.
+The below figurs illusrates the 
+| Web frontend |   Workflow     |
+|:------------:|:--------------:|
+| <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
 ### Start the ModelCI service
 
@@ -94,15 +92,13 @@ Once you have installed, start ModelCI service by:
 modelci start
 ```
 
-### Register a Model
-
-Assume you have a ResNet50 model trained by PyTorch. To deploy it as a cloud service, the first step is to publish the model to our system.
+### 1. Register and publish a model
 
 ```python
 from modelci.hub.manager import register_model
 from modelci.types.bo import IOShape, Task, Metric
 
-# Register a Trained ResNet50 Model to ModelHub.
+# Publish a newly trained ResNet50 model to our system.
 register_model(
     'home/ResNet50/pytorch/1.zip',
     dataset='ImageNet',
@@ -115,17 +111,14 @@ register_model(
 )
 ```
 
-### Convert a Model
-
-As the a newly trained model can not be deployed to cloud, MLModelCI converts it to some optimized formats (e.g., 
-TorchScript and ONNX) automatically.
-
-You can finish this on your own:
+### 2. Automatic model conversion
 
 ```python
 from modelci.hub.converter import ONNXConverter
 from modelci.types.bo import IOShape
 
+# the system will trigger the function automaticlly
+# users can call the function individually 
 ONNXConverter.from_torch_module(
     '<path to torch model>', 
     '<path to export onnx model>', 
@@ -133,17 +126,14 @@ ONNXConverter.from_torch_module(
 )
 ```
 
-### Profile a Model
-
-Before deploying an optimized model as a cloud service, developers need to understand its runtime performance 
-(e.g., latency and throughput) so to set up a more cost-effective solution (batch size? device? serving system? etc.). 
-MLModelCI provides a profile to automate the processing.
-
-You can manually profile your models as follows:
+### 3. Automatic model profiling
 
 ```python
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.profiler import Profiler
+
+# the system will trigger the function and dispatch the profiling jobs to idle workers automaticlly
+# users can call the function individually 
 
 test_data_item = ...
 batch_num = ...
@@ -160,12 +150,7 @@ profiler = Profiler(model_info=model_info, server_name='name of your server', in
 profiler.diagnose('device name')
 ```
 
-### Dispatch a model
-
-MLModelCI provides a dispatcher to deploy a model as a cloud service. The dispatcher launches a serving system 
-(e.g. Tensorflow-Serving) to load a model in a containerized manner and dispatches the MLaaS to a device.
-
-We search for a converted model and then dispatch it to a device with a specific batch size.
+### 5. Model dispatch
 
 ```python
 from modelci.hub.deployer.dispatcher import serve
@@ -174,32 +159,30 @@ from modelci.types.bo import Framework, Engine
 
 model_info = ...
 
-# get saved model information
+# get saved model information and bind the model with a ML serving system
 model_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
 
-# deploy the model to cuda device 0.
 serve(save_path=model_info[0].saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
 ```
 
-Now your model is an efficient cloud service!
-
-For more information please take a look at our tutorials.
-
 ## Quickstart with Notebook
 
-- [Installation, Converting and Registering Image Classification Model by ModelCI](./example/notebook/image_classification_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/image_classification_model_deployment.ipynb)
-- [Converting and Registering Object Detection model by ModelCI](./example/notebook/object_detection_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/object_detection_model_deployment.ipynb)
+- [Publish an image classification model](./example/notebook/image_classification_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/image_classification_model_deployment.ipynb)
+- [Publish an object detection model](./example/notebook/object_detection_model_deployment.ipynb)  [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/cap-ntu/ML-Model-CI/blob/master/example/notebook/object_detection_model_deployment.ipynb)
+- [ ] Model performance analysis
+- [ ] Model dispatch
+- [ ] Model visualization&edit
 
 ## Tutorial
 
 After the Quick Start, we provide detailed tutorials for users to understand our system.
 
 - [Register a Model in ModelHub](./docs/tutorial/register.md)
+- [Manage Models with Housekeeper within a Team](./docs/tutorial/housekeeper.md)
 - [Convert a Model to Optimized Formats](./docs/tutorial/convert.md)
 - [Profile a Model for Cost-Effective MLaaS](./docs/tutorial/profile.md)
 - [Dispatch a Model as a Cloud Service](./docs/tutorial/retrieve-and-deploy.md)
-- [Manage Models with Housekeeper](./docs/tutorial/housekeeper.md)
-
+- [ ] model visulization and editor within a team
 
 ## Contributing
 
