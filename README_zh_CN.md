@@ -47,6 +47,19 @@ Machine Learning Model CI 是一个**云上一站式机器学习模型和服务�
 
 ## 简易安装
 
+```shell script
+# need to install requests package first
+pip install setuptools requests==2.23.0
+# then install modelci
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master --use-feature=2020-resolver
+```
+
+### Command Line  
+
+```shell script
+bash scripts/install.sh
+```
+
 ## 快速使用
 
 ## 详细教程
