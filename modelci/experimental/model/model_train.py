@@ -43,7 +43,7 @@ class OptimizerPropertyBase(BaseModel, abc.ABC):
     __required_type__: OptimizerType
 
     @root_validator(pre=True)
-    def check_required_type(cls, values):  # noqa
+    def check_required_type(cls, values):  # pylint: disable=no-self-use
         required_type = values.get('__required_type__')
         if isinstance(required_type, str):
             required_type = OptimizerType(required_type)
@@ -94,7 +94,7 @@ class LRSchedulerPropertyBase(BaseModel, abc.ABC):
     __required_type__: LRSchedulerType
 
     @root_validator(pre=True)
-    def check_required_type(cls, values):  # noqa
+    def check_required_type(cls, values):  # pylint: disable=no-self-use
         required_type = values.get('__required_type__')
         if isinstance(required_type, str):
             required_type = OptimizerType(required_type)
@@ -113,7 +113,7 @@ class MultiStepLRProperty(LRSchedulerPropertyBase):
     gamma: Optional[PositiveFloat]
 
     @validator('milestones')
-    def check_list_increasing(cls, v):
+    def check_list_increasing(cls, v):  # pylint: disable=no-self-use
         if not all(i < j for i, j in zip(v, v[1:])):
             raise ValueError(f'List {v} is not strictly increasing.')
 
@@ -145,7 +145,7 @@ class TrainingJob(BaseModel):
     status: Status
 
     @root_validator(pre=True)
-    def optimizer_type_inject(cls, values):  # noqa
+    def optimizer_type_inject(cls, values):  # pylint: disable=no-self-use
         """
         Inject type for `optimizer_property` based on the value provided in `optimizer_type`.
         """
