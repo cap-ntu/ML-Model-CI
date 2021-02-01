@@ -15,6 +15,7 @@
 </p>
 
 <p align="center">
+    <a href="CHINESE_README.md">中文简介</a> •
     <a href="#features">Features</a> •
     <a href="#installation">Installation</a> •
     <a href="#quick-start">Quick Start</a> •
