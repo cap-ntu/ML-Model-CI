@@ -47,6 +47,7 @@ Machine Learning Model CI 是一个**云上一站式机器学习模型和服务�
 
 ## 简易安装
 
+### pip安装
 ```shell script
 # 确保安装依赖是最新版本
 pip install -U setuptools requests
@@ -54,9 +55,14 @@ pip install -U setuptools requests
 pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
 ```
 
-### Command Line  
+### conda工作空间
+**Note**
+- 需要已经安装好conda和docker
+- 需要`sudo`权限安装TensorRT （如需使用）
 
 ```shell script
+git clone git@github.com:cap-ntu/ML-Model-CI.git
+cd ML-Model-CI
 bash scripts/install.sh
 ```
 
