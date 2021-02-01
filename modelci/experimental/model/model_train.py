@@ -131,6 +131,7 @@ class LossFunctionType(Enum):
 
 class TrainingJob(BaseModel):
     id: str
+    model: str
     data_module: DataModuleProperty
     min_epochs: Optional[PositiveInt]
     max_epochs: PositiveInt
