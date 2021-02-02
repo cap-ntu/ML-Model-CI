@@ -162,6 +162,10 @@ class TrainingJob(BaseModel):
         Inject type for `optimizer_property` based on the value provided in `optimizer_type`.
         """
         test_type, test_prop = values.get('optimizer_type'), values.get('optimizer_property')
+        if test_type is None or test_prop is None:
+            # not checking here
+            return values
+
         if isinstance(test_prop, dict):
             test_prop['__required_type__'] = test_type
         elif isinstance(test_prop, OptimizerPropertyBase):
@@ -181,6 +185,10 @@ class TrainingJob(BaseModel):
         Inject type for `lr_scheduler_property` based on the value provided in `lr_scheduler_type`.
         """
         test_type, test_prop = values.get('lr_scheduler_type'), values.get('lr_scheduler_property')
+        if test_type is None or test_prop is None:
+            # not checking here
+            return values
+
         if isinstance(test_prop, dict):
             test_prop['__required_type__'] = test_type
         elif isinstance(test_prop, LRSchedulerPropertyBase):
@@ -250,3 +258,17 @@ class TrainingJobIn(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class TrainingJobUpdate(TrainingJob):
+    """
+    TODO: more optional fields for update
+    """
+    model: Optional[ObjectIdStr]
+    data_module: Optional[DataModuleProperty]
+    max_epochs: Optional[PositiveInt]
+    optimizer_type: Optional[OptimizerType]
+    optimizer_property: Optional[_OptimizerProperty]
+    lr_scheduler_type: Optional[LRSchedulerType]
+    lr_scheduler_property: Optional[_LRSchedulerProperty]
+    loss_function: Optional[LossFunctionType]

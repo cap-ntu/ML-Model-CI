@@ -14,12 +14,15 @@ from typing import Optional
 import pytorch_lightning as pl
 import torch
 
+import modelci.experimental.curd.model_train as model_train_curd
+from modelci.experimental.finetuner import OUTPUT_DIR
 from modelci.experimental.finetuner.pytorch_datamodule import PyTorchDataModule
 from modelci.experimental.finetuner.transfer_learning import freeze, FineTuneModule
-from modelci.experimental.model.model_train import TrainingJob
+from modelci.experimental.model.model_train import TrainingJob, TrainingJobUpdate
 from modelci.hub.manager import get_remote_model_weight
 from modelci.persistence.service import ModelService
 from modelci.types.bo import Engine
+from modelci.types.vo import Status
 
 
 class BaseTrainer(abc.ABC):
@@ -121,6 +124,7 @@ class PyTorchTrainer(BaseTrainer):
             model=model,
             data_loader_kwargs={'datamodule': data_module},
             trainer_kwargs={
+                'default_root_dir': training_job.data_module.data_dir or OUTPUT_DIR,
                 'weights_summary': None,
                 'progress_bar_refresh_rate': 1,
                 'num_sanity_val_steps': 0,
@@ -131,7 +135,14 @@ class PyTorchTrainer(BaseTrainer):
         return trainer
 
     def start(self):
+        def training_done_callback(future):
+            model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.PASS))
+            # TODO: save to database
+            print(self.export_model())
+
         self._task = self._executor.submit(self.trainer_engine.fit, self.model, **self._data_loader_kwargs)
+        self._task.add_done_callback(training_done_callback)
+        model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.RUNNING))
 
     def join(self, timeout=None):
         if self._task:
@@ -141,9 +152,10 @@ class PyTorchTrainer(BaseTrainer):
         if self._task:
             # trigger pytorch lighting training graceful shutdown via a ^C
             self._task.set_exception(KeyboardInterrupt())
+            model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.FAIL))
 
     def export_model(self):
-        return self.model.cpu()
+        return self.model.net.cpu()
 
     def resume_soon(self):
         if self._event_pause.is_set():
