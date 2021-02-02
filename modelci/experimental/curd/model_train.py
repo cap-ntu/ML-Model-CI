@@ -10,7 +10,7 @@ from typing import List
 from bson import ObjectId
 
 from modelci.config import MONGO_DB
-from modelci.experimental.model.model_train import TrainingJob, TrainingJobIn
+from modelci.experimental.model.model_train import TrainingJob, TrainingJobIn, TrainingJobUpdate
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
 from modelci.persistence.model_dao import ModelDAO
@@ -49,8 +49,19 @@ def save(training_job_in: TrainingJobIn) -> str:
     return _collection.insert_one(training_job.dict(exclude_none=True)).inserted_id
 
 
-def update() -> int:
-    raise NotImplementedError()
+def update(training_job: TrainingJobUpdate) -> int:
+    # exists by ID
+    if not bool(_collection.count_documents(filter={'_id': ObjectId(training_job.id)}, limit=1)):
+        raise ValueError(f'id {training_job.id} not found.')
+
+    # check model ID
+    if training_job.model and not ModelDAO.exists_by_id(ObjectId(training_job.model)):
+        raise ServiceException(f'Model with ID {training_job.model} not exist.')
+
+    # save update
+    update_data = training_job.dict(exclude_unset=True)
+    result = _collection.update_one(filter={'_id': ObjectId(training_job.id)}, update={'$set': update_data})
+    return result.modified_count
 
 
 def delete_by_id(id: str) -> TrainingJob:

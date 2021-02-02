@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 from modelci.experimental.curd.model_train import save, get_by_id, get_all, delete_by_id, delete_all
+from modelci.experimental.finetuner.trainer import PyTorchTrainer
 from modelci.experimental.model.model_train import TrainingJob, TrainingJobIn
 
 router = APIRouter()
@@ -30,8 +31,10 @@ def create_training_job(training_job: TrainingJobIn):
     """
     id_ = save(training_job_in=training_job)
     if id_ is not None:
-        # TODO: submit the job to the controller
-        pass
+        training_job = get_by_id(id_)
+        trainer = PyTorchTrainer.from_training_job(training_job)
+        trainer.start()
+        trainer.join()
     return {'id': str(id_)}
 
 
