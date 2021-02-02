@@ -85,14 +85,14 @@ The below figurs illusrates the
 |:------------:|:--------------:|
 | <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
-### Start the ModelCI service
+### 1. Start the ModelCI service
 
 Once you have installed, start ModelCI service by:
 ```shell script
 modelci start
 ```
 
-### 1. Register and publish a model
+### 2. Register and publish a model
 
 ```python
 from modelci.hub.manager import register_model
@@ -111,7 +111,7 @@ register_model(
 )
 ```
 
-### 2. Automatic model conversion
+### 3. Automatic model conversion
 
 ```python
 from modelci.hub.converter import ONNXConverter
@@ -126,7 +126,7 @@ ONNXConverter.from_torch_module(
 )
 ```
 
-### 3. Automatic model profiling
+### 4. Automatic model profiling
 
 ```python
 from modelci.hub.client.torch_client import CVTorchClient
