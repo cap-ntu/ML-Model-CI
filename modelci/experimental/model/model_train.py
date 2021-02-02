@@ -11,15 +11,15 @@ import abc
 from enum import Enum
 from typing import Optional, Union, Tuple, List
 
-from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator
+from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator, confloat
 
 from modelci.experimental.model.common import ObjectIdStr
 from modelci.types.vo import Status
 
 
 class DataModuleProperty(BaseModel):
-    dataset: str
-    batch_size: int
+    dataset_name: str
+    batch_size: PositiveInt
     num_workers: Optional[int] = 1
     data_dir: Optional[str]
 
@@ -54,14 +54,14 @@ class OptimizerPropertyBase(BaseModel, abc.ABC):
 
 
 class SGDProperty(OptimizerPropertyBase):
-    momentum: Optional[PositiveFloat]
+    momentum: Optional[confloat(ge=0)]
 
     __required_type__ = OptimizerType.SGD
 
 
 class AdagradProperty(OptimizerPropertyBase):
     lr_decay: Optional[PositiveFloat]
-    weight_decay: Optional[PositiveFloat]
+    weight_decay: Optional[confloat(ge=0)]
     eps: Optional[PositiveFloat]
 
     __required_type__ = OptimizerType.ADAGRAD
@@ -70,7 +70,7 @@ class AdagradProperty(OptimizerPropertyBase):
 class AdamProperty(OptimizerPropertyBase):
     betas: Optional[Tuple[PositiveFloat, PositiveFloat]]
     eps: Optional[Tuple[PositiveFloat]]
-    weight_decay: Optional[PositiveFloat]
+    weight_decay: Optional[confloat(ge=0)]
     amsgrad: Optional[bool]
 
     __required_type__ = OptimizerType.ADAM
@@ -138,9 +138,9 @@ _LRSchedulerProperty = Union[StepLRProperty, MultiStepLRProperty, ExponentialLRP
 
 
 class LossFunctionType(Enum):
-    L1_Loss = 'L1Loss'
-    MSE_Loss = 'MSELoss'
-    CROSS_ENTROPY_LOSS = 'CrossEntropyLoss'
+    L1_Loss = 'torch.nn.L1Loss'
+    MSE_Loss = 'torch.nn.MSELoss'
+    CROSS_ENTROPY_LOSS = 'torch.nn.CrossEntropyLoss'
 
 
 class TrainingJob(BaseModel):
