@@ -7,6 +7,7 @@
     "@alifd/theme-design-pro": "^0.x",
     "antd": "^4.2.0",
     "axios": "^0.19.2",
+    "graphviz-react": "^1.1.1",
     "moment": "^2.24.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
