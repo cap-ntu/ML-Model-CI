@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Author: USER
-Email: yli056@e.ntu.edu.sg
-Date: 10/12/2020
-"""
+
 import click
 import requests
 

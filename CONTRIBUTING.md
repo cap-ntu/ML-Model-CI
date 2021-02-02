@@ -1,10 +1,10 @@
 # Contributing
 
-ModelCI welcomes your contributions!
+MLModelCI welcomes your contributions!
 
 ## Setup Environment
 
-To contribute to the ModelCI, you need to setup the developing environment first, you can easily create the dev environments according to the following steps. All the scripts should be executed under the root project of this repo.
+To contribute to the MLModelCI, you need to setup the developing environment first, you can easily create the dev environments according to the following steps. All the scripts should be executed under the root project of this repo.
 
 ### Create Anaconda Environment
 
@@ -39,7 +39,7 @@ source scripts/setup_env.sh
 2. Set project root as source root.
 
 
-After these steps, try running ModelCI locally and start making a difference!
+After these steps, try running MLModelCI locally and start making a difference!
 
 
 ## Coding Standards
