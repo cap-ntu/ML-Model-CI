@@ -13,6 +13,7 @@ from typing import Optional, Union, Tuple, List
 
 from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator
 
+from modelci.experimental.model.common import ObjectIdStr
 from modelci.types.vo import Status
 
 
@@ -143,8 +144,8 @@ class LossFunctionType(Enum):
 
 
 class TrainingJob(BaseModel):
-    id: str
-    model: str
+    id: Optional[ObjectIdStr]
+    model: ObjectIdStr
     data_module: DataModuleProperty
     min_epochs: Optional[PositiveInt]
     max_epochs: PositiveInt
@@ -153,7 +154,61 @@ class TrainingJob(BaseModel):
     lr_scheduler_type: LRSchedulerType
     lr_scheduler_property: _LRSchedulerProperty
     loss_function: LossFunctionType
-    status: Status
+    status: Optional[Status] = Status.UNKNOWN
+
+    @root_validator(pre=True)
+    def optimizer_type_inject(cls, values):  # pylint: disable=no-self-use
+        """
+        Inject type for `optimizer_property` based on the value provided in `optimizer_type`.
+        """
+        test_type, test_prop = values.get('optimizer_type'), values.get('optimizer_property')
+        if isinstance(test_prop, dict):
+            test_prop['__required_type__'] = test_type
+        elif isinstance(test_prop, OptimizerPropertyBase):
+            if test_prop.__required_type__.value != test_type:
+                raise TypeError(f'`optimizer_property` has incorrect type {type(test_prop)} as '
+                                f'defined in `optimizer_type`: {test_type}.')
+        else:
+            raise TypeError(
+                f'Cannot parse type, expected one of [`dict`, `OptimizerPropertyBase`], got {type(test_prop)}.'
+            )
+
+        return values
+
+    @root_validator(pre=True)
+    def lr_scheduler_type_inject(cls, values):  # pylint: disable=no-self-use
+        """
+        Inject type for `lr_scheduler_property` based on the value provided in `lr_scheduler_type`.
+        """
+        test_type, test_prop = values.get('lr_scheduler_type'), values.get('lr_scheduler_property')
+        if isinstance(test_prop, dict):
+            test_prop['__required_type__'] = test_type
+        elif isinstance(test_prop, LRSchedulerPropertyBase):
+            if test_prop.__required_type__.value != test_type:
+                raise TypeError(f'`lr_scheduler_property` has incorrect type {type(test_prop)} as '
+                                f'defined in `lr_scheduler_type`: {test_type}.')
+        else:
+            raise TypeError(
+                f'Cannot parse type, expected one of [`dict`, `LRSchedulerPropertyBase`], got {type(test_prop)}.'
+            )
+
+        return values
+
+    class Config:
+        use_enum_values = True
+        fields = {'id': '_id'}
+
+
+class TrainingJobIn(BaseModel):
+    model: ObjectIdStr
+    data_module: DataModuleProperty
+    min_epochs: Optional[PositiveInt]
+    max_epochs: PositiveInt
+    optimizer_type: OptimizerType
+    optimizer_property: _OptimizerProperty
+    lr_scheduler_type: LRSchedulerType
+    lr_scheduler_property: _LRSchedulerProperty
+    loss_function: LossFunctionType
 
     @root_validator(pre=True)
     def optimizer_type_inject(cls, values):  # pylint: disable=no-self-use
@@ -173,3 +228,25 @@ class TrainingJob(BaseModel):
             )
 
         return values
+
+    @root_validator(pre=True)
+    def lr_scheduler_type_inject(cls, values):  # pylint: disable=no-self-use
+        """
+        Inject type for `lr_scheduler_property` based on the value provided in `lr_scheduler_type`.
+        """
+        test_type, test_prop = values.get('lr_scheduler_type'), values.get('lr_scheduler_property')
+        if isinstance(test_prop, dict):
+            test_prop['__required_type__'] = test_type
+        elif isinstance(test_prop, LRSchedulerPropertyBase):
+            if test_prop.__required_type__.value != test_type:
+                raise TypeError(f'`lr_scheduler_property` has incorrect type {type(test_prop)} as '
+                                f'defined in `lr_scheduler_type`: {test_type}.')
+        else:
+            raise TypeError(
+                f'Cannot parse type, expected one of [`dict`, `LRSchedulerPropertyBase`], got {type(test_prop)}.'
+            )
+
+        return values
+
+    class Config:
+        use_enum_values = True
