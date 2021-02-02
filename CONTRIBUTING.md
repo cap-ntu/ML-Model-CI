@@ -18,22 +18,14 @@ conda install pytorch-lightning -c conda-forge
 pip install hummingbird-ml==0.2.1 torchviz==0.0.1
 ```
 
-### Install Service
-
-```shell script
-sh scripts/start_service.sh
-```
-
-After installing the service we need, you must setup the environment variables to activate the service. You can run the script in command line, if you are using IDE to develop, you should add the EnvFile manually.
-
-
-#### Option1: Using Script
+### Start Services
 
 ```shell script
 source scripts/setup_env.sh
+python modelci/cli/__init__.py start
 ```
 
-#### Option2: Setup Manually while Using IDE
+### Option2: Setup Manually while Using IDE
 
 1. Add `modelci/env-mongodb.env` as an EnvFile.
 2. Set project root as source root.
