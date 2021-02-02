@@ -23,6 +23,7 @@ async def get_model_structure(id: str):  # noqa
         id (str): Model object ID.
     """
     # return model DAG
+
     raise NotImplementedError('Method `get_model_structure` not implemented.')
 
 

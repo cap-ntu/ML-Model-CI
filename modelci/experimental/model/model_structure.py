@@ -9,6 +9,8 @@ ML model structure definitions.
 """
 import abc
 import inspect
+import re
+import sys
 from enum import Enum
 from typing import Optional, Union, Tuple, Dict, OrderedDict
 
@@ -33,13 +35,17 @@ class LayerType(Enum):
     Enum of the supported layer type. This is to hint which class of layer the provided data is converted to.
     """
 
-    LINEAR = 'torch.nn.Linear'
-    CONV_1D = 'torch.nn.Conv1d'
-    CONV_2D = 'torch.nn.Conv2d'
-    RELU = 'torch.nn.ReLU'
-    TANH = 'torch.nn.Tanh'
-    BN_1D = 'torch.nn.BatchNorm1d'
-    BN_2D = 'torch.nn.BatchNorm2d'
+    LINEAR = 'Linear'
+    CONV_1D = 'Conv1d'
+    CONV_2D = 'Conv2d'
+    RELU = 'ReLU'
+    TANH = 'Tanh'
+    BN_1D = 'BatchNorm1d'
+    BN_2D = 'BatchNorm2d'
+    MP_1D = 'MaxPool1d'
+    MP_2D = 'MaxPool2d'
+    AAP_1D = 'AdaptiveAvgPool1d'
+    AAP_2D = 'AdaptiveAvgPool2d'
 
 
 class ModelLayer(BaseModel, abc.ABC):
@@ -106,7 +112,7 @@ class ModelLayer(BaseModel, abc.ABC):
         return layer_type
 
 
-class LinearLayer(ModelLayer):
+class Linear(ModelLayer):
     in_features: Optional[PositiveInt]
     out_features: Optional[PositiveInt]
     bias: Optional[bool]
@@ -123,8 +129,8 @@ class _ConvNd(ModelLayer, abc.ABC):
     out_channels: Optional[PositiveInt]
     kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]]
     stride: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]]
-    padding: conint(ge=0)
-    dilation: PositiveInt
+    padding: Optional[Union[conint(ge=0), Tuple[conint(ge=0), ...]]]
+    dilation: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]]
     groups: PositiveInt
     bias: bool
     padding_mode: Literal['zeros', 'reflect', 'replicate', 'circular']
@@ -135,16 +141,10 @@ class _ConvNd(ModelLayer, abc.ABC):
 
 
 class Conv1d(_ConvNd):
-    kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt]]]
-    stride: Optional[Union[PositiveInt, Tuple[PositiveInt]]]
-
     __required_type__ = LayerType.CONV_1D
 
 
 class Conv2d(_ConvNd):
-    kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt, PositiveInt]]]
-    stride: Optional[Union[PositiveInt, Tuple[PositiveInt, PositiveInt]]]
-
     __required_type__ = LayerType.CONV_2D
 
 
@@ -174,7 +174,37 @@ class BatchNorm2d(_BatchNorm):
     __required_type__ = LayerType.BN_2D
 
 
-_LayerType = Union[LinearLayer, Conv1d, Conv2d, ReLU, Tanh, BatchNorm1d, BatchNorm2d]
+class _MaxPool(ModelLayer, abc.ABC):
+    kernel_size: Union[PositiveInt, Tuple[PositiveInt, ...]]
+    stride: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]] = None
+    padding: Union[conint(ge=0), Tuple[conint(ge=0), ...]] = 0
+    dilation: Union[PositiveInt, Tuple[PositiveInt, ...]] = 1
+    return_indices: bool = False
+    ceil_mode: bool = False
+
+
+class MaxPool1d(_MaxPool):
+    __required_type__ = LayerType.MP_1D
+
+
+class MaxPool2d(_MaxPool):
+    __required_type__ = LayerType.MP_2D
+
+
+class _AdaptiveAvgPool(ModelLayer, abc.ABC):
+    output_size: Union[PositiveInt, Tuple[PositiveInt, ...]]
+
+
+class AdaptiveAvgPool1d(_AdaptiveAvgPool):
+    __required_type__ = LayerType.AAP_1D
+
+
+class AdaptiveAvgPool2d(_AdaptiveAvgPool):
+    __required_type__ = LayerType.AAP_2D
+
+
+_LayerType = Union[Linear, Conv1d, Conv2d, ReLU, Tanh, BatchNorm1d, BatchNorm2d, MaxPool1d, MaxPool2d,
+                   AdaptiveAvgPool1d, AdaptiveAvgPool2d]
 
 
 class Structure(BaseModel):
@@ -222,3 +252,36 @@ class Structure(BaseModel):
         default_factory=dict,
         example={'conv1': {'fc1': 'A'}}
     )
+
+    @classmethod
+    def from_model(cls, model):
+        """
+        use torch hook to extract model layer information
+        refer to https://github.com/sksq96/pytorch-summary/blob/master/torchsummary/torchsummary.py
+
+        Args:
+            model (torch.nn.Module): PyTorch model object
+
+        Returns:
+            model structure object
+
+        """
+
+        from collections import OrderedDict
+        layer_mapping = OrderedDict()
+        connection_mapping = {}
+
+        layer_list = [param.replace(".weight", "") for param in dict(list(model.named_parameters())).keys() if
+                      ".weight" in param]
+        for layer_name in layer_list:
+            layer_path_str = re.sub("\.(\d+)\.", r"[\1].", layer_name)
+            model_layer = eval(f'model.{layer_path_str}')
+            layer_class_name = str(model_layer.__class__).split(".")[-1].split("'")[0]
+            if hasattr(sys.modules[__name__], layer_class_name):
+                layer: ModelLayer = getattr(sys.modules[__name__], layer_class_name)
+                layer_mapping[layer_name] = layer.parse_layer_obj(model_layer)
+            else:
+                raise NotImplementedError(f"layer type {layer_class_name} parser is not available currently")
+
+        # TODO add model layer connection to connection_mapping
+        return cls(layer=layer_mapping, connection=connection_mapping)
