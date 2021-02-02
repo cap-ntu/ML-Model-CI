@@ -105,7 +105,7 @@ class PyTorchTrainer(BaseTrainer):
         # build pytorch lightning module
         fine_tune_module_kwargs = {
             'net': net,
-            'loss': eval(str(training_job.loss_function))(),
+            'loss': eval(str(training_job.loss_function))(),  # nosec
             'batch_size': training_job.data_module.batch_size,
             'num_workers': training_job.data_module.num_workers,
         }
