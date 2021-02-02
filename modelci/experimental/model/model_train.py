@@ -11,14 +11,15 @@ import abc
 from enum import Enum
 from typing import Optional, Union, Tuple, List
 
-from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator
+from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator, confloat
 
+from modelci.experimental.model.common import ObjectIdStr
 from modelci.types.vo import Status
 
 
 class DataModuleProperty(BaseModel):
-    dataset: str
-    batch_size: int
+    dataset_name: str
+    batch_size: PositiveInt
     num_workers: Optional[int] = 1
     data_dir: Optional[str]
 
@@ -53,14 +54,14 @@ class OptimizerPropertyBase(BaseModel, abc.ABC):
 
 
 class SGDProperty(OptimizerPropertyBase):
-    momentum: Optional[PositiveFloat]
+    momentum: Optional[confloat(ge=0)]
 
     __required_type__ = OptimizerType.SGD
 
 
 class AdagradProperty(OptimizerPropertyBase):
     lr_decay: Optional[PositiveFloat]
-    weight_decay: Optional[PositiveFloat]
+    weight_decay: Optional[confloat(ge=0)]
     eps: Optional[PositiveFloat]
 
     __required_type__ = OptimizerType.ADAGRAD
@@ -69,7 +70,7 @@ class AdagradProperty(OptimizerPropertyBase):
 class AdamProperty(OptimizerPropertyBase):
     betas: Optional[Tuple[PositiveFloat, PositiveFloat]]
     eps: Optional[Tuple[PositiveFloat]]
-    weight_decay: Optional[PositiveFloat]
+    weight_decay: Optional[confloat(ge=0)]
     amsgrad: Optional[bool]
 
     __required_type__ = OptimizerType.ADAM
@@ -137,14 +138,14 @@ _LRSchedulerProperty = Union[StepLRProperty, MultiStepLRProperty, ExponentialLRP
 
 
 class LossFunctionType(Enum):
-    L1_Loss = 'L1Loss'
-    MSE_Loss = 'MSELoss'
-    CROSS_ENTROPY_LOSS = 'CrossEntropyLoss'
+    L1_Loss = 'torch.nn.L1Loss'
+    MSE_Loss = 'torch.nn.MSELoss'
+    CROSS_ENTROPY_LOSS = 'torch.nn.CrossEntropyLoss'
 
 
 class TrainingJob(BaseModel):
-    id: str
-    model: str
+    id: Optional[ObjectIdStr]
+    model: ObjectIdStr
     data_module: DataModuleProperty
     min_epochs: Optional[PositiveInt]
     max_epochs: PositiveInt
@@ -153,7 +154,69 @@ class TrainingJob(BaseModel):
     lr_scheduler_type: LRSchedulerType
     lr_scheduler_property: _LRSchedulerProperty
     loss_function: LossFunctionType
-    status: Status
+    status: Optional[Status] = Status.UNKNOWN
+
+    @root_validator(pre=True)
+    def optimizer_type_inject(cls, values):  # pylint: disable=no-self-use
+        """
+        Inject type for `optimizer_property` based on the value provided in `optimizer_type`.
+        """
+        test_type, test_prop = values.get('optimizer_type'), values.get('optimizer_property')
+        if test_type is None or test_prop is None:
+            # not checking here
+            return values
+
+        if isinstance(test_prop, dict):
+            test_prop['__required_type__'] = test_type
+        elif isinstance(test_prop, OptimizerPropertyBase):
+            if test_prop.__required_type__.value != test_type:
+                raise TypeError(f'`optimizer_property` has incorrect type {type(test_prop)} as '
+                                f'defined in `optimizer_type`: {test_type}.')
+        else:
+            raise TypeError(
+                f'Cannot parse type, expected one of [`dict`, `OptimizerPropertyBase`], got {type(test_prop)}.'
+            )
+
+        return values
+
+    @root_validator(pre=True)
+    def lr_scheduler_type_inject(cls, values):  # pylint: disable=no-self-use
+        """
+        Inject type for `lr_scheduler_property` based on the value provided in `lr_scheduler_type`.
+        """
+        test_type, test_prop = values.get('lr_scheduler_type'), values.get('lr_scheduler_property')
+        if test_type is None or test_prop is None:
+            # not checking here
+            return values
+
+        if isinstance(test_prop, dict):
+            test_prop['__required_type__'] = test_type
+        elif isinstance(test_prop, LRSchedulerPropertyBase):
+            if test_prop.__required_type__.value != test_type:
+                raise TypeError(f'`lr_scheduler_property` has incorrect type {type(test_prop)} as '
+                                f'defined in `lr_scheduler_type`: {test_type}.')
+        else:
+            raise TypeError(
+                f'Cannot parse type, expected one of [`dict`, `LRSchedulerPropertyBase`], got {type(test_prop)}.'
+            )
+
+        return values
+
+    class Config:
+        use_enum_values = True
+        fields = {'id': '_id'}
+
+
+class TrainingJobIn(BaseModel):
+    model: ObjectIdStr
+    data_module: DataModuleProperty
+    min_epochs: Optional[PositiveInt]
+    max_epochs: PositiveInt
+    optimizer_type: OptimizerType
+    optimizer_property: _OptimizerProperty
+    lr_scheduler_type: LRSchedulerType
+    lr_scheduler_property: _LRSchedulerProperty
+    loss_function: LossFunctionType
 
     @root_validator(pre=True)
     def optimizer_type_inject(cls, values):  # pylint: disable=no-self-use
@@ -173,3 +236,39 @@ class TrainingJob(BaseModel):
             )
 
         return values
+
+    @root_validator(pre=True)
+    def lr_scheduler_type_inject(cls, values):  # pylint: disable=no-self-use
+        """
+        Inject type for `lr_scheduler_property` based on the value provided in `lr_scheduler_type`.
+        """
+        test_type, test_prop = values.get('lr_scheduler_type'), values.get('lr_scheduler_property')
+        if isinstance(test_prop, dict):
+            test_prop['__required_type__'] = test_type
+        elif isinstance(test_prop, LRSchedulerPropertyBase):
+            if test_prop.__required_type__.value != test_type:
+                raise TypeError(f'`lr_scheduler_property` has incorrect type {type(test_prop)} as '
+                                f'defined in `lr_scheduler_type`: {test_type}.')
+        else:
+            raise TypeError(
+                f'Cannot parse type, expected one of [`dict`, `LRSchedulerPropertyBase`], got {type(test_prop)}.'
+            )
+
+        return values
+
+    class Config:
+        use_enum_values = True
+
+
+class TrainingJobUpdate(TrainingJob):
+    """
+    TODO: more optional fields for update
+    """
+    model: Optional[ObjectIdStr]
+    data_module: Optional[DataModuleProperty]
+    max_epochs: Optional[PositiveInt]
+    optimizer_type: Optional[OptimizerType]
+    optimizer_property: Optional[_OptimizerProperty]
+    lr_scheduler_type: Optional[LRSchedulerType]
+    lr_scheduler_property: Optional[_LRSchedulerProperty]
+    loss_function: Optional[LossFunctionType]

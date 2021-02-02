@@ -5,7 +5,6 @@ Author: yuanmingleee
 Email: 
 Date: 1/29/2021
 """
-import ast
 
 import torch
 from fastapi import APIRouter
@@ -71,7 +70,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
 
             # check if the provided type matches the original type
             layer_type = type(net_layer)
-            layer_type_provided = ast.literal_eval(layer_param.type_.value)
+            layer_type_provided = eval(layer_param.type_.value)  # nosec
             if layer_type is not layer_type_provided:
                 raise ModelStructureError(f'Expect `{layer_name}.type_` to be {layer_type}, '
                                           f'but got {layer_type_provided}')
