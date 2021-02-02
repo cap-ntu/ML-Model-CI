@@ -7,14 +7,20 @@ Date: 1/31/2021
 
 ML model structure related API
 """
+import torch
 from fastapi import APIRouter
+from modelci.hub.manager import get_remote_model_weight
+
+from modelci.types.bo import Engine
+
+from modelci.persistence.service import ModelService
 
 from modelci.experimental.model.model_structure import Structure
 
 router = APIRouter()
 
 
-@router.get('/{id}')  # TODO: add response_model
+@router.get('/{id}', response_model=Structure)
 async def get_model_structure(id: str):  # noqa
     """
     Get model structure as a model structure graph (connection between layer as edge, layers as nodes)
@@ -23,8 +29,15 @@ async def get_model_structure(id: str):  # noqa
         id (str): Model object ID.
     """
     # return model DAG
+    model = ModelService.get_model_by_id(id)
+    if model.engine != Engine.PYTORCH:
+        raise ValueError(f'model {id} is not supported for editing. '
+                         f'Currently only support model with engine=PYTORCH')
 
-    raise NotImplementedError('Method `get_model_structure` not implemented.')
+    # download model as local cache
+    cache_path = get_remote_model_weight(model=model)
+    net = torch.load(cache_path)
+    return Structure.from_model(net)
 
 
 @router.patch('/{id}')  # TODO: add response_model

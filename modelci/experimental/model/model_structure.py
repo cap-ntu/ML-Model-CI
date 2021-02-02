@@ -254,10 +254,9 @@ class Structure(BaseModel):
     )
 
     @classmethod
-    def from_model(cls, model):
+    def from_model(cls, model): #noqa
         """
-        use torch hook to extract model layer information
-        refer to https://github.com/sksq96/pytorch-summary/blob/master/torchsummary/torchsummary.py
+        extract model layer information
 
         Args:
             model (torch.nn.Module): PyTorch model object

@@ -64,6 +64,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         if layer_op == Operation.MODIFY:
 
             # check if the layer name exists
+            # TODO check if layer path exists eg."layer1.0.conv1"
             if not hasattr(net, layer_name):
                 raise ModelStructureError(f'Structure layer name `{layer_name}` not found in model {id}.')
             net_layer = getattr(net, layer_name)
