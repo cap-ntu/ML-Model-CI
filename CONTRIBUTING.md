@@ -25,15 +25,6 @@ source scripts/setup_env.sh
 python modelci/cli/__init__.py start
 ```
 
-### Option2: Setup Manually while Using IDE
-
-1. Add `modelci/env-mongodb.env` as an EnvFile.
-2. Set project root as source root.
-
-
-After these steps, try running MLModelCI locally and start making a difference!
-
-
 ## Coding Standards
 
 ### Unit Tests
