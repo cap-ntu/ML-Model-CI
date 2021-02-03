@@ -37,27 +37,27 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     this.state = {
       graphData: '',
       isLoaded: false,
-	  modelStructure: {layer: {}, connection: {}},
-	  finetuneConfig: DEFAULT_FINETUNE_CONFIG,
-	  visible: false,
-	  currentLayerName: '',
-	  currentLayerInfo: {},
-	  layerSchema: {},
-	  configSchema: {
-		  'title' : 'Finetune Settings',
-		  'type' : 'object',
-		  'properties' : {
-          'dataset_name': {
-			'type' : 'string',
-			default: 'CIFAR10',
-            enum: ['CIFAR10']
-          }
-		  }
-	  }
+      modelStructure: {layer: {}, connection: {}},
+      finetuneConfig: DEFAULT_FINETUNE_CONFIG,
+      visible: false,
+      currentLayerName: '',
+      currentLayerInfo: {},
+      layerSchema: {},
+      configSchema: {
+        'title' : 'Finetune Settings',
+        'type' : 'object',
+        'properties' : {
+            'dataset_name': {
+        'type' : 'string',
+        default: 'CIFAR10',
+              enum: ['CIFAR10']
+            }
+        }
+      }
     };
     this.showLayerInfo = this.showLayerInfo.bind(this);
-	this.layerSubmit = this.layerSubmit.bind(this);
-	this.configSubmit = this.configSubmit.bind(this);
+	  this.layerSubmit = this.layerSubmit.bind(this);
+	  this.configSubmit = this.configSubmit.bind(this);
   }
 
   public async componentDidMount() {
