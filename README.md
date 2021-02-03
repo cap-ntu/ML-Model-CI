@@ -87,9 +87,9 @@ The below figurs illusrates the
 
 ### 1. Start the ModelCI service
 
-Once you have installed, start ModelCI service by:
+Once you have installed, start MLModelCI service on a leader server by:
 ```shell script
-modelci start
+modelci service init
 ```
 
 ### 2. Register and publish a model
