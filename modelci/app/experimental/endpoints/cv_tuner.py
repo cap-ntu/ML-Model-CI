@@ -128,4 +128,12 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             convert=False, profile=False
         )
 
-    return True
+        model_bo = ModelService.get_models(
+            name=model.name,
+            task=model.task,
+            framework=model.framework,
+            engine=model.engine,
+            version=ModelVersion(model.version.ver + 1)
+        )[0]
+
+    return {'id' : model_bo.id}

@@ -118,7 +118,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
    */
   configSubmit = async ()=>{
 	  // submit model structure
-	  console.log(this.state.modelStructure.layer)
 	  let layers = this.state.modelStructure.layer
 	  let updatedLayers = Object.keys(layers).reduce(function(r, e) {
 		if (layers[e].op_ != 'E') r[e] = layers[e]
@@ -126,10 +125,12 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
 	  }, {})
 	 // TODO add connection update info 
 	  let submittedStructure: ModelStructure = {"layer": updatedLayers, "connection": {}}
-	  await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
-	  // submit training job
-	  await axios.post(config.trainerURL, this.state.finetuneConfig)
-
+	  let res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
+    // submit training job
+    let newConfig = {...this.state.finetuneConfig}
+    newConfig.model = res.data.id;
+    res = await axios.post(config.trainerURL, newConfig)
+    console.log(res.data.id)
   }
 
 
@@ -141,7 +142,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
   public handleConfigChange = (config: any)=>{
 	  let newConfig = {...this.state.finetuneConfig}
 	  newConfig.data_module = { ...config.formData, ...newConfig.data_module};
-	  newConfig.model = this.props.match.params.id;
 	  this.setState({ finetuneConfig: newConfig })
   }
 
