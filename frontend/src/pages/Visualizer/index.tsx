@@ -6,7 +6,7 @@ import { config } from 'ice';
 import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
-import {FinetuneConfig,ModelStructure,DEFAULT_FINETUNE_CONFIG} from './utils/type'
+import {ModelStructure} from './utils/type'
 
 const defaultOptions: GraphvizOptions = {
   fit: true,
@@ -23,7 +23,6 @@ type VisualizerState = {
   graphData: string; 
   isLoaded: boolean; 
   modelStructure: ModelStructure;
-  finetuneConfig: FinetuneConfig;
   visible: boolean;
   currentLayerName: string;
   currentLayerInfo: object;
@@ -38,7 +37,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
       graphData: '',
       isLoaded: false,
       modelStructure: {layer: {}, connection: {}},
-      finetuneConfig: DEFAULT_FINETUNE_CONFIG,
       visible: false,
       currentLayerName: '',
       currentLayerInfo: {},
@@ -57,7 +55,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     };
     this.showLayerInfo = this.showLayerInfo.bind(this);
 	  this.layerSubmit = this.layerSubmit.bind(this);
-	  this.configSubmit = this.configSubmit.bind(this);
   }
 
   public async componentDidMount() {
@@ -126,24 +123,10 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
 	 // TODO add connection update info 
 	  let submittedStructure: ModelStructure = {"layer": updatedLayers, "connection": {}}
 	  let res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
-    // submit training job
-    let newConfig = {...this.state.finetuneConfig}
-    newConfig.model = res.data.id;
-    res = await axios.post(config.trainerURL, newConfig)
     console.log(res.data.id)
+    // TODO submit training job
   }
 
-
-  /**
-   * update finetine job config
-   * TODO add more config options
-   * @param e event
-   */
-  public handleConfigChange = (config: any)=>{
-	  let newConfig = {...this.state.finetuneConfig}
-	  newConfig.data_module = { ...config.formData, ...newConfig.data_module};
-	  this.setState({ finetuneConfig: newConfig })
-  }
 
   public render() {
     return (
@@ -177,7 +160,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
 			<Form 
 			schema={this.state.configSchema}  
 			onSubmit={this.configSubmit}
-			onChange={this.handleConfigChange}
 			/>
         </Col>
       </Row>
