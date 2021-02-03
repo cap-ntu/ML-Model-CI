@@ -45,11 +45,11 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
         'title' : 'Finetune Settings',
         'type' : 'object',
         'properties' : {
-            'dataset_name': {
-        'type' : 'string',
-        default: 'CIFAR10',
-              enum: ['CIFAR10']
-            }
+          'dataset_name': {
+            'type' : 'string',
+            default: 'CIFAR10',
+            enum: ['CIFAR10']
+          }
         }
       }
     };
@@ -77,52 +77,53 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
    */
   public showLayerInfo = (title: string)=>{
     // TODO validation check of model layer name
-    if(title.includes('.weight') && !title.includes('downsample')){
-	  const layerName: string = title.replace('.weight','');
-	  let layersInfo: object = this.state.modelStructure.layer;
+    // TODO display model layer without weight
+    if(title.includes('.weight') || title.includes('.bias')){
+	  const layerName: string = title.replace('.weight','').replace('.bias','');
+	  const layersInfo: object = this.state.modelStructure.layer;
 	  if(layerName in layersInfo){
-		  let layerInfo = { ...layersInfo[layerName] }
+		  const layerInfo = { ...layersInfo[layerName] }
 		  this.setState({ currentLayerInfo: layersInfo[layerName] })
 		  this.setState({ currentLayerName: layerName})
 		  delete layerInfo.op_;
 		  delete layerInfo.type_;
 		  const schema = GenerateSchema.json('Layer Parameters',layerInfo)
 		  delete schema.$schema
-		  for(let property in schema.properties){
-			schema.properties[property].default = layerInfo[property]
+		  for(const property in schema.properties){
+          schema.properties[property].default = layerInfo[property]
 		  }
 		  this.setState({layerSchema: schema, visible: true, currentLayerName: layerName})
 	  }	  
     }
   }
 
-    /**
+  /**
    * update model layer information after submit
    */
   public layerSubmit = (layer: any)=>{
-	  let modifyMark = {op_: 'M'}
-	  let newConfig = { ...this.state.currentLayerInfo, ...layer.formData, ...modifyMark }
-	  let newStructure = {...this.state.modelStructure}
+	  const modifyMark = {op_: 'M'}
+	  const newConfig = { ...this.state.currentLayerInfo, ...layer.formData, ...modifyMark }
+	  const newStructure = {...this.state.modelStructure}
 	  newStructure.layer[this.state.currentLayerName] =  newConfig
 	  this.setState({ modelStructure: newStructure	})
 	  // close the form
 	  this.setState({visible: false});
-}
+  }
 
 
   /**
    * submit finetune job and modified model structures
    */
-  configSubmit = async ()=>{
+  public configSubmit = async ()=>{
 	  // submit model structure
-	  let layers = this.state.modelStructure.layer
-	  let updatedLayers = Object.keys(layers).reduce(function(r, e) {
-		if (layers[e].op_ != 'E') r[e] = layers[e]
-		return r;
+	  const layers = this.state.modelStructure.layer
+	  const updatedLayers = Object.keys(layers).reduce(function(r, e) {
+      if (layers[e].op_ !== 'E') r[e] = layers[e]
+      return r;
 	  }, {})
 	 // TODO add connection update info 
-	  let submittedStructure: ModelStructure = {"layer": updatedLayers, "connection": {}}
-	  let res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
+	  const submittedStructure: ModelStructure = {'layer': updatedLayers, 'connection': {}}
+	  const res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
     console.log(res.data.id)
     // TODO submit training job
   }
@@ -157,10 +158,10 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
           </Card>
         </Col>
         <Col span={8}>
-			<Form 
-			schema={this.state.configSchema}  
-			onSubmit={this.configSubmit}
-			/>
+          <Form 
+            schema={this.state.configSchema}  
+            onSubmit={this.configSubmit}
+          />
         </Col>
       </Row>
     );

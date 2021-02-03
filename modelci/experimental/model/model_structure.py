@@ -270,16 +270,15 @@ class Structure(BaseModel):
         layer_mapping = collections.OrderedDict()
         connection_mapping = {}
 
-        layer_list = [param.replace(".weight", "") for param in dict(list(model.named_parameters())).keys() if
-                      ".weight" in param and "downsample" not in param]
-        for layer_name in layer_list:
-            layer_path_str = re.sub("\.(\d+)\.", r"[\1].", layer_name)
-            # TODO validation check
-            model_layer = eval(f'model.{layer_path_str}') # nosec
+        layer_list = model.named_modules()
+        for (layer_name,model_layer) in layer_list:
             layer_class_name = str(model_layer.__class__).split(".")[-1].split("'")[0]
             if hasattr(sys.modules[__name__], layer_class_name):
                 layer: ModelLayer = getattr(sys.modules[__name__], layer_class_name)
                 layer_mapping[layer_name] = layer.parse_layer_obj(model_layer)
+            elif layer_class_name in ["Sequential", "Bottleneck", "ResNet"]:
+                # exclude sequencial, bottleNeck
+                pass
             else:
                 raise NotImplementedError(f"layer type {layer_class_name} parser is not available currently")
 
