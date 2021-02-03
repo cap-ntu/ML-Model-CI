@@ -13,6 +13,7 @@ import re
 import sys
 from enum import Enum
 from typing import Optional, Union, Tuple, Dict, OrderedDict
+import collections
 
 from pydantic import BaseModel, PositiveInt, conint, PositiveFloat, Field, validator
 from typing_extensions import Literal
@@ -266,8 +267,7 @@ class Structure(BaseModel):
 
         """
 
-        from collections import OrderedDict
-        layer_mapping = OrderedDict()
+        layer_mapping = collections.OrderedDict()
         connection_mapping = {}
 
         layer_list = [param.replace(".weight", "") for param in dict(list(model.named_parameters())).keys() if
@@ -275,7 +275,7 @@ class Structure(BaseModel):
         for layer_name in layer_list:
             layer_path_str = re.sub("\.(\d+)\.", r"[\1].", layer_name)
             # TODO validation check
-            model_layer = eval(f'model.{layer_path_str}')
+            model_layer = eval(f'model.{layer_path_str}') # nosec
             layer_class_name = str(model_layer.__class__).split(".")[-1].split("'")[0]
             if hasattr(sys.modules[__name__], layer_class_name):
                 layer: ModelLayer = getattr(sys.modules[__name__], layer_class_name)
