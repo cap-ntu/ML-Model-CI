@@ -9,11 +9,8 @@ ML model structure definitions.
 """
 import abc
 import inspect
-import re
-import sys
 from enum import Enum
 from typing import Optional, Union, Tuple, Dict, OrderedDict
-import collections
 
 from pydantic import BaseModel, PositiveInt, conint, PositiveFloat, Field, validator
 from typing_extensions import Literal
@@ -253,34 +250,3 @@ class Structure(BaseModel):
         default_factory=dict,
         example={'conv1': {'fc1': 'A'}}
     )
-
-    @classmethod
-    def from_model(cls, model): #noqa
-        """
-        extract model layer information
-
-        Args:
-            model (torch.nn.Module): PyTorch model object
-
-        Returns:
-            model structure object
-
-        """
-
-        layer_mapping = collections.OrderedDict()
-        connection_mapping = {}
-
-        layer_list = model.named_modules()
-        for (layer_name,model_layer) in layer_list:
-            layer_class_name = str(model_layer.__class__).split(".")[-1].split("'")[0]
-            if hasattr(sys.modules[__name__], layer_class_name):
-                layer: ModelLayer = getattr(sys.modules[__name__], layer_class_name)
-                layer_mapping[layer_name] = layer.parse_layer_obj(model_layer)
-            elif layer_class_name in ["Sequential", "Bottleneck", "ResNet"]:
-                # exclude sequencial, bottleNeck
-                pass
-            else:
-                raise NotImplementedError(f"layer type {layer_class_name} parser is not available currently")
-
-        # TODO add model layer connection to connection_mapping
-        return cls(layer=layer_mapping, connection=connection_mapping)

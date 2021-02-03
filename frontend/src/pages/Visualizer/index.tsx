@@ -7,6 +7,7 @@ import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
 import {ModelStructure} from './utils/type'
+import mockStructure from './utils/mock';
 
 const defaultOptions: GraphvizOptions = {
   fit: true,
@@ -36,7 +37,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     this.state = {
       graphData: '',
       isLoaded: false,
-      modelStructure: {layer: {}, connection: {}},
+      modelStructure: mockStructure,
       visible: false,
       currentLayerName: '',
       currentLayerInfo: {},
