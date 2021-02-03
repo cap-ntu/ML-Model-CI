@@ -1,4 +1,4 @@
-#  Copyright (c) NTU_CAP 2020. All Rights Reserved.
+#  Copyright (c) NTU_CAP 2021. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ logger = Logger(__name__)
 
 @click.group()
 def service():
-    """A complete MLOps platform for managing, converting and profiling models and then deploying models as cloud services (MLaaS)"""
     pass
 
 

@@ -1,4 +1,4 @@
-#  Copyright (c) NTU_CAP 2020. All Rights Reserved.
+#  Copyright (c) NTU_CAP 2021. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -14,13 +14,18 @@
 
 import click
 from modelci.cli.modelci_service import *
+from modelci.cli import model_cli
 
 @click.group()
+@click.version_option()
 def cli():
+    """A complete MLOps platform for managing, converting and profiling models and then deploying models as cloud services (MLaaS)"""
     pass
 
 
 cli.add_command(service)
+cli.add_command(model_cli.commands)	
+cli.add_command(model_cli.models)
 
 if __name__ == '__main__':
     cli()
