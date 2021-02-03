@@ -81,10 +81,10 @@ docker pull mlmodelci/mlmodelci
 |:------------:|:--------------:|
 | <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
-### 1. 启动MLModelCI服务
+### 1. 启动MLModelCI中心服务
 
 ```shell script
-modelci start
+modelci service init
 ```
 
 ### 2. 注册和发布模型

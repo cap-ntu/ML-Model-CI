@@ -22,7 +22,7 @@ pip install hummingbird-ml==0.2.1 torchviz==0.0.1
 
 ```shell script
 source scripts/setup_env.sh
-python modelci/cli/__init__.py start
+python modelci/cli/__init__.py service init
 ```
 
 ## Coding Standards

@@ -13,20 +13,15 @@
 #  permissions and limitations under the License.
 
 import click
-from modelci.cli.modelci_service import *
-from modelci.cli import model_cli
 
-@click.group()
-@click.version_option()
-def cli():
-    """A complete MLOps platform for managing, converting and profiling models and then deploying models as cloud services (MLaaS)"""
-    pass
+def register():
+    raise NotImplementedError
 
+def show_models():
+    raise NotImplementedError
 
-cli.add_command(service)
-cli.add_command(model_cli.commands)	
-cli.add_command(model_cli.models)
+def download_model():
+    raise NotImplementedError
 
-if __name__ == '__main__':
-    cli()
-
+def download_model_from_url():
+    raise NotImplementedError
