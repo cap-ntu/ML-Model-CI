@@ -35,17 +35,17 @@ class LayerType(Enum):
     Enum of the supported layer type. This is to hint which class of layer the provided data is converted to.
     """
 
-    LINEAR = 'Linear'
-    CONV_1D = 'Conv1d'
-    CONV_2D = 'Conv2d'
-    RELU = 'ReLU'
-    TANH = 'Tanh'
-    BN_1D = 'BatchNorm1d'
-    BN_2D = 'BatchNorm2d'
-    MP_1D = 'MaxPool1d'
-    MP_2D = 'MaxPool2d'
-    AAP_1D = 'AdaptiveAvgPool1d'
-    AAP_2D = 'AdaptiveAvgPool2d'
+    LINEAR = 'torch.nn.Linear'
+    CONV_1D = 'torch.nn.Conv1d'
+    CONV_2D = 'torch.nn.Conv2d'
+    RELU = 'torch.nn.ReLU'
+    TANH = 'torch.nn.Tanh'
+    BN_1D = 'torch.nn.BatchNorm1d'
+    BN_2D = 'torch.nn.BatchNorm2d'
+    MP_1D = 'torch.nn.MaxPool1d'
+    MP_2D = 'torch.nn.MaxPool2d'
+    AAP_1D = 'torch.nn.AdaptiveAvgPool1d'
+    AAP_2D = 'torch.nn.AdaptiveAvgPool2d'
 
 
 class ModelLayer(BaseModel, abc.ABC):
@@ -271,9 +271,10 @@ class Structure(BaseModel):
         connection_mapping = {}
 
         layer_list = [param.replace(".weight", "") for param in dict(list(model.named_parameters())).keys() if
-                      ".weight" in param]
+                      ".weight" in param and "downsample" not in param]
         for layer_name in layer_list:
             layer_path_str = re.sub("\.(\d+)\.", r"[\1].", layer_name)
+            # TODO validation check
             model_layer = eval(f'model.{layer_path_str}')
             layer_class_name = str(model_layer.__class__).split(".")[-1].split("'")[0]
             if hasattr(sys.modules[__name__], layer_class_name):

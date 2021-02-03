@@ -5,8 +5,14 @@
   "dependencies": {
     "@alifd/next": "^1.19.4",
     "@alifd/theme-design-pro": "^0.x",
+    "@hikeman/react-graphviz": "^0.0.7",
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
+    "@rjsf/core": "^2.4.1",
+    "@rjsf/material-ui": "^2.4.1",
     "antd": "^4.2.0",
     "axios": "^0.19.2",
+    "generate-schema": "^2.6.0",
     "graphviz-react": "^1.1.1",
     "moment": "^2.24.0",
     "react": "^16.4.1",
@@ -14,6 +20,7 @@
     "reqwest": "^2.0.5"
   },
   "devDependencies": {
+    "@hikeman/react-graphviz": "^0.0.7",
     "@ice/spec": "^1.0.0",
     "@types/d3-graphviz": "^2.6.6",
     "@types/react": "^16.9.41",

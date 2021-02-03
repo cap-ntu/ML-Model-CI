@@ -8,9 +8,9 @@ Date: 1/29/2021
 
 import torch
 from fastapi import APIRouter
-from tensorflow import Operation
 
-from modelci.experimental.model.model_structure import Structure
+
+from modelci.experimental.model.model_structure import Structure, Operation
 from modelci.hub.manager import register_model, get_remote_model_weight
 from modelci.persistence.service import ModelService
 from modelci.types.bo import ModelVersion, Engine, IOShape
@@ -48,11 +48,12 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
     Returns:
 
     """
+    if len(updated_layer.layer.items()) == 0:
+        return True
     model = ModelService.get_model_by_id(id)
     if model.engine != Engine.PYTORCH:
         raise ValueError(f'model {id} is not supported for editing. '
                          f'Currently only support model with engine=PYTORCH')
-
     # download model as local cache
     cache_path = get_remote_model_weight(model=model)
     net = torch.load(cache_path)
@@ -118,6 +119,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         output_shapes.append(output_shape)
 
     if not dry_run:
+        # TODO avoid duplicate version
         register_model(
             net, dataset='', metric=model.metric, task=model.task,
             inputs=model.inputs, outputs=output_shapes,
