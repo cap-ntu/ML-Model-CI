@@ -126,11 +126,9 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
 	  }, {})
 	 // TODO add connection update info 
 	  let submittedStructure: ModelStructure = {"layer": updatedLayers, "connection": {}}
-	  console.log(submittedStructure )
-	  let res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
-	  console.log(res.data)
+	  await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`,submittedStructure)
 	  // submit training job
-	//   await axios.post(config.trainerURL, this.state.finetuneConfig)
+	  await axios.post(config.trainerURL, this.state.finetuneConfig)
 
   }
 
