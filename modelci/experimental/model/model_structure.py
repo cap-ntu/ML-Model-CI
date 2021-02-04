@@ -40,6 +40,10 @@ class LayerType(Enum):
     TANH = 'torch.nn.Tanh'
     BN_1D = 'torch.nn.BatchNorm1d'
     BN_2D = 'torch.nn.BatchNorm2d'
+    MP_1D = 'torch.nn.MaxPool1d'
+    MP_2D = 'torch.nn.MaxPool2d'
+    AAP_1D = 'torch.nn.AdaptiveAvgPool1d'
+    AAP_2D = 'torch.nn.AdaptiveAvgPool2d'
 
 
 class ModelLayer(BaseModel, abc.ABC):
@@ -106,7 +110,7 @@ class ModelLayer(BaseModel, abc.ABC):
         return layer_type
 
 
-class LinearLayer(ModelLayer):
+class Linear(ModelLayer):
     in_features: Optional[PositiveInt]
     out_features: Optional[PositiveInt]
     bias: Optional[bool]
@@ -123,8 +127,8 @@ class _ConvNd(ModelLayer, abc.ABC):
     out_channels: Optional[PositiveInt]
     kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]]
     stride: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]]
-    padding: conint(ge=0)
-    dilation: PositiveInt
+    padding: Optional[Union[conint(ge=0), Tuple[conint(ge=0), ...]]]
+    dilation: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]]
     groups: PositiveInt
     bias: bool
     padding_mode: Literal['zeros', 'reflect', 'replicate', 'circular']
@@ -135,16 +139,10 @@ class _ConvNd(ModelLayer, abc.ABC):
 
 
 class Conv1d(_ConvNd):
-    kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt]]]
-    stride: Optional[Union[PositiveInt, Tuple[PositiveInt]]]
-
     __required_type__ = LayerType.CONV_1D
 
 
 class Conv2d(_ConvNd):
-    kernel_size: Optional[Union[PositiveInt, Tuple[PositiveInt, PositiveInt]]]
-    stride: Optional[Union[PositiveInt, Tuple[PositiveInt, PositiveInt]]]
-
     __required_type__ = LayerType.CONV_2D
 
 
@@ -174,7 +172,37 @@ class BatchNorm2d(_BatchNorm):
     __required_type__ = LayerType.BN_2D
 
 
-_LayerType = Union[LinearLayer, Conv1d, Conv2d, ReLU, Tanh, BatchNorm1d, BatchNorm2d]
+class _MaxPool(ModelLayer, abc.ABC):
+    kernel_size: Union[PositiveInt, Tuple[PositiveInt, ...]]
+    stride: Optional[Union[PositiveInt, Tuple[PositiveInt, ...]]] = None
+    padding: Union[conint(ge=0), Tuple[conint(ge=0), ...]] = 0
+    dilation: Union[PositiveInt, Tuple[PositiveInt, ...]] = 1
+    return_indices: bool = False
+    ceil_mode: bool = False
+
+
+class MaxPool1d(_MaxPool):
+    __required_type__ = LayerType.MP_1D
+
+
+class MaxPool2d(_MaxPool):
+    __required_type__ = LayerType.MP_2D
+
+
+class _AdaptiveAvgPool(ModelLayer, abc.ABC):
+    output_size: Union[PositiveInt, Tuple[PositiveInt, ...]]
+
+
+class AdaptiveAvgPool1d(_AdaptiveAvgPool):
+    __required_type__ = LayerType.AAP_1D
+
+
+class AdaptiveAvgPool2d(_AdaptiveAvgPool):
+    __required_type__ = LayerType.AAP_2D
+
+
+_LayerType = Union[Linear, Conv1d, Conv2d, ReLU, Tanh, BatchNorm1d, BatchNorm2d, MaxPool1d, MaxPool2d,
+                   AdaptiveAvgPool1d, AdaptiveAvgPool2d]
 
 
 class Structure(BaseModel):

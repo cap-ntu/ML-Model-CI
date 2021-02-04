@@ -8,9 +8,9 @@ Date: 1/29/2021
 
 import torch
 from fastapi import APIRouter
-from tensorflow import Operation
 
-from modelci.experimental.model.model_structure import Structure
+
+from modelci.experimental.model.model_structure import Structure, Operation
 from modelci.hub.manager import register_model, get_remote_model_weight
 from modelci.persistence.service import ModelService
 from modelci.types.bo import ModelVersion, Engine, IOShape
@@ -48,11 +48,12 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
     Returns:
 
     """
+    if len(updated_layer.layer.items()) == 0:
+        return True
     model = ModelService.get_model_by_id(id)
     if model.engine != Engine.PYTORCH:
         raise ValueError(f'model {id} is not supported for editing. '
                          f'Currently only support model with engine=PYTORCH')
-
     # download model as local cache
     cache_path = get_remote_model_weight(model=model)
     net = torch.load(cache_path)
@@ -64,6 +65,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         if layer_op == Operation.MODIFY:
 
             # check if the layer name exists
+            # TODO check if layer path exists eg."layer1.0.conv1"
             if not hasattr(net, layer_name):
                 raise ModelStructureError(f'Structure layer name `{layer_name}` not found in model {id}.')
             net_layer = getattr(net, layer_name)
@@ -117,12 +119,21 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         output_shapes.append(output_shape)
 
     if not dry_run:
+        # TODO avoid duplicate version
         register_model(
-            net, dataset='', metric=model.metric, task=model.task,
+            net, dataset='', metric={key: 0 for key in model.metric.keys()}, task=model.task,
             inputs=model.inputs, outputs=output_shapes,
             architecture=model.name, framework=model.framework, engine=model.engine,
             version=ModelVersion(model.version.ver + 1),
             convert=False, profile=False
         )
 
-    return True
+        model_bo = ModelService.get_models(
+            name=model.name,
+            task=model.task,
+            framework=model.framework,
+            engine=model.engine,
+            version=ModelVersion(model.version.ver + 1)
+        )[0]
+
+    return {'id' : model_bo.id}
