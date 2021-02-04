@@ -22,11 +22,13 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlparse
 from tqdm.auto import tqdm
 
+from modelci.utils.misc import make_dir
+
 
 
 # TODO: move model registeration related functions from manager to this file
 
-def download_model_from_url(url, file_path, hash_prefix=None, progress=True):
+def _download_model_from_url(url, file_path, hash_prefix=None, progress=True):
     file_size = None
     
     req = Request(url)
@@ -41,7 +43,9 @@ def download_model_from_url(url, file_path, hash_prefix=None, progress=True):
     print(file_size)
 
     dst = os.path.expanduser(file_path)
+    print(dst)
     dst_dir = os.path.dirname(dst)
+    make_dir(dst_dir)
     f = tempfile.NamedTemporaryFile(delete=False, dir=dst_dir)
 
     try:
@@ -74,4 +78,4 @@ def download_model_from_url(url, file_path, hash_prefix=None, progress=True):
 if __name__ == "__main__":
     resnet18_url = "https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth"
     model_name = "resnet18.pth"
-    download_model_from_url(resnet18_url, model_name)
+    _download_model_from_url(resnet18_url, model_name)
