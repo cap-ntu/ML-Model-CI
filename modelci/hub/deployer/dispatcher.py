@@ -99,6 +99,7 @@ def serve_by_name(args):
     model_bo = retrieve_model(architecture_name=model, framework=framework, engine=engine)
     serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
+    # TODO: check if the service is dispatched sucessfully
     model_bo[0].model_status = ModelStatus.IN_SERVICE
     ModelService.update_model(model_bo[0])
 
@@ -106,6 +107,7 @@ def serve_by_name(args):
 def serve_by_task(args):
     model_bo = retrieve_model_by_task(task=args.task)
     serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    # TODO: check if the service is dispatched sucessfully
     model_bo[0].model_status = ModelStatus.IN_SERVICE
     ModelService.update_model(model_bo[0])
 
