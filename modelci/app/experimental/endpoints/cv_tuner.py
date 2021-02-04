@@ -121,7 +121,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
     if not dry_run:
         # TODO avoid duplicate version
         register_model(
-            net, dataset='', metric=model.metric, task=model.task,
+            net, dataset='', metric={key: 0 for key in model.metric.keys()}, task=model.task,
             inputs=model.inputs, outputs=output_shapes,
             architecture=model.name, framework=model.framework, engine=model.engine,
             version=ModelVersion(model.version.ver + 1),
