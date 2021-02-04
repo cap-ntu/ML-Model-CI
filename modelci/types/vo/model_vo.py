@@ -36,15 +36,18 @@ class ModelInputFormat(CaseInsensitiveEnum):
     FORMAT_NHWC = 'FORMAT_NHWC'
     FORMAT_NCHW = 'FORMAT_NCHW'
 
+
 class Task(CaseInsensitiveEnum):
-    IMAGE_CLASSIFICATION = 'image classification'
-    OBJECT_DETECTION = 'object detection'
-    SEGMENTATION = 'segmentation'
+    IMAGE_CLASSIFICATION = 'Image Classification'
+    OBJECT_DETECTION = 'Object Detection'
+    SEGMENTATION = 'Segmentation'
+
 
 class Metric(CaseInsensitiveEnum):
     ACC = 'acc'
     MAP = 'mAp'
     IOU = 'IoU'
+
 
 class Framework(CaseInsensitiveEnum):
     TENSORFLOW = 'TensorFlow'
@@ -67,6 +70,13 @@ class Status(CaseInsensitiveEnum):
     PASS = 'Pass'
     RUNNING = 'Running'
     FAIL = 'Fail'
+
+
+class ModelStatus(CaseInsensitiveEnum):
+    PUBLISHED = 'Published'
+    TRAINING = 'Training'
+    READY = 'Ready'
+    IN_SERVICE = 'In Service'
 
 
 class IOShapeVO(BaseModel):
@@ -183,6 +193,7 @@ class ModelListOut(BaseModel):
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
     status: Status
+    model_status: ModelStatus
     creator: str
     create_time: datetime
 
@@ -201,6 +212,7 @@ class ModelListOut(BaseModel):
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
             status=Status(model_bo.status.name),
+            model_status=ModelStatus(model_bo.model_status.name),
             creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
@@ -219,6 +231,7 @@ class ModelDetailOut(BaseModel):
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
     status: Status
+    model_status: ModelStatus
     creator: str
     create_time: datetime
 
@@ -237,6 +250,7 @@ class ModelDetailOut(BaseModel):
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
             status=Status(model_bo.status.name),
+            model_status=ModelStatus(model_bo.model_status.name),
             creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
@@ -251,5 +265,6 @@ class ModelIn(BaseModel):
     architecture: str
     framework: Framework
     version: int
+    model_status: ModelStatus
     convert: bool
     profile: bool

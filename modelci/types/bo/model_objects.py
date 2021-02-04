@@ -49,12 +49,21 @@ class Engine(Enum):
 
 @unique
 class Status(Enum):
-    """Enumerator of model status
+    """Enumerator of model status TODO remove or combine with ModelStatus
     """
     UNKNOWN = 0
     PASS = 1
     RUNNING = 2
     FAIL = 3
+
+@unique
+class ModelStatus(Enum):
+    """Enumerator of model status in the lifecycle
+    """
+    PUBLISHED = 0
+    TRAINING = 1
+    READY = 2
+    IN_SERVICE =3
 
 
 @unique

@@ -52,6 +52,12 @@ const columns = [
     className: 'column',
   },
   {
+    title: 'Status',
+    dataIndex: 'model_status',
+    key: 'model_status',
+    className: 'column',
+  },
+  {
     title: 'Model User',
     dataIndex: 'creator',
     key: 'creator',
@@ -104,12 +110,12 @@ export default class Dashboard extends React.Component {
     this.loadAllModels();
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     const { pagination } = this.state;
     this.fetch({ pagination });
   }
 
-  handleTableChange = (pagination, filters, sorter) => {
+  public handleTableChange = (pagination, filters, sorter) => {
     this.fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
@@ -118,7 +124,7 @@ export default class Dashboard extends React.Component {
     });
   };
 
-  fetch = (params = {}) => {
+  public fetch = (params = {}) => {
     this.setState({ loading: true });
     reqwest({
       url: config.modelURL,
@@ -137,7 +143,7 @@ export default class Dashboard extends React.Component {
     });
   };
 
-  loadAllModels = () => {
+  public loadAllModels = () => {
     const targetUrl = config.modelURL;
     axios
       .get(targetUrl)

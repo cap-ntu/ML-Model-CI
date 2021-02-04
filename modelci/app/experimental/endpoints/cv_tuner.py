@@ -13,7 +13,7 @@ from tensorflow import Operation
 from modelci.experimental.model.model_structure import Structure
 from modelci.hub.manager import register_model, get_remote_model_weight
 from modelci.persistence.service import ModelService
-from modelci.types.bo import ModelVersion, Engine, IOShape
+from modelci.types.bo import ModelVersion, Engine, IOShape, ModelStatus
 from modelci.types.type_conversion import model_data_type_to_torch, type_to_data_type
 from modelci.utils.exceptions import ModelStructureError
 
@@ -118,9 +118,16 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
 
     if not dry_run:
         register_model(
-            net, dataset='', metric=model.metric, task=model.task,
-            inputs=model.inputs, outputs=output_shapes,
-            architecture=model.name, framework=model.framework, engine=model.engine,
+            net,
+            dataset='',
+            metric=model.metric,
+            task=model.task,
+            inputs=model.inputs,
+            outputs=output_shapes,
+            architecture=model.name,
+            framework=model.framework,
+            engine=model.engine,
+            model_status=ModelStatus.PUBLISHED,
             version=ModelVersion(model.version.ver + 1),
             convert=False, profile=False
         )

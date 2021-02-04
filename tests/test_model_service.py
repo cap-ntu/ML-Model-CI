@@ -11,7 +11,11 @@ from modelci.types.bo import (
     ModelVersion,
     IOShape,
     Weight,
-    StaticProfileResultBO, InfoTuple, Task, Metric,
+    StaticProfileResultBO,
+    InfoTuple,
+    Task,
+    Metric,
+    ModelStatus
 )
 from modelci.types.trtis_objects import ModelInputFormat
 
@@ -31,6 +35,7 @@ def test_register_model():
         task=Task.IMAGE_CLASSIFICATION,
         inputs=[IOShape([-1, 3, 224, 224], dtype=float, format=ModelInputFormat.FORMAT_NCHW)],
         outputs=[IOShape([-1, 1000], dtype=int)],
+        model_status=ModelStatus.READY,
         weight=Weight(bytes([123]))
     )
 

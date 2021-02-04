@@ -1,6 +1,6 @@
 from .dynamic_profile_result_bo import DynamicProfileResultBO, ProfileLatency, ProfileMemory, ProfileThroughput
 from .model_bo import ModelBO
-from .model_objects import DataType, Task, Metric, Framework, Engine, Status, ModelVersion, IOShape, InfoTuple, Weight
+from .model_objects import DataType, Task, Metric, ModelStatus, Framework, Engine, Status, ModelVersion, IOShape, InfoTuple, Weight
 from .profile_result_bo import ProfileResultBO
 from .static_profile_result_bo import StaticProfileResultBO
 

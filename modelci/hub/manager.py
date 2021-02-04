@@ -16,7 +16,7 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
-from modelci.types.bo import IOShape, Task, Metric, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
+from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task']
@@ -34,6 +34,7 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
+        model_status: ModelStatus = ModelStatus.READY,
         convert=True,
         profile=True,
 ):
@@ -62,6 +63,7 @@ def register_model(
         model_input: specify sample model input data
             TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
+        model_status (ModelStatus): Indicate the status of current model in its lifecycle
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
@@ -145,6 +147,7 @@ def register_model(
                 metric=metric,
                 inputs=inputs,
                 outputs=outputs,
+                model_status=model_status,
                 weight=Weight(f, filename=filename)
             )
 
@@ -222,6 +225,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     task = model_config.get('task', None)
     framework = model_config.get('framework', None)
     engine = model_config.get('engine', None)
+    model_status = model_config.get('model_status', None)
     version = model_config.get('version', None)
     convert = model_config.get('convert', True)
 
@@ -240,6 +244,8 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework = Framework[framework.upper()]
     if engine is not None:
         engine = Engine[engine.upper()]
+    if model_status is not None:
+        model_status = ModelStatus[model_status.upper()]
     if version is not None:
         version = ModelVersion(version)
     # os.path.expanduser
@@ -256,6 +262,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework=framework,
         engine=engine,
         version=version,
+        model_status=model_status,
         convert=convert,
     )
 
