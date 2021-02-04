@@ -34,7 +34,14 @@ def modelhub():
 @modelhub.command("publish")
 @click.option('-p', '--ymal_path', required=True, type=str, help='the yaml file path')
 def register_model(ymal_path):
+    """publish a model to our system
+
+    Args:
+        ymal_path ([type]): a ymal file that contains model registeration info
+    """
+    
     register_model_from_yaml(ymal_path)
+    logger.info("model published")
 
 
 @modelhub.command("list")
@@ -52,6 +59,15 @@ def register_model(ymal_path):
 @click.option('-v', '--version', type=click.INT, help='Model version.')
 @click.option('-a', '--all', 'list_all', type=click.BOOL, is_flag=True, help='Show all models.')
 def show_models(name, framework, engine, version, list_all):
+    """show a table that lists all models published in mlmodelci
+
+    Args:
+        name ([type]): [description]
+        framework ([type]): [description]
+        engine ([type]): [description]
+        version ([type]): [description]
+        list_all ([type]): [description]
+    """
     payload = remove_dict_null({'name': name, 'framework': framework, 'engine': engine, 'version': version})
     with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/', params=payload) as r:
         model_list = r.json()
@@ -66,6 +82,12 @@ def download_model():
 @click.option('-u', '--url', required=True, type=str, help='the link to a model')
 @click.option('-p', '--path', required=True, type=str, help='the saved path and file name.')
 def download_model_from_url(url, path):
+    """download a model weight file from an url
+
+    Args:
+        url ([type]): a model file url
+        path ([type]): the saved path and file name
+    """
     _download_model_from_url(url, path)
     logger.info("{} model downloaded succussfuly.".format(path))
 
