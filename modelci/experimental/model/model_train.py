@@ -69,7 +69,7 @@ class AdagradProperty(OptimizerPropertyBase):
 
 class AdamProperty(OptimizerPropertyBase):
     betas: Optional[Tuple[PositiveFloat, PositiveFloat]]
-    eps: Optional[Tuple[PositiveFloat]]
+    eps: Optional[confloat(ge=0)]
     weight_decay: Optional[confloat(ge=0)]
     amsgrad: Optional[bool]
 
