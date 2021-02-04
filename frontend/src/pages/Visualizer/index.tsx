@@ -8,7 +8,7 @@ import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
 import { ModelStructure } from './utils/type'
-import mockStructure from './utils/mock';
+const mockStructure = require('./utils/mock.json');
 
 const defaultOptions: GraphvizOptions = {
   fit: true,

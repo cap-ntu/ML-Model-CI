@@ -20,7 +20,6 @@
     "reqwest": "^2.0.5"
   },
   "devDependencies": {
-    "@hikeman/react-graphviz": "^0.0.7",
     "@ice/spec": "^1.0.0",
     "@types/d3-graphviz": "^2.6.6",
     "@types/react": "^16.9.41",
