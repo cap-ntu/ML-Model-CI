@@ -48,7 +48,7 @@ def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
         console.print(*model_ids, sep='\n')
         return
 
-    table = Table(box=box.SIMPLE)
+    table = Table(show_header=True, header_style="bold magenta")
 
     table.add_column('ID')
     table.add_column('ARCH NAME')
