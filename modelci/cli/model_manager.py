@@ -12,6 +12,7 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
+import os
 import click
 import requests
 
@@ -22,6 +23,7 @@ from modelci.hub.init_data import export_model
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils.misc import remove_dict_null
 from modelci.hub.publish import _download_model_from_url
+from modelci.hub.manager import register_model_from_yaml
 
 logger = Logger(__name__)
 
@@ -29,9 +31,10 @@ logger = Logger(__name__)
 def modelhub():
     pass
 
-@modelhub.command()
-def register():
-    raise NotImplementedError
+@modelhub.command("publish")
+@click.option('-p', '--ymal_path', required=True, type=str, help='the yaml file path')
+def register_model(ymal_path):
+    register_model_from_yaml(ymal_path)
 
 
 @modelhub.command("list")
@@ -60,7 +63,7 @@ def download_model():
     raise NotImplementedError
 
 @modelhub.command("get")
-@click.option('-u', '--url', required=True, type=str, help='the link of a model')
+@click.option('-u', '--url', required=True, type=str, help='the link to a model')
 @click.option('-p', '--path', required=True, type=str, help='the saved path and file name.')
 def download_model_from_url(url, path):
     _download_model_from_url(url, path)

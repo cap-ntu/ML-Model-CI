@@ -1,4 +1,4 @@
-weight: /home/modelci/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip
+weight: ~/project/ML-Model-CI/.cache/resnet18.pth
 dataset: ImageNet
 task: IMAGE_CLASSIFICATION
 metric:
@@ -13,4 +13,4 @@ architecture: ResNet50
 framework: PYTORCH
 engine: TORCHSCRIPT
 version: 1
-convert: false
+convert: true

@@ -211,8 +211,10 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     # read yaml
     with open(file_path) as f:
         model_config = yaml.safe_load(f)
-    # TODO able to parse ~ in file path by os.path.expanduser
-    origin_model = model_config['weight']
+   
+    model_weight_path = model_config['weight']
+    origin_model = os.path.expanduser(model_weight_path)
+
     dataset = model_config['dataset']
     metric = model_config['metric']
     inputs_plain = model_config['inputs']
