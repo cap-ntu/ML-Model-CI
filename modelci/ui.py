@@ -35,7 +35,8 @@ def single_model_view(model: Optional[dict], top=False):
         model['engine'],
         str(model['version']),
         model['dataset'],
-        f'{model["acc"]:.2f}',
+        list(model["metric"].keys())[0],
+        f'{list(model["metric"].values())[0]:.2f}',
         model['task'],
         status_mapper[model['status']],
     )
@@ -56,7 +57,8 @@ def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
     table.add_column('ENGINE')
     table.add_column('VERSION')
     table.add_column('DATASET')
-    table.add_column('ACCURACY')
+    table.add_column('METRIC')
+    table.add_column('SCORE')
     table.add_column('TASK', width=15)
     table.add_column('STATUS')
 
@@ -101,9 +103,15 @@ def model_detailed_view(model: dict):
 
     grid = Table.grid(padding=(0, 2))
     # Basic Info
-    grid.add_row('ID', 'Model Name', 'Framework', 'Version', 'Pretrained Dataset', 'Accuracy', 'Task', style='b')
+    grid.add_row('ID', 'Model Name', 'Framework', 'Version', 'Pretrained Dataset', 'Metric', 'Score', 'Task', style='b')
     grid.add_row(
-        model['id'], model['name'], model['framework'], str(model['version']), model['dataset'], str(model['acc']),
+        model['id'],
+        model['name'],
+        model['framework'],
+        str(model['version']),
+        model['dataset'],
+        list(model["metric"].keys())[0],
+        str(list(model["metric"].values())[0]),
         model['task']
     )
 
@@ -195,3 +203,4 @@ def model_detailed_view(model: dict):
 
     console.print(grid)
     console.print(converted_grid)
+    
