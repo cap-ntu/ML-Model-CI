@@ -9,8 +9,8 @@ inputs:
 outputs:
   - shape: [-1, 1000]
     dtype: TYPE_FP32
-architecture: ResNet50
+architecture: ResNet18
 framework: PYTORCH
-engine: TORCHSCRIPT
+engine: PYTORCH
 version: 1
-convert: true
+convert: False
