@@ -74,10 +74,12 @@ class Status(CaseInsensitiveEnum):
 
 class ModelStatus(CaseInsensitiveEnum):
     PUBLISHED = 'Published'
+    CONVERTING = 'Converting'
+    PROFILING = 'Profiling'
+    DEPLOYED = 'Deployed'
+    DRAFT = 'Draft'
+    VALIDATING = 'Validating'
     TRAINING = 'Training'
-    READY = 'Ready'
-    IN_SERVICE = 'In Service'
-
 
 class IOShapeVO(BaseModel):
     shape: List[int]

@@ -161,7 +161,7 @@ class PyTorchTrainer(BaseTrainer):
             self._task.set_exception(KeyboardInterrupt())
             model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.FAIL))
             model_bo = ModelService.get_model_by_id(self.model_id)
-            model_bo.model_status = ModelStatus.PUBLISHED
+            model_bo.model_status = ModelStatus.DRAFT
             ModelService.update_model(model_bo)
 
     def export_model(self):

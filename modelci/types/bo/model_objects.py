@@ -59,16 +59,21 @@ class Status(Enum):
 @unique
 class ModelStatus(Enum):
     """Enumerator of model status in the lifecycle
-    Pre-trained models are registered as READY status
-    Before fine-tuning, model structure will be modified and the result new model is saved as PUBLISHED status
-    Models under fine-tuning process will be marked as TRAINING status,
-    Deployed models will be viewed as IN_SERVICE status
+    PUBLISHED: model published to hub and ready for conversion, profiling, and deployment
+    CONVERTING: model is under conversion
+    PROFILING: model is under profiling
+    DEPLOYED: model is deployed as a service
+    DRAFT: model is under edit
+    VALIDATING: model is under quick accuracy validation
+    TRAINING: model is under training
     """
     PUBLISHED = 0
-    TRAINING = 1
-    READY = 2
-    IN_SERVICE =3
-
+    CONVERTING = 1
+    PROFILING = 2
+    DEPLOYED = 3
+    DRAFT = 4
+    VALIDATING = 5
+    TRAINING = 6
 
 @unique
 class Metric(Enum):

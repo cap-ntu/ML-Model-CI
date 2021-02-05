@@ -34,7 +34,7 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-        model_status: ModelStatus = ModelStatus.READY,
+        model_status: ModelStatus = ModelStatus.PUBLISHED,
         convert=True,
         profile=True,
 ):
@@ -113,7 +113,7 @@ def register_model(
 
     if convert:
         # TODO: generate from path name
-
+        # TODO: mark model status as converting
         # generate model variant
         model_dir_list.extend(_generate_model_family(
             origin_model,
@@ -174,6 +174,10 @@ def register_model(
                 'asynchronous': False,
                 'model_info': model,
             }
+
+            model.model_status = ModelStatus.PROFILING
+            ModelService.update_model(model)
+
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
             elif engine == Engine.TFS:
