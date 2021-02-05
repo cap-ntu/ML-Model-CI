@@ -21,7 +21,7 @@ from modelci.experimental.finetuner.transfer_learning import freeze, FineTuneMod
 from modelci.experimental.model.model_train import TrainingJob, TrainingJobUpdate
 from modelci.hub.manager import get_remote_model_weight
 from modelci.persistence.service import ModelService
-from modelci.types.bo import Engine, ModelStatus, ModelBO
+from modelci.types.bo import Engine, ModelStatus
 from modelci.types.vo import Status
 
 
