@@ -6,6 +6,18 @@ import reqwest from 'reqwest';
 import './index.css';
 
 const { Search } = Input;
+
+const tagColor = {
+  'Published': 'geekblue',
+  'Converted' : 'cyan',
+  'Profiling' : 'purple',
+  'In Service' : 'gold',
+  'Draft': 'lime',
+  'Validating': 'magenta',
+  'Training': 'volcano'
+
+}
+
 const columns = [
   {
     title: 'Model Name',
@@ -36,14 +48,14 @@ const columns = [
     dataIndex: 'metric',
     key: 'metric',
     className: 'column',
-    render: (text) =>  Object.keys(text)[0]
+    render: (metric) =>  Object.keys(metric)[0]
   },
   {
     title: 'Score',
     dataIndex: 'metric',
     key: 'score',
     className: 'column',
-    render: (text) =>  text[Object.keys(text)[0]]
+    render: (metric) =>  metric[Object.keys(metric)[0]]
   },
   {
     title: 'Task',
@@ -56,6 +68,9 @@ const columns = [
     dataIndex: 'model_status',
     key: 'model_status',
     className: 'column',
+    render: (modelStatus) =>  {
+      return modelStatus.map(status => <Tag color={tagColor[status]}>{status}</Tag>)
+    }
   },
   {
     title: 'Model User',
@@ -76,16 +91,17 @@ const columns = [
         <Button style={{ marginLeft: '3px' }} type="primary" size="large">
           Profile
         </Button>
-        { record.engine=="PYTORCH" || record.engine=="TFS" ? 
-        (
-        <Button type="primary" size="large">
-          <Link to={'/visualizer/'+text}>Finetune</Link>
-        </Button>
-        ) : "" }
+        { record.engine==='PYTORCH' || record.engine==='TFS' ? 
+          (
+            <Button type="primary" size="large">
+              <Link to={`/visualizer/${text}`}>Finetune</Link>
+            </Button>
+          ) : '' }
       </div>
     ),
   },
 ];
+
 
 const getRandomuserParams = (params) => {
   return {
@@ -293,15 +309,15 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                    {(() => {
-                      switch (record.engine) {
-                          case "TorchScript": return "PyTorch JIT + FastAPI";
-                          case "ONNX":  return "ONNX Runtime + FastAPI";
-                          case "tensorrt": return "Triton Inference Server";
-                          case "TFS": return "TensorFlow Serving";
-                          default: return "FastAPI";
-                      }
-                    })()}
+                      {(() => {
+                        switch (record.engine) {
+                          case 'TorchScript': return 'PyTorch JIT + FastAPI';
+                          case 'ONNX':  return 'ONNX Runtime + FastAPI';
+                          case 'tensorrt': return 'Triton Inference Server';
+                          case 'TFS': return 'TensorFlow Serving';
+                          default: return 'FastAPI';
+                        }
+                      })()}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item

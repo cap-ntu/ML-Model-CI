@@ -27,7 +27,7 @@ class ModelBO(object):
         inputs (List[IOShape]): Input shape and data type.
         outputs (List[IOShape]): Output shape and data type.
         weight (Weight): Model weight binary. Default to empty bytes.
-        model_status (ModelStatus): Indicate the status of current model in its lifecycle
+        model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
         profile_result (ProfileResultBO): Profiling result. Default to None.
         status (Status): Model running status. Default to `UNKNOWN`.
         create_time (datetime): Model registration time. Default to current datetime.
@@ -59,7 +59,7 @@ class ModelBO(object):
             task: Task,
             inputs: List[IOShape],
             outputs: List[IOShape],
-            model_status: ModelStatus,
+            model_status: List[ModelStatus] = None,
             weight: Weight = Weight(),
             profile_result: ProfileResultBO = None,
             status: Status = Status.UNKNOWN,
@@ -115,7 +115,7 @@ class ModelBO(object):
             outputs=output_dos,
             task=self.task.value,
             status=self.status.value,
-            model_status=self.model_status.value,
+            model_status=[item.value for item in self.model_status],
             creator=self.creator,
             create_time=self.create_time,
         )
@@ -168,7 +168,7 @@ class ModelBO(object):
             outputs=outputs,
             task=Task(model_do.task),
             status=Status(model_do.status),
-            model_status=ModelStatus(model_do.model_status),
+            model_status=[ModelStatus(item) for item in model_do.model_status],
             creator=model_do.creator,
             create_time=model_do.create_time,
         )

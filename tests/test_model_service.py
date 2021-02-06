@@ -28,14 +28,14 @@ def test_register_model():
     model = ModelBO(
         'ResNet50',
         framework=Framework.PYTORCH,
-        engine=Engine.TRT,
+        engine=Engine.PYTORCH,
         version=ModelVersion(1),
         dataset='ImageNet',
         metric={Metric.ACC: 0.80},
         task=Task.IMAGE_CLASSIFICATION,
         inputs=[IOShape([-1, 3, 224, 224], dtype=float, format=ModelInputFormat.FORMAT_NCHW)],
         outputs=[IOShape([-1, 1000], dtype=int)],
-        model_status=ModelStatus.READY,
+        model_status=[ModelStatus.PUBLISHED],
         weight=Weight(bytes([123]))
     )
 

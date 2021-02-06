@@ -55,7 +55,7 @@ class ModelDO(Document):
     # Status enum value
     status = IntField(required=True)
     # Model Status enum value
-    model_status = IntField(required=True)
+    model_status = ListField()
     # Model provider (uploader)
     creator = StringField(required=True)
     # Creation time of this record

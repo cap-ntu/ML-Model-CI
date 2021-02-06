@@ -29,15 +29,7 @@ async def get_model_structure(id: str):  # noqa
         id (str): Model object ID.
     """
     # return model DAG
-    model = ModelService.get_model_by_id(id)
-    if model.engine != Engine.PYTORCH:
-        raise ValueError(f'model {id} is not supported for editing. '
-                         f'Currently only support model with engine=PYTORCH')
-
-    # download model as local cache
-    cache_path = get_remote_model_weight(model=model)
-    net = torch.load(cache_path)
-    return Structure.from_model(net)
+    raise NotImplementedError('Method `get_model_structure` not implemented.')
 
 
 @router.patch('/{id}')  # TODO: add response_model

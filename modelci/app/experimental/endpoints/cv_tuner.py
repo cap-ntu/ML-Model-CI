@@ -130,7 +130,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             architecture=model.name,
             framework=model.framework,
             engine=model.engine,
-            model_status=ModelStatus.DRAFT,
+            model_status=[ModelStatus.DRAFT],
             version=ModelVersion(model.version.ver + 1),
             convert=False, profile=False
         )
@@ -143,4 +143,4 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             version=ModelVersion(model.version.ver + 1)
         )[0]
 
-    return {'id' : model_bo.id}
+        return {'id' : model_bo.id}

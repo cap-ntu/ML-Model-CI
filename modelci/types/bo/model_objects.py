@@ -68,9 +68,9 @@ class ModelStatus(Enum):
     TRAINING: model is under training
     """
     PUBLISHED = 0
-    CONVERTING = 1
+    CONVERTED = 1
     PROFILING = 2
-    DEPLOYED = 3
+    IN_SERVICE = 3
     DRAFT = 4
     VALIDATING = 5
     TRAINING = 6

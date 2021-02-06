@@ -34,7 +34,7 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-        model_status: ModelStatus = ModelStatus.PUBLISHED,
+        model_status: List[ModelStatus] = None,
         convert=True,
         profile=True,
 ):
@@ -63,7 +63,7 @@ def register_model(
         model_input: specify sample model input data
             TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
-        model_status (ModelStatus): Indicate the status of current model in its lifecycle
+        model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
@@ -136,6 +136,13 @@ def register_model(
         version = parse_result['version']
         filename = parse_result['filename']
 
+        if model_status is not None:
+            model_bo_status = model_status
+        elif engine == Engine.PYTORCH:
+            model_bo_status = [ModelStatus.PUBLISHED]
+        else:
+            model_bo_status = [ModelStatus.CONVERTED]
+
         with open(str(model_dir), 'rb') as f:
             model = ModelBO(
                 name=architecture,
@@ -147,7 +154,7 @@ def register_model(
                 metric=metric,
                 inputs=inputs,
                 outputs=outputs,
-                model_status=model_status,
+                model_status=model_bo_status,
                 weight=Weight(f, filename=filename)
             )
 
@@ -238,8 +245,6 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain)))
 
     # wrap POJO
-    if model_input is not None:
-        model_input = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_input)))
     if task is not None:
         task = Task[task.upper()]
     if metric is not None:
@@ -249,7 +254,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     if engine is not None:
         engine = Engine[engine.upper()]
     if model_status is not None:
-        model_status = ModelStatus[model_status.upper()]
+        model_status = [ModelStatus[item.upper()] for item in model_status]
     if version is not None:
         version = ModelVersion(version)
     # os.path.expanduser
