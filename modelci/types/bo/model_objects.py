@@ -49,13 +49,31 @@ class Engine(Enum):
 
 @unique
 class Status(Enum):
-    """Enumerator of model status
+    """Enumerator of model status TODO remove or combine with ModelStatus
     """
     UNKNOWN = 0
     PASS = 1
     RUNNING = 2
     FAIL = 3
 
+@unique
+class ModelStatus(Enum):
+    """Enumerator of model status in the lifecycle
+    PUBLISHED: model published to hub and ready for conversion, profiling, and deployment
+    CONVERTING: model is under conversion
+    PROFILING: model is under profiling
+    DEPLOYED: model is deployed as a service
+    DRAFT: model is under edit
+    VALIDATING: model is under quick accuracy validation
+    TRAINING: model is under training
+    """
+    PUBLISHED = 0
+    CONVERTED = 1
+    PROFILING = 2
+    IN_SERVICE = 3
+    DRAFT = 4
+    VALIDATING = 5
+    TRAINING = 6
 
 @unique
 class Metric(Enum):

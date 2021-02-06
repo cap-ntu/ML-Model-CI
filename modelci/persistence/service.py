@@ -150,7 +150,7 @@ class ModelService(object):
             # build arguments
             valid_keys = [
                 'name', 'framework', 'engine', 'version', 'dataset', 'metric',
-                'weight', 'task', 'inputs', 'outputs', 'status'
+                'weight', 'task', 'inputs', 'outputs', 'status', 'model_status'
             ]
             kwargs = dict()
 

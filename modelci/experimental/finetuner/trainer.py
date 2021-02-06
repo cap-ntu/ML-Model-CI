@@ -21,7 +21,7 @@ from modelci.experimental.finetuner.transfer_learning import freeze, FineTuneMod
 from modelci.experimental.model.model_train import TrainingJob, TrainingJobUpdate
 from modelci.hub.manager import get_remote_model_weight
 from modelci.persistence.service import ModelService
-from modelci.types.bo import Engine
+from modelci.types.bo import Engine, ModelStatus
 from modelci.types.vo import Status
 
 
@@ -75,6 +75,7 @@ class PyTorchTrainer(BaseTrainer):
     def __init__(
             self,
             model: pl.LightningModule,
+            model_id: str,
             data_loader_kwargs: dict = None,
             trainer_kwargs: dict = None,
             id: str = None
@@ -82,6 +83,7 @@ class PyTorchTrainer(BaseTrainer):
         self._id = id
         self.model = model
         trainer_kwargs = trainer_kwargs or dict()
+        self.model_id = model_id
         self.trainer_engine = pl.Trainer(**trainer_kwargs)
         self._data_loader_kwargs = data_loader_kwargs or dict()
 
@@ -94,8 +96,8 @@ class PyTorchTrainer(BaseTrainer):
         # TODO: only support fine-tune
 
         model_bo = ModelService.get_model_by_id(training_job.model)
-        if model_bo.engine != Engine.PYTORCH:
-            raise ValueError(f'Model engine expected `{Engine.PYTORCH}`, but got {model_bo.engine}.')
+        if model_bo.engine != Engine.NONE:
+            raise ValueError(f'Model engine expected `{Engine.NONE}`, but got {model_bo.engine}.')
 
         # download local cache
         cache_path = get_remote_model_weight(model_bo)
@@ -130,19 +132,25 @@ class PyTorchTrainer(BaseTrainer):
                 'num_sanity_val_steps': 0,
                 'gpus': 1,  # TODO: set GPU number
                 **trainer_kwargs,
-            }
+            },
+            model_id=training_job.model
         )
         return trainer
 
     def start(self):
         def training_done_callback(future):
             model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.PASS))
-            # TODO: save to database
+            # TODO: save to database and update model_status, engine
             print(self.export_model())
 
         self._task = self._executor.submit(self.trainer_engine.fit, self.model, **self._data_loader_kwargs)
         self._task.add_done_callback(training_done_callback)
         model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.RUNNING))
+
+        model_bo = ModelService.get_model_by_id(self.model_id)
+        model_bo.model_status.remove(ModelStatus.DRAFT)
+        model_bo.model_status.append(ModelStatus.TRAINING)
+        ModelService.update_model(model_bo)
 
     def join(self, timeout=None):
         if self._task:
@@ -153,6 +161,10 @@ class PyTorchTrainer(BaseTrainer):
             # trigger pytorch lighting training graceful shutdown via a ^C
             self._task.set_exception(KeyboardInterrupt())
             model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.FAIL))
+            model_bo = ModelService.get_model_by_id(self.model_id)
+            model_bo.model_status.remove(ModelStatus.TRAINING)
+            model_bo.model_status.append(ModelStatus.DRAFT)
+            ModelService.update_model(model_bo)
 
     def export_model(self):
         return self.model.net.cpu()
