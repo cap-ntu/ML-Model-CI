@@ -8,6 +8,8 @@ import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
 import { ModelStructure } from './utils/type'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockStructure = require('./utils/mock.json');
 
 const defaultOptions: GraphvizOptions = {
@@ -46,7 +48,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
       currentY: 0,
       graphData: '',
       isLoaded: false,
-      modelStructure: mockStructure,
+      modelStructure: { layer: {}, connection: {}},
       visible: false,
       currentLayerName: '',
       currentLayerInfo: {},
@@ -66,18 +68,28 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     this.showLayerInfo = this.showLayerInfo.bind(this);
     this.layerSubmit = this.layerSubmit.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onLayerChange = this.onLayerChange.bind(this);
   }
 
   public async componentDidMount() {
     const id: string = this.props.match.params.id;
     const graph = await axios.get(`${config.visualizerURL}/${id}`);
-    const struct = await axios.get(`${config.structureURL}/${id}`)
     this.setState({
       isLoaded: true,
       graphData: graph.data.dot,
-      modelStructure: struct.data
+      modelStructure: mockStructure
     });
   }
+
+  public onLayerChange(layer: any){
+    const properties = {...this.state.layerSchema.properties}
+    Object.keys(properties).forEach(
+      (property) => {
+        properties[property].default = layer.formData[property]
+      }
+    )
+  }
+
 
   /**
    * record the mouse position
@@ -114,7 +126,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     const newConfig = { ...this.state.currentLayerInfo, ...layer.formData, ...modifyMark }
     const newStructure = { ...this.state.modelStructure }
     newStructure.layer[this.state.currentLayerName] = newConfig
-    this.setState({ modelStructure: newStructure })
     // close the form
     this.setState({ visible: false });
   }
@@ -139,9 +150,11 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
         delete layerInfo.type_;
         const schema = GenerateSchema.json(`Layer ${layerName}`, layerInfo)
         delete schema.$schema
-        for (const property in schema.properties) {
-          schema.properties[property].default = layerInfo[property]
-        }
+        Object.keys(schema.properties).forEach(
+          (property) =>{
+            schema.properties[property].default = layerInfo[property]
+          }
+        )
         // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState({ X: this.state.currentX, Y: this.state.currentY })
         this.setState({ layerSchema: schema, visible: true, currentLayerName: layerName })
@@ -162,6 +175,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                       <Form
                         schema={this.state.layerSchema}
                         onSubmit={this.layerSubmit}
+                        onChange={this.onLayerChange}
                       />
                     </div>
                   }
@@ -169,7 +183,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                   visible={this.state.visible}
                   placement="rightTop"
                   autoAdjustOverflow
-                  overlayStyle={{left: this.state.X + 200, top: this.state.Y - 300}}
+                  overlayStyle={{left: this.state.X + 200, top: this.state.Y - 400}}
                   overlayInnerStyle={{width: 350, height: 600, overflowY: 'scroll'}}
                 />
                 <ReactD3GraphViz

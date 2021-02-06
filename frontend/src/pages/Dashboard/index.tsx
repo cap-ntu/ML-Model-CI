@@ -1,11 +1,13 @@
 import React from 'react';
-import { Button, Table, Card, Divider, Input, Descriptions, Tag } from 'antd';
+import { Button, Table, Card, Divider, Input, Descriptions, Tag, Menu, Dropdown } from 'antd';
+import { EditOutlined, ProfileOutlined, BranchesOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { config, Link } from 'ice';
 import reqwest from 'reqwest';
 import './index.css';
 
 const { Search } = Input;
+
 const columns = [
   {
     title: 'Model Name',
@@ -62,22 +64,27 @@ const columns = [
     dataIndex: 'id',
     key: 'id',
     className: 'column',
-    render: (text, record) => (
-      <div>
-        <Button type="primary" size="large">
-          Edit
-        </Button>
-        <Button style={{ marginLeft: '3px' }} type="primary" size="large">
-          Profile
-        </Button>
-        { record.engine=="PYTORCH" || record.engine=="TFS" ? 
-        (
-        <Button type="primary" size="large">
-          <Link to={'/visualizer/'+text}>Finetune</Link>
-        </Button>
-        ) : "" }
-      </div>
-    ),
+    render: (text, record) =>{
+      const menu = (
+        <Menu>
+          <Menu.Item key="2" icon={<ProfileOutlined />} style={{fontSize: 18}}>
+            Profile
+          </Menu.Item>
+          { record.engine==='PYTORCH' || record.engine==='TFS' ?  
+            (
+              <Menu.Item key="3" icon={<BranchesOutlined />} style={{fontSize: 18}}>
+                <Link to={`/visualizer/${text}`}>Finetune</Link>
+              </Menu.Item>
+            ) : ''
+          }
+        </Menu>
+      );
+      return(
+        <Dropdown.Button overlay={menu} size="large">
+          <EditOutlined /> Edit
+        </Dropdown.Button>
+      )
+    }
   },
 ];
 
@@ -287,15 +294,15 @@ export default class Dashboard extends React.Component {
                         fontSize: 25,
                       }}
                     >
-                    {(() => {
-                      switch (record.engine) {
-                          case "TorchScript": return "PyTorch JIT + FastAPI";
-                          case "ONNX":  return "ONNX Runtime + FastAPI";
-                          case "tensorrt": return "Triton Inference Server";
-                          case "TFS": return "TensorFlow Serving";
-                          default: return "FastAPI";
-                      }
-                    })()}
+                      {(() => {
+                        switch (record.engine) {
+                          case 'TorchScript': return 'PyTorch JIT + FastAPI';
+                          case 'ONNX':  return 'ONNX Runtime + FastAPI';
+                          case 'tensorrt': return 'Triton Inference Server';
+                          case 'TFS': return 'TensorFlow Serving';
+                          default: return 'FastAPI';
+                        }
+                      })()}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
