@@ -11,8 +11,8 @@ const tagColor = {
   'Published': 'geekblue',
   'Converted' : 'cyan',
   'Profiling' : 'purple',
-  'In Service' : 'gold',
-  'Draft': 'lime',
+  'In Service' : 'lime',
+  'Draft': 'red',
   'Validating': 'magenta',
   'Training': 'volcano'
 

@@ -100,7 +100,10 @@ def serve_by_name(args):
     serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
     # TODO: check if the service is dispatched sucessfully
-    model_bo[0].model_status.append(ModelStatus.IN_SERVICE)
+    new_status = [item for item in model_bo[0].model_status if
+                  item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
+    new_status.append(ModelStatus.IN_SERVICE)
+    model_bo[0].model_status = new_status
     ModelService.update_model(model_bo[0])
 
 
@@ -108,7 +111,10 @@ def serve_by_task(args):
     model_bo = retrieve_model_by_task(task=args.task)
     serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
     # TODO: check if the service is dispatched sucessfully
-    model_bo[0].model_status.append(ModelStatus.IN_SERVICE)
+    new_status = [item for item in model_bo[0].model_status if
+                  item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
+    new_status.append(ModelStatus.IN_SERVICE)
+    model_bo[0].model_status = new_status
     ModelService.update_model(model_bo[0])
 
 

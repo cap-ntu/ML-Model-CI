@@ -97,13 +97,13 @@ def register_model(
         else:  # from implicit extracted from path, check validity of the path later at registration
             path = model_dir
         model_dir_list.append(path)
-    elif framework == Framework.PYTORCH and engine == Engine.PYTORCH:
+    elif framework == Framework.PYTORCH and engine in [Engine.PYTORCH, Engine.NONE]:
         # save original pytorch model
         pytorch_dir = generate_path(
             task=task,
             model_name=architecture,
             framework=framework,
-            engine=Engine.PYTORCH,
+            engine=engine,
             version=str(version),
         )
         pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -113,7 +113,6 @@ def register_model(
 
     if convert:
         # TODO: generate from path name
-        # TODO: mark model status as converting
         # generate model variant
         model_dir_list.extend(_generate_model_family(
             origin_model,
@@ -182,7 +181,10 @@ def register_model(
                 'model_info': model,
             }
 
-            model.model_status = ModelStatus.PROFILING
+            new_status = [item for item in model.model_status if
+                          item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
+            new_status.append(ModelStatus.PROFILING)
+            model.model_status = new_status
             ModelService.update_model(model)
 
             if engine == Engine.TORCHSCRIPT:
