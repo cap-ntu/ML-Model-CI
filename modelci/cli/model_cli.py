@@ -12,6 +12,8 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
+
+# TODO(ZHZ): remove the file after moving all functions to model_manager.py
 import click
 import requests
 

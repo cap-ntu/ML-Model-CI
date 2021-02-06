@@ -14,6 +14,7 @@
 
 import click
 from modelci.cli.modelci_service import *
+from modelci.cli.model_manager import *
 from modelci.cli import model_cli
 
 @click.group()
@@ -24,6 +25,7 @@ def cli():
 
 
 cli.add_command(service)
+cli.add_command(modelhub)
 cli.add_command(model_cli.commands)	
 cli.add_command(model_cli.models)
 

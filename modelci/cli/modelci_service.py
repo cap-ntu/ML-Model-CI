@@ -82,6 +82,4 @@ def disconnect_leader_server():
     """
     raise NotImplementedError
 
-if __name__ == "__main__":
-    service()
 
