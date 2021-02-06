@@ -96,8 +96,8 @@ class PyTorchTrainer(BaseTrainer):
         # TODO: only support fine-tune
 
         model_bo = ModelService.get_model_by_id(training_job.model)
-        if model_bo.engine != Engine.PYTORCH:
-            raise ValueError(f'Model engine expected `{Engine.PYTORCH}`, but got {model_bo.engine}.')
+        if model_bo.engine != Engine.NONE:
+            raise ValueError(f'Model engine expected `{Engine.NONE}`, but got {model_bo.engine}.')
 
         # download local cache
         cache_path = get_remote_model_weight(model_bo)
@@ -140,7 +140,7 @@ class PyTorchTrainer(BaseTrainer):
     def start(self):
         def training_done_callback(future):
             model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.PASS))
-            # TODO: save to database and update model_status
+            # TODO: save to database and update model_status, engine
             print(self.export_model())
 
         self._task = self._executor.submit(self.trainer_engine.fit, self.model, **self._data_loader_kwargs)
