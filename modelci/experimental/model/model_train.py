@@ -155,6 +155,7 @@ class TrainingJob(BaseModel):
     lr_scheduler_property: _LRSchedulerProperty
     loss_function: LossFunctionType
     status: Optional[Status] = Status.UNKNOWN
+    valdation_accuracy: Optional[float] = None
 
     @root_validator(pre=True)
     def optimizer_type_inject(cls, values):  # pylint: disable=no-self-use

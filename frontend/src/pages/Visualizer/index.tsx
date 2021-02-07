@@ -1,13 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { ReactD3GraphViz } from '@hikeman/react-graphviz';
-import { Row, Col, Card, Popover } from 'antd';
+import { Row, Col, Card, Popover, Button, Divider, Progress, Modal } from 'antd';
 import axios from 'axios';
 import { config } from 'ice';
 import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
-import { ModelStructure } from './utils/type'
+import { ModelStructure, FinetuneConfig,DEFAULT_FINETUNE_CONFIG } from './utils/type'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockStructure = require('./utils/mock.json');
@@ -21,7 +21,6 @@ const defaultOptions: GraphvizOptions = {
   zoomTranslateExtent: [[-2000, -20000], [1000, 1000]]
 };
 
-
 type VisualizerProps = { match: any };
 type VisualizerState = {
   X: number;
@@ -30,12 +29,15 @@ type VisualizerState = {
   currentY: number;
   graphData: string;
   isLoaded: boolean;
+  isValidating: boolean;
   modelStructure: ModelStructure;
+  finetuneConfig: FinetuneConfig;
   visible: boolean;
   currentLayerName: string;
   currentLayerInfo: object;
   layerSchema: object;
   configSchema: object;
+  seconds: number;
 };
 
 export default class Visualizer extends React.Component<VisualizerProps, VisualizerState> {
@@ -46,9 +48,12 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
       Y: 0,
       currentX: 0,
       currentY: 0,
+      seconds: 60,
       graphData: '',
       isLoaded: false,
+      isValidating: false,
       modelStructure: { layer: {}, connection: {}},
+      finetuneConfig: DEFAULT_FINETUNE_CONFIG,
       visible: false,
       currentLayerName: '',
       currentLayerInfo: {},
@@ -65,10 +70,14 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
         }
       }
     };
+    this.timer = 0;
     this.showLayerInfo = this.showLayerInfo.bind(this);
     this.layerSubmit = this.layerSubmit.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onLayerChange = this.onLayerChange.bind(this);
+    this.onConfigChange = this.onConfigChange.bind(this);
+    this.onClickValidate = this.onClickValidate.bind(this);
+    this.countDown = this.countDown.bind(this);
   }
 
   public async componentDidMount() {
@@ -81,6 +90,10 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     });
   }
 
+  /**
+   * update layer info
+   * @param layer event
+   */
   public onLayerChange(layer: any){
     const properties = {...this.state.layerSchema.properties}
     Object.keys(properties).forEach(
@@ -90,6 +103,22 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     )
   }
 
+  /**
+   * update finetine job config
+   * TODO add more config options
+   * @param e event
+   */
+  public onConfigChange = (config: any)=>{
+	  this.setState(
+      prevState =>
+      {
+        const newConfig = prevState.finetuneConfig
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        newConfig.data_module = { ...config.formData, ...newConfig.data_module};
+        return {finetuneConfig:prevState.finetuneConfig}
+      }
+    )
+  }
 
   /**
    * record the mouse position
@@ -113,9 +142,19 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     }, {})
     // TODO add connection update info 
     const submittedStructure: ModelStructure = { 'layer': updatedLayers, 'connection': {} }
-    const res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`, submittedStructure)
-    console.log(res.data.id)
+    let res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`, submittedStructure)
     // TODO submit training job
+    const newConfig = {...this.state.finetuneConfig}
+    newConfig.model = res.data.id;
+    res = await axios.post(config.trainerURL, newConfig)
+    Modal.success({
+      title: 'Finetune Job Created',
+      content:
+					<h6>Your finetune job is submitted successfully<br />
+				You can visit the following link to check the training status<br />
+					  <a href='/jobs'>Job: {res.data.id}</a>
+					</h6>
+    });
   }
 
   /**
@@ -162,12 +201,36 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     }
   }
 
+  /**
+   * display data during validating process
+   */
+  public onClickValidate = () =>{
+    // TODO: pass parameters to validator
+    this.setState({isValidating: true})
+    this.setState({seconds: 60})
+    this.timer = setInterval(this.countDown, 1000);
+  }
+
+  // refer to https://stackoverflow.com/a/40887181
+  public countDown() {
+    this.setState(
+      prevState =>({ seconds: prevState.seconds - 1 })
+    )
+    if (this.state.seconds === 0) { 
+      clearInterval(this.timer);
+      this.setState({isValidating: false})
+      // TODO: get validate accuracy
+    }
+  }
+
   public render() {
     return (
       <div onMouseMove={this.onMouseMove}>
         <Row gutter={16}>
-          <Col span={16}>
-            <Card title="Model Structure" bordered={false}>
+          <Col span={15}>
+            <Card bordered={false}>
+              <h5 className="MuiTypography-root MuiTypography-h5">Model Structure</h5>
+              <Divider />
               <div id="graphviz">
                 <Popover
                   content={
@@ -194,11 +257,61 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
               </div>
             </Card>
           </Col>
-          <Col span={8}>
-            <Form
-              schema={this.state.configSchema}
-              onSubmit={this.configSubmit}
-            />
+          <Col span={7} offset={1}>
+            <Card bordered={false}>
+              <Form
+                schema={this.state.configSchema}
+                onSubmit={this.configSubmit}
+                onChange={this.onConfigChange}
+              >
+                <div>
+                  { this.state.isValidating || this.state.seconds===0?
+                    <Card bordered={false}>
+                      <Row justify="center">
+                        <Progress
+                          percent={100 - this.state.seconds/60*100}
+                          format={()=>`${this.state.seconds} s`}
+                        />
+                      </Row>
+                      <Row justify="center">
+                        <h3>
+                          Validation Accuracy :&nbsp;
+                          <span className="ant-statistic-content">
+                            {this.state.seconds===0?
+                              `${0.00} %` // TODO replace with ajax data
+                              : '  In Progress  '
+                            }
+                          </span>
+                        </h3>
+                      </Row>
+                    </Card> : ''
+                  }
+                  <Row>
+                    <Col span={11}>
+                      <Button 
+                        type="primary" 
+                        htmlType="submit" 
+                        size="large"
+                        block
+                      >
+                        Train
+                      </Button>
+                    </Col>
+                    <Col span={11} offset={2}>
+                      
+                      <Button 
+                        type="primary" 
+                        size="large" 
+                        onClick={this.onClickValidate} 
+                        disabled={this.state.isValidating}
+                        block>
+                        Validate
+                      </Button>
+                    </Col>
+                  </Row>
+                </div>
+              </Form>
+            </Card>
           </Col>
         </Row>
       </div>

@@ -119,7 +119,19 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         output_shapes.append(output_shape)
 
     if not dry_run:
-        # TODO avoid duplicate version
+        # TODO return validation result for dry_run mode
+        # TODO apply Semantic Versioning https://semver.org/
+        version = ModelVersion(model.version.ver + 1)
+        previous_models = ModelService.get_models(
+                name=model.name,
+                task=model.task,
+                framework=model.framework,
+                engine=Engine.NONE
+        )
+        if len(previous_models):
+            last_version = max(previous_models, key=lambda k: k.version.ver).version.ver
+            version = ModelVersion(last_version + 1)
+
         register_model(
             net,
             dataset='',
@@ -131,7 +143,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             framework=model.framework,
             engine=Engine.NONE,
             model_status=[ModelStatus.DRAFT],
-            version=ModelVersion(model.version.ver + 1),
+            version=version,
             convert=False, profile=False
         )
 
@@ -140,7 +152,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             task=model.task,
             framework=model.framework,
             engine=Engine.NONE,
-            version=ModelVersion(model.version.ver + 1)
+            version=version
         )[0]
 
         return {'id' : model_bo.id}
