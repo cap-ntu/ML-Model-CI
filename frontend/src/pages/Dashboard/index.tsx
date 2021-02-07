@@ -8,6 +8,17 @@ import './index.css';
 
 const { Search } = Input;
 
+const tagColor = {
+  'Published': 'geekblue',
+  'Converted' : 'cyan',
+  'Profiling' : 'purple',
+  'In Service' : 'lime',
+  'Draft': 'red',
+  'Validating': 'magenta',
+  'Training': 'volcano'
+
+}
+
 const columns = [
   {
     title: 'Model Name',
@@ -38,20 +49,29 @@ const columns = [
     dataIndex: 'metric',
     key: 'metric',
     className: 'column',
-    render: (text) =>  Object.keys(text)[0]
+    render: (metric) =>  Object.keys(metric)[0]
   },
   {
     title: 'Score',
     dataIndex: 'metric',
     key: 'score',
     className: 'column',
-    render: (text) =>  text[Object.keys(text)[0]]
+    render: (metric) =>  metric[Object.keys(metric)[0]]
   },
   {
     title: 'Task',
     dataIndex: 'task',
     key: 'task',
     className: 'column',
+  },
+  {
+    title: 'Status',
+    dataIndex: 'model_status',
+    key: 'model_status',
+    className: 'column',
+    render: (modelStatus) =>  {
+      return modelStatus.map((status,index) => <Tag color={tagColor[status]} key={index}>{status}</Tag>)
+    }
   },
   {
     title: 'Model User',
@@ -88,6 +108,7 @@ const columns = [
   },
 ];
 
+
 const getRandomuserParams = (params) => {
   return {
     results: params.pagination.pageSize,
@@ -111,12 +132,12 @@ export default class Dashboard extends React.Component {
     this.loadAllModels();
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     const { pagination } = this.state;
     this.fetch({ pagination });
   }
 
-  handleTableChange = (pagination, filters, sorter) => {
+  public handleTableChange = (pagination, filters, sorter) => {
     this.fetch({
       sortField: sorter.field,
       sortOrder: sorter.order,
@@ -125,7 +146,7 @@ export default class Dashboard extends React.Component {
     });
   };
 
-  fetch = (params = {}) => {
+  public fetch = (params = {}) => {
     this.setState({ loading: true });
     reqwest({
       url: config.modelURL,
@@ -144,7 +165,7 @@ export default class Dashboard extends React.Component {
     });
   };
 
-  loadAllModels = () => {
+  public loadAllModels = () => {
     const targetUrl = config.modelURL;
     axios
       .get(targetUrl)

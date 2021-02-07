@@ -30,7 +30,7 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
-from modelci.types.bo import IOShape, Task, Metric, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
+from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task']
@@ -48,6 +48,7 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
+        model_status: List[ModelStatus] = None,
         convert=True,
         profile=True,
 ):
@@ -76,6 +77,7 @@ def register_model(
         model_input: specify sample model input data
             TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
+        model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
@@ -109,13 +111,13 @@ def register_model(
         else:  # from implicit extracted from path, check validity of the path later at registration
             path = model_dir
         model_dir_list.append(path)
-    elif framework == Framework.PYTORCH and engine == Engine.PYTORCH:
+    elif framework == Framework.PYTORCH and engine in [Engine.PYTORCH, Engine.NONE]:
         # save original pytorch model
         pytorch_dir = generate_path(
             task=task,
             model_name=architecture,
             framework=framework,
-            engine=Engine.PYTORCH,
+            engine=engine,
             version=str(version),
         )
         pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -125,7 +127,6 @@ def register_model(
 
     if convert:
         # TODO: generate from path name
-
         # generate model variant
         model_dir_list.extend(_generate_model_family(
             origin_model,
@@ -148,6 +149,13 @@ def register_model(
         version = parse_result['version']
         filename = parse_result['filename']
 
+        if model_status is not None:
+            model_bo_status = model_status
+        elif engine == Engine.PYTORCH:
+            model_bo_status = [ModelStatus.PUBLISHED]
+        else:
+            model_bo_status = [ModelStatus.CONVERTED]
+
         with open(str(model_dir), 'rb') as f:
             model = ModelBO(
                 name=architecture,
@@ -159,6 +167,7 @@ def register_model(
                 metric=metric,
                 inputs=inputs,
                 outputs=outputs,
+                model_status=model_bo_status,
                 weight=Weight(f, filename=filename)
             )
 
@@ -185,6 +194,13 @@ def register_model(
                 'asynchronous': False,
                 'model_info': model,
             }
+
+            new_status = [item for item in model.model_status if
+                          item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
+            new_status.append(ModelStatus.PROFILING)
+            model.model_status = new_status
+            ModelService.update_model(model)
+
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
             elif engine == Engine.TFS:
@@ -238,6 +254,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     task = model_config.get('task', None)
     framework = model_config.get('framework', None)
     engine = model_config.get('engine', None)
+    model_status = model_config.get('model_status', None)
     version = model_config.get('version', None)
     convert = model_config.get('convert', True)
 
@@ -246,8 +263,6 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain)))
 
     # wrap POJO
-    if model_input is not None:
-        model_input = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_input)))
     if task is not None:
         task = Task[task.upper()]
     if metric is not None:
@@ -256,6 +271,8 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework = Framework[framework.upper()]
     if engine is not None:
         engine = Engine[engine.upper()]
+    if model_status is not None:
+        model_status = [ModelStatus[item.upper()] for item in model_status]
     if version is not None:
         version = ModelVersion(version)
     # os.path.expanduser
@@ -272,6 +289,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework=framework,
         engine=engine,
         version=version,
+        model_status=model_status,
         convert=convert,
     )
 
