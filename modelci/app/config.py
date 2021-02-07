@@ -9,6 +9,7 @@ Date: 6/19/2020
 import os
 
 API_V1_STR = '/api/v1'
+API_EXP_STR = '/api/exp'
 
 SECRET_KEY = os.getenvb(b"SECRET_KEY")
 if not SECRET_KEY:

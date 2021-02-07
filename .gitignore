@@ -138,3 +138,5 @@ dmypy.json
 
 # Idea
 .idea/
+modelci/cli/exp.py
+.cache

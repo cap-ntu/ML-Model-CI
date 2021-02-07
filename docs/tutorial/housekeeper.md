@@ -18,14 +18,14 @@ Users can search for a model and obtain its detailed information.
 
 ```python
 from modelci.hub.manager import retrieve_model, retrieve_model_by_task
-from modelci.types.bo import Framework, Engine
+from modelci.types.bo import Framework, Engine, Task
 
 # By model name and optionally filtered by model framework and(or) model engine
 model_bo = retrieve_model(
     architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT
 )
 # By task
-model_bo2 = retrieve_model_by_task(task='image classification')
+model_bo2 = retrieve_model_by_task(task=Task.IMAGE_CLASSIFICATION)
 ```
 
 The returned tuple contains the path where the model is cached and model meta information (e.g. model name, model framework).

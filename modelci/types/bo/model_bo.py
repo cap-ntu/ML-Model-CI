@@ -7,7 +7,7 @@ from typing import Optional, List, Dict
 from bson import ObjectId
 
 from modelci.types.do import ModelDO
-from .model_objects import Framework, Metric, Task, Engine, ModelVersion, IOShape, Status, Weight
+from .model_objects import Framework, Metric, Task, Engine, ModelVersion, IOShape, Status, Weight, ModelStatus
 from .profile_result_bo import ProfileResultBO
 
 
@@ -27,6 +27,7 @@ class ModelBO(object):
         inputs (List[IOShape]): Input shape and data type.
         outputs (List[IOShape]): Output shape and data type.
         weight (Weight): Model weight binary. Default to empty bytes.
+        model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
         profile_result (ProfileResultBO): Profiling result. Default to None.
         status (Status): Model running status. Default to `UNKNOWN`.
         create_time (datetime): Model registration time. Default to current datetime.
@@ -59,6 +60,7 @@ class ModelBO(object):
             parent_model_id: str,
             inputs: List[IOShape],
             outputs: List[IOShape],
+            model_status: List[ModelStatus] = None,
             weight: Weight = Weight(),
             profile_result: ProfileResultBO = None,
             status: Status = Status.UNKNOWN,
@@ -78,6 +80,7 @@ class ModelBO(object):
         self.inputs = inputs
         self.outputs = outputs
         self.weight = weight
+        self.model_status = model_status
         self.profile_result = profile_result
         self.status = status
         self.creator = creator
@@ -115,6 +118,7 @@ class ModelBO(object):
             task=self.task.value,
             parent_model_id = self.parent_model_id,
             status=self.status.value,
+            model_status=[item.value for item in self.model_status],
             creator=self.creator,
             create_time=self.create_time,
         )
@@ -168,6 +172,7 @@ class ModelBO(object):
             task=Task(model_do.task),
             parent_model_id=model_do.parent_model_id,
             status=Status(model_do.status),
+            model_status=[ModelStatus(item) for item in model_do.model_status],
             creator=model_do.creator,
             create_time=model_do.create_time,
         )

@@ -1,285 +1,194 @@
+/* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { Graphviz } from 'graphviz-react';
-import { Row, Col, Card, Button, Select, Form, InputNumber, Switch, Input, Radio, Modal } from "antd";
+import { ReactD3GraphViz } from '@hikeman/react-graphviz';
+import { Row, Col, Card, Popover } from 'antd';
 import axios from 'axios';
 import { config } from 'ice';
+import { GraphvizOptions } from 'd3-graphviz';
+import GenerateSchema from 'generate-schema';
+import Form from '@rjsf/material-ui';
+import { ModelStructure } from './utils/type'
+const mockStructure = require('./utils/mock.json');
 
-
-const defaultOptions = {
-	fit: true,
-	height: 1000,
-	width: 1000,
-	zoom: true,
-	zoomScaleExtent: [0.5, 20],
-	zoomTranslateExtent: [[-2000, -20000], [1000, 1000]]
+const defaultOptions: GraphvizOptions = {
+  fit: true,
+  height: 700,
+  width: 1000,
+  zoom: true,
+  zoomScaleExtent: [0.5, 20],
+  zoomTranslateExtent: [[-2000, -20000], [1000, 1000]]
 };
 
-const tailLayout = {
-	wrapperCol: { span: 16, offset: 8 },
+
+type VisualizerProps = { match: any };
+type VisualizerState = {
+  X: number;
+  Y: number;
+  currentX: number;
+  currentY: number;
+  graphData: string;
+  isLoaded: boolean;
+  modelStructure: ModelStructure;
+  visible: boolean;
+  currentLayerName: string;
+  currentLayerInfo: object;
+  layerSchema: object;
+  configSchema: object;
 };
 
-const onFinishFailed = (errorInfo: any) => {
-	console.log('Failed:', errorInfo);
-};
+export default class Visualizer extends React.Component<VisualizerProps, VisualizerState> {
+  constructor(props) {
+    super(props);
+    this.state = {
+      X: 0,
+      Y: 0,
+      currentX: 0,
+      currentY: 0,
+      graphData: '',
+      isLoaded: false,
+      modelStructure: mockStructure,
+      visible: false,
+      currentLayerName: '',
+      currentLayerInfo: {},
+      layerSchema: {},
+      configSchema: {
+        'title': 'Finetune Settings',
+        'type': 'object',
+        'properties': {
+          'dataset_name': {
+            'type': 'string',
+            default: 'CIFAR10',
+            enum: ['CIFAR10']
+          }
+        }
+      }
+    };
+    this.showLayerInfo = this.showLayerInfo.bind(this);
+    this.layerSubmit = this.layerSubmit.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
+  }
 
-const defaultTrainerConfig = {
-	'dataset_name': 'cifar-10',
-	'num_epochs': 15,
-	'batch_size': 8,
-	'optimizer': 'Adam',
-	'num_workers': 1,
-	'lr': 0.01,
-	'scheduler': 'StepLR',
-	'loss_fn': 'CrossEntropyLoss',
-	'optimizerConfig': {
-		'beta1': 0.9,
-		'beta2': 0.99,
-		'eps': 1e-08,
-		'weight_decay': 0,
-		'amsgrad': 'False'
-	}
-}
+  public async componentDidMount() {
+    const id: string = this.props.match.params.id;
+    const graph = await axios.get(`${config.visualizerURL}/${id}`);
+    const struct = await axios.get(`${config.structureURL}/${id}`)
+    this.setState({
+      isLoaded: true,
+      graphData: graph.data.dot,
+      modelStructure: struct.data
+    });
+  }
 
-const optimizerConfig = {
-	'Adam': [
-		{
-			name: 'beta1',
-			label: 'beta1',
-			type: 'number',
-			default: 0.9,
-			min: 0,
-			max: 1,
-			step: 0.01,
-			col: '8'
-		},
-		{
-			name: 'beta2',
-			label: 'beta2',
-			type: 'number',
-			default: '0.999',
-			min: 0,
-			max: 1,
-			step: 0.001,
-			col: '8'
-		},
-		{
-			name: 'eps',
-			label: 'eps',
-			type: 'number',
-			default: 1e-08,
-			step: 1e-08,
-			col: '8'
-		},
-		{
-			name: 'weight_decay',
-			label: 'weight_decay',
-			type: 'number',
-			default: 0,
-			col: '12'
-		},
-		{
-			name: 'amsgrad',
-			label: 'amsgrad',
-			type: 'boolean',
-			default: false,
-			col: 12
-		}
-	]
-};
+  /**
+   * record the mouse position
+   * @param e event
+   */
+  public onMouseMove(e: any) {
+    this.setState({ currentX: e.screenX, currentY: e.screenY });
+  }
 
-function constructInput(item: any) {
-	switch (item.type) {
-		case 'number':
-			return (<InputNumber min={item.min} max={item.max} step={item.step} />)
-		case 'boolean':
-			return (
-				<Radio.Group>
-					<Radio.Button value="True">True</Radio.Button>
-					<Radio.Button value="False">False</Radio.Button>
-				</Radio.Group>)
-		default:
-			return (<Input />)
-	}
-}
+  /**
+   * submit finetune job and modified model structures
+   */
+  public configSubmit = async () => {
+    // submit model structure
+    const layers = this.state.modelStructure.layer
+    const updatedLayers = Object.keys(layers).reduce(function (r, e) {
+      if (layers[e].op_ !== 'E') {
+        r[e] = layers[e]
+      }
+      return r;
+    }, {})
+    // TODO add connection update info 
+    const submittedStructure: ModelStructure = { 'layer': updatedLayers, 'connection': {} }
+    const res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`, submittedStructure)
+    console.log(res.data.id)
+    // TODO submit training job
+  }
 
+  /**
+   * update model layer information after submit
+   */
+  public layerSubmit = (layer: any) => {
+    const modifyMark = { op_: 'M' }
+    const newConfig = { ...this.state.currentLayerInfo, ...layer.formData, ...modifyMark }
+    const newStructure = { ...this.state.modelStructure }
+    newStructure.layer[this.state.currentLayerName] = newConfig
+    this.setState({ modelStructure: newStructure })
+    // close the form
+    this.setState({ visible: false });
+  }
 
-function construcForm(item: object) {
-	return (
-		<Col span={item.col}>
-		<Form.Item
-			name={['optimizerConfig', item.name]}
-			label={item.label}
-			key={item.name}
-		>
-			{constructInput(item)}
-		</Form.Item>
-		</Col>
-	)
-}
+  /**
+   * display layer settings form after click on the graph
+   * TODO add default value
+   * 
+   * @param title layer title
+   * 
+   */
+  public showLayerInfo = (title: string) => {
+    // TODO validation check of model layer name
+    if (title.includes('.weight') || title.includes('.bias')) {
+      const layerName: string = title.replace('.weight', '').replace('.bias', '');
+      const layersInfo: object = this.state.modelStructure.layer;
+      if (layerName in layersInfo && layerName !== this.state.currentLayerName) {
+        const layerInfo = { ...layersInfo[layerName] }
+        this.setState({ currentLayerInfo: layersInfo[layerName] })
+        this.setState({ currentLayerName: layerName })
+        delete layerInfo.op_;
+        delete layerInfo.type_;
+        const schema = GenerateSchema.json(`Layer ${layerName}`, layerInfo)
+        delete schema.$schema
+        for (const property in schema.properties) {
+          schema.properties[property].default = layerInfo[property]
+        }
+        // eslint-disable-next-line react/no-access-state-in-setstate
+        this.setState({ X: this.state.currentX, Y: this.state.currentY })
+        this.setState({ layerSchema: schema, visible: true, currentLayerName: layerName })
+      }
+    }
+  }
 
-export default class Visualizer extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			data: null,
-			isFetching: false,
-			optimizer: 'Adam',
-			scheduler: 'stepLR',
-			hyperParameterTuning: true
-		};
-		this.handleOptimizerChange = this.handleOptimizerChange.bind(this);
-		this.handleSchedulerChange = this.handleSchedulerChange.bind(this);
-		this.onFinish = this.onFinish.bind(this)
-	}
+  public render() {
+    return (
+      <div onMouseMove={this.onMouseMove}>
+        <Row gutter={16}>
+          <Col span={16}>
+            <Card title="Model Structure" bordered={false}>
+              <div id="graphviz">
+                <Popover
+                  content={
+                    <div>
+                      <Form
+                        schema={this.state.layerSchema}
+                        onSubmit={this.layerSubmit}
+                      />
+                    </div>
+                  }
+                  title="Modify Layer Paramaters"
+                  visible={this.state.visible}
+                  placement="rightTop"
+                  autoAdjustOverflow
+                  overlayStyle={{left: this.state.X + 200, top: this.state.Y - 300}}
+                  overlayInnerStyle={{width: 350, height: 600, overflowY: 'scroll'}}
+                />
+                <ReactD3GraphViz
+                  dot={this.state.isLoaded ? this.state.graphData : 'graph {}'}
+                  options={defaultOptions}
+                  onClick={this.showLayerInfo}
+                />
+              </div>
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Form
+              schema={this.state.configSchema}
+              onSubmit={this.configSubmit}
+            />
+          </Col>
+        </Row>
+      </div>
+    );
 
-	async onFinish(values: object) {
-		values['tuning'] = this.state.hyperParameterTuning
-		// TODO(JSS) add model structure modifications to value
-		// TODO(JSS) add job page to display training status
-		let response = await axios.post(`${config.trainerURL}/${this.props.match.params.id}`, values)
-		console.log('Success:', response.data.jobID);
-		Modal.success({
-			title: 'Finetune Job Created',
-			content:
-					<h6>Your finetune job is submitted successfully<br />
-				You can visit the following link to check the training status<br />
-				<a href={`/job/${response.data.jobID}`}>Job: {response.data.jobID}</a>
-					</h6>
-		});
-
-	};
-
-	handleOptimizerChange = (optimizer: string) => {
-		this.setState({
-			optimizer: optimizer
-		})
-	};
-
-	handleSchedulerChange = (scheduler: string) => {
-		this.setState({
-			scheduler: scheduler
-		})
-	};
-
-	handleHyperParameterSwitch = (checked: boolean) => {
-		this.setState({
-			hyperParameterTuning: checked
-		})
-	}
-
-	componentDidMount() {
-		this.setState({ isFetching: true });
-		const targetUrl = config.visualizerURL;
-		axios.get(`${targetUrl}/${this.props.match.params.id}`)
-			.then(res => {
-				this.setState({ data: res.data.dot });
-			})
-	}
-
-	render() {
-		return (
-			<Row gutter={16}>
-				<Col span={16}>
-					<Card title={`Model Structure`} bordered={false}>
-						<div id="graphviz">
-							<Graphviz dot={this.state.data ? this.state.data : `graph {}`} options={defaultOptions} />
-						</div>
-					</Card>
-				</Col>
-				<Col span={8}>
-					<Card title="Finetune" bordered={false}>
-						<Form
-							name="basic"
-							initialValues={defaultTrainerConfig}
-							onFinish={this.onFinish}
-							onFinishFailed={onFinishFailed}
-						>
-							<Form.Item
-								name="dataset_name"
-								label="Name of Dataset"
-								rules={[{ required: true, message: 'Please select one of the datasets' }]}
-							>
-								<Select>
-									<Select.Option value="cifar-10">cifar-10</Select.Option>
-								</Select>
-							</Form.Item>
-							<Form.Item
-								name="num_epochs"
-								label="Number of Epochs"
-								rules={[{ required: true, message: 'Please set your number of epochs' }]}
-							>
-								<InputNumber min={1} />
-							</Form.Item>
-							<Form.Item
-								name="batch_size"
-								label="Batch Size"
-								rules={[{ required: true, message: 'Please set your batch size' }]}
-							>
-								<InputNumber min={1} />
-							</Form.Item>
-							<Form.Item
-								name="num_workers"
-								label="Maxmium Number of CPU workers"
-							>
-								<InputNumber min={1} />
-							</Form.Item>
-							<Form.Item label="Automated HyperParameter Tuning">
-								<Switch checked={this.state.hyperParameterTuning} onChange={this.handleHyperParameterSwitch} value={this.state.hyperParameterTuning} />
-							</Form.Item>
-							{
-								this.state.hyperParameterTuning ? '' :
-
-									[<Form.Item
-										name="optimizer"
-										label="Optimizer"
-										key="optimizer"
-									>
-										<Select value={this.state.optimizer} onChange={this.handleOptimizerChange}>
-											<Select.Option value="Adam">Adam</Select.Option>
-										</Select>
-									</Form.Item>
-									]
-										.concat(<Row>{optimizerConfig[this.state.optimizer].map(construcForm)}</Row>)
-										.concat(
-											[
-												<Form.Item
-													name="lr"
-													label="Initial learning rate"
-													key="lr"
-												>
-													<InputNumber min={0} />
-												</Form.Item>,
-												<Form.Item
-													name="scheduler"
-													label="Type of learning rate scheduler"
-													key="scheduler"
-												>
-													<Select value={this.state.scheduler} onChange={this.handleSchedulerChange}>
-														<Select.Option value="StepLR">StepLR</Select.Option>
-													</Select>
-												</Form.Item>,
-												<Form.Item
-													name="loss_fn"
-													label="Type of loss function"
-													key="loss_fn"
-												>
-													<Select>
-														<Select.Option value="CrossEntropyLoss">Cross-Entropy Loss</Select.Option>
-													</Select>
-												</Form.Item>
-											]
-										)
-							}
-							<Form.Item {...tailLayout}>
-								<Button type="primary" htmlType="submit">
-									Submit
-              					</Button>
-							</Form.Item>
-						</Form>
-					</Card>
-				</Col>
-			</Row>
-		);
-
-	};
+  };
 };

@@ -36,15 +36,18 @@ class ModelInputFormat(CaseInsensitiveEnum):
     FORMAT_NHWC = 'FORMAT_NHWC'
     FORMAT_NCHW = 'FORMAT_NCHW'
 
+
 class Task(CaseInsensitiveEnum):
-    IMAGE_CLASSIFICATION = 'image classification'
-    OBJECT_DETECTION = 'object detection'
-    SEGMENTATION = 'segmentation'
+    IMAGE_CLASSIFICATION = 'Image Classification'
+    OBJECT_DETECTION = 'Object Detection'
+    SEGMENTATION = 'Segmentation'
+
 
 class Metric(CaseInsensitiveEnum):
     ACC = 'acc'
     MAP = 'mAp'
     IOU = 'IoU'
+
 
 class Framework(CaseInsensitiveEnum):
     TENSORFLOW = 'TensorFlow'
@@ -68,6 +71,15 @@ class Status(CaseInsensitiveEnum):
     RUNNING = 'Running'
     FAIL = 'Fail'
 
+
+class ModelStatus(CaseInsensitiveEnum):
+    PUBLISHED = 'Published'
+    CONVERTED = 'Converted'
+    PROFILING = 'Profiling'
+    IN_SERVICE = 'In Service'
+    DRAFT = 'Draft'
+    VALIDATING = 'Validating'
+    TRAINING = 'Training'
 
 class IOShapeVO(BaseModel):
     shape: List[int]
@@ -184,6 +196,7 @@ class ModelListOut(BaseModel):
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
     status: Status
+    model_status: List[ModelStatus]
     creator: str
     create_time: datetime
 
@@ -203,6 +216,7 @@ class ModelListOut(BaseModel):
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
             status=Status(model_bo.status.name),
+            model_status=[ModelStatus(item.name) for item in model_bo.model_status],
             creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
@@ -222,6 +236,7 @@ class ModelDetailOut(BaseModel):
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
     status: Status
+    model_status: List[ModelStatus]
     creator: str
     create_time: datetime
 
@@ -241,6 +256,7 @@ class ModelDetailOut(BaseModel):
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
             status=Status(model_bo.status.name),
+            model_status=[ModelStatus(item) for item in model_bo.model_status],
             creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
@@ -256,6 +272,7 @@ class ModelIn(BaseModel):
     architecture: str
     framework: Framework
     version: int
+    model_status: List[ModelStatus]
     convert: bool
     profile: bool
 

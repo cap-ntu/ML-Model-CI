@@ -12,18 +12,39 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-
-# TODO(ZHZ): remove the file after moving all functions to model_manager.py
+import os
 import click
 import requests
+
+from modelci.utils import Logger
 
 from modelci.app import SERVER_HOST, SERVER_PORT
 from modelci.hub.init_data import export_model
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils.misc import remove_dict_null
+from modelci.hub.publish import _download_model_from_url
+from modelci.hub.manager import register_model_from_yaml
+
+logger = Logger(__name__)
+
+@click.group()
+def modelhub():
+    pass
+
+@modelhub.command("publish")
+@click.option('-p', '--ymal_path', required=True, type=str, help='the yaml file path')
+def register_model(ymal_path):
+    """publish a model to our system
+
+    Args:
+        ymal_path ([type]): a ymal file that contains model registeration info
+    """
+    
+    register_model_from_yaml(ymal_path)
+    logger.info("model published")
 
 
-@click.command()
+@modelhub.command("list")
 @click.argument('name', type=click.STRING, required=False)
 @click.option(
     '-f', '--framework',
@@ -37,51 +58,36 @@ from modelci.utils.misc import remove_dict_null
 )
 @click.option('-v', '--version', type=click.INT, help='Model version.')
 @click.option('-a', '--all', 'list_all', type=click.BOOL, is_flag=True, help='Show all models.')
-@click.option('-q', '--quiet', type=click.BOOL, is_flag=True, help='Only show numeric IDs.')
-def models(name, framework, engine, version, list_all, quiet):
+def show_models(name, framework, engine, version, list_all):
+    """show a table that lists all models published in mlmodelci
+
+    Args:
+        name ([type]): [description]
+        framework ([type]): [description]
+        engine ([type]): [description]
+        version ([type]): [description]
+        list_all ([type]): [description]
+    """
     payload = remove_dict_null({'name': name, 'framework': framework, 'engine': engine, 'version': version})
     with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/', params=payload) as r:
         model_list = r.json()
-        model_view([model_list], list_all=list_all, quiet=quiet)
+        model_view([model_list], list_all=list_all)
 
 
-@click.group('model')
-def commands():
+@modelhub.command()
+def download_model():
+    raise NotImplementedError
+
+@modelhub.command("get")
+@click.option('-u', '--url', required=True, type=str, help='the link to a model')
+@click.option('-p', '--path', required=True, type=str, help='the saved path and file name.')
+def download_model_from_url(url, path):
+    """download a model weight file from an url
+
+    Args:
+        url ([type]): a model file url
+        path ([type]): the saved path and file name
     """
-    ModelCI hub for Manage (CURD), convert, diagnose and deploy DL models supported by industrial
-    serving systems.
-    """
-    pass
+    _download_model_from_url(url, path)
+    logger.info("{} model downloaded succussfuly.".format(path))
 
-
-@commands.command()
-@click.option('-n', '--name', type=click.STRING, required=True, help='Model architecture name.')
-@click.option(
-    '-f', '--framework',
-    type=click.Choice(['TensorFlow', 'PyTorch'], case_sensitive=False),
-    required=True,
-    help='Model framework name.'
-)
-@click.option(
-    '--trt',
-    type=click.STRING,
-    is_flag=True,
-    help='Flag for exporting models served by TensorRT. Please make sure you have TensorRT installed in your machine'
-         'before set this flag.'
-)
-def export(name, framework, trt):
-    """
-    Export model from PyTorch hub / TensorFlow hub and try convert the model into various format for different serving
-    engines.
-    """
-    export_model(model_name=name, framework=framework, enable_trt=trt)
-    exit(0)
-
-
-@commands.command()
-@click.argument('model_id')
-def show(model_id):
-    """Show a single model."""
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
-        model = r.json()
-        model_detailed_view(model)

@@ -1,57 +1,34 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Author: Li Yuanming
-Email: yli056@e.ntu.edu.sg
-Date: 10/12/2020
-"""
+#  Copyright (c) NTU_CAP 2021. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at:
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+#  or implied. See the License for the specific language governing
+#  permissions and limitations under the License.
+
 import click
-
-from modelci.app import (start as app_start, stop as app_stop)
+from modelci.cli.modelci_service import *
+from modelci.cli.model_manager import *
 from modelci.cli import model_cli
-from modelci.utils import Logger
-from modelci.utils.docker_container_manager import DockerContainerManager
-
-logger = Logger(__name__, welcome=False)
-
 
 @click.group()
 @click.version_option()
 def cli():
-    """A complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS)"""
+    """A complete MLOps platform for managing, converting and profiling models and then deploying models as cloud services (MLaaS)"""
     pass
 
 
-@cli.command()
-@click.option('--gpu', default=False, type=click.BOOL, is_flag=True)
-def start(gpu=False):
-    """Start the ModelCI service."""
-    container_conn = DockerContainerManager(enable_gpu=gpu)
-    if not container_conn.start():
-        container_conn.connect()
-    app_start()
-
-
-@cli.command()
-def stop():
-    """Stop the ModelCI service"""
-    container_conn = DockerContainerManager()
-    container_conn.stop()
-    app_stop()
-
-
-@cli.command()
-def clean():
-    """Stop the ModelCI service and remove all containers."""
-    # remove all services
-    container_conn = DockerContainerManager()
-    container_conn.stop()
-    app_stop()
-    container_conn.remove_all()
-
-
-cli.add_command(model_cli.commands)
+cli.add_command(service)
+cli.add_command(modelhub)
+cli.add_command(model_cli.commands)	
 cli.add_command(model_cli.models)
 
 if __name__ == '__main__':
     cli()
+

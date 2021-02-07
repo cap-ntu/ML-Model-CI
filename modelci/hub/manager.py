@@ -1,3 +1,17 @@
+#  Copyright (c) NTU_CAP 2021. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at:
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+#  or implied. See the License for the specific language governing
+#  permissions and limitations under the License.
+
 import os
 import subprocess
 from functools import partial
@@ -6,6 +20,7 @@ from typing import Iterable, Union, List, Dict, Optional
 
 import cv2
 import tensorflow as tf
+import torch
 import yaml
 
 from modelci.hub.client.onnx_client import CVONNXClient
@@ -15,7 +30,7 @@ from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
-from modelci.types.bo import IOShape, Task, Metric, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
+from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task', 'retrieve_model_by_parent_id']
@@ -36,6 +51,7 @@ def register_model(
         parent_model_id: str = "",
         convert: bool = True,
         profile: bool = True,
+        model_status: List[ModelStatus] = None
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
@@ -44,6 +60,9 @@ def register_model(
         In the `no_generate` model(i.e. `no_generate` flag is set to be `True`), `architecture`, `framework`, `engine`
         and `version` could be None. If any of the above arguments is `None`, all of them will be auto induced
         from the origin_model path. An `ValueError` will be raised if the mata info cannot be induced.
+
+    TODO:
+        This function has a super comprehensive logic, need to be simplified.
 
     Arguments:
         origin_model: The uploaded model without optimization. When `no_generate` flag is set, this parameter should
@@ -57,9 +76,10 @@ def register_model(
         inputs (Iterable[IOShape]): Model input tensors.
         outputs (Iterable[IOShape]): Model output tensors.
         model_input: specify sample model input data
-        TODO: specify more model conversion related params
+            TODO: specify more model conversion related params
         engine (Engine): Model optimization engine. Default to `Engine.NONE`.
         parent_model_id (Optional[str]): the parent model id of current model if this model is derived from a pre-existing one
+        model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
         convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
             file. Default to `True`.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
@@ -68,9 +88,9 @@ def register_model(
     from modelci.controller.executor import Job
 
     model_dir_list = list()
-    if not convert:
-        # type and existence check
-        assert isinstance(origin_model, str)
+
+    # type and existence check
+    if isinstance(origin_model, str):
         model_dir = Path(origin_model).absolute()
         assert model_dir.exists(), f'model weight does not exist at {origin_model}'
 
@@ -93,9 +113,22 @@ def register_model(
         else:  # from implicit extracted from path, check validity of the path later at registration
             path = model_dir
         model_dir_list.append(path)
-    else:
-        # TODO: generate from path name
+    elif framework == Framework.PYTORCH and engine in [Engine.PYTORCH, Engine.NONE]:
+        # save original pytorch model
+        pytorch_dir = generate_path(
+            task=task,
+            model_name=architecture,
+            framework=framework,
+            engine=engine,
+            version=str(version),
+        )
+        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
+        save_path_with_ext = pytorch_dir.with_suffix('.pth')
+        torch.save(origin_model, str(save_path_with_ext))
+        model_dir_list.append(pytorch_dir.with_suffix('.pth'))
 
+    if convert:
+        # TODO: generate from path name
         # generate model variant
         model_dir_list.extend(_generate_model_family(
             origin_model,
@@ -118,6 +151,13 @@ def register_model(
         version = parse_result['version']
         filename = parse_result['filename']
 
+        if model_status is not None:
+            model_bo_status = model_status
+        elif engine == Engine.PYTORCH:
+            model_bo_status = [ModelStatus.PUBLISHED]
+        else:
+            model_bo_status = [ModelStatus.CONVERTED]
+
         with open(str(model_dir), 'rb') as f:
             model = ModelBO(
                 name=architecture,
@@ -130,7 +170,8 @@ def register_model(
                 parent_model_id=parent_model_id,
                 inputs=inputs,
                 outputs=outputs,
-                weight=Weight(f, filename=filename),
+                model_status=model_bo_status,
+                weight=Weight(f, filename=filename)
             )
 
             ModelService.post_model(model)
@@ -157,6 +198,13 @@ def register_model(
                 'asynchronous': False,
                 'model_info': model,
             }
+
+            new_status = [item for item in model.model_status if
+                          item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
+            new_status.append(ModelStatus.PROFILING)
+            model.model_status = new_status
+            ModelService.update_model(model)
+
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
             elif engine == Engine.TFS:
@@ -197,8 +245,10 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     # read yaml
     with open(file_path) as f:
         model_config = yaml.safe_load(f)
-    # TODO able to parse ~ in file path by os.path.expanduser
-    origin_model = model_config['weight']
+   
+    model_weight_path = model_config['weight']
+    origin_model = os.path.expanduser(model_weight_path)
+
     dataset = model_config['dataset']
     metric = model_config['metric']
     inputs_plain = model_config['inputs']
@@ -209,6 +259,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     task = model_config.get('task', None)
     framework = model_config.get('framework', None)
     engine = model_config.get('engine', None)
+    model_status = model_config.get('model_status', None)
     version = model_config.get('version', None)
     convert = model_config.get('convert', True)
 
@@ -217,8 +268,6 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain)))
 
     # wrap POJO
-    if model_input is not None:
-        model_input = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_input)))
     if task is not None:
         task = Task[task.upper()]
     if metric is not None:
@@ -227,6 +276,8 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework = Framework[framework.upper()]
     if engine is not None:
         engine = Engine[engine.upper()]
+    if model_status is not None:
+        model_status = [ModelStatus[item.upper()] for item in model_status]
     if version is not None:
         version = ModelVersion(version)
     # os.path.expanduser
@@ -244,6 +295,7 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         framework=framework,
         engine=engine,
         version=version,
+        model_status=model_status,
         convert=convert,
     )
 
@@ -265,16 +317,8 @@ def _generate_model_family(
     tfs_dir = generate_this_path(engine=Engine.TFS)
     onnx_dir = generate_this_path(engine=Engine.ONNX)
     trt_dir = generate_this_path(engine=Engine.TRT)
-    pytorch_dir = generate_this_path(engine=Engine.PYTORCH)
 
     if framework == Framework.PYTORCH:
-        # save original pytorch model
-        import torch
-        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
-        save_path_with_ext = pytorch_dir.with_suffix('.pth')
-        torch.save(model, str(save_path_with_ext))
-        generated_dir_list.append(pytorch_dir.with_suffix('.pth'))
-
         # to TorchScript
         if TorchScriptConverter.from_torch_module(model, torchscript_dir):
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
