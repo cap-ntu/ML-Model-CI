@@ -1,0 +1,10 @@
+@import '~antd/dist/antd.css';
+
+.ant-descriptions-item-label,.ant-descriptions-item-content,table {
+  font-size: 20px;
+}
+
+tr.ant-table-expanded-row .ant-descriptions-view table {
+  width: 100%;
+  font-size: 20px;
+}
