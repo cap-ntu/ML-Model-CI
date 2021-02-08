@@ -36,3 +36,31 @@ export const DEFAULT_FINETUNE_CONFIG: FinetuneConfig = {
   lr_scheduler_property: {lr: 0.01, step_size: 30},
   loss_function: 'torch.nn.CrossEntropyLoss'
 }
+
+
+export const DEFAULT_CONFIG_SCHEMA = {
+  'title': 'Finetune Settings',
+  'type': 'object',
+  'oneOf': [
+    {
+      'title': 'Select Dataset',
+      'properties': {
+        'dataset_name': {
+          'type': 'string',
+          default: 'CIFAR10',
+          enum: ['CIFAR10']
+        }
+      }
+    },
+    { 'title': 'Upload Custom Dataset',
+      'description': 'Please uploda compressed dataset in zip file format',
+      'properties': {
+        'dataset_path': {
+          'type': 'string',
+          'format': 'data-url',
+          'title': 'Single File with'
+        },
+      }
+    }
+  ]
+}

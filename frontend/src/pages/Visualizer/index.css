@@ -1,0 +1,3 @@
+.panel >.MuiFormControl-root > .MuiBox-root {
+    display: none;
+}

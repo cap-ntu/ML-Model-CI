@@ -1,13 +1,14 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { ReactD3GraphViz } from '@hikeman/react-graphviz';
-import { Row, Col, Card, Popover, Button, Divider, Progress, Modal } from 'antd';
+import { Row, Col, Card, Popover, Button, Divider, Progress, Modal, Space, Tooltip} from 'antd';
 import axios from 'axios';
 import { config } from 'ice';
 import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
-import { ModelStructure, FinetuneConfig,DEFAULT_FINETUNE_CONFIG } from './utils/type'
+import './index.css'
+import { ModelStructure, FinetuneConfig, DEFAULT_FINETUNE_CONFIG, DEFAULT_CONFIG_SCHEMA } from './utils/type'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockStructure = require('./utils/mock.json');
@@ -58,17 +59,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
       currentLayerName: '',
       currentLayerInfo: {},
       layerSchema: {},
-      configSchema: {
-        'title': 'Finetune Settings',
-        'type': 'object',
-        'properties': {
-          'dataset_name': {
-            'type': 'string',
-            default: 'CIFAR10',
-            enum: ['CIFAR10']
-          }
-        }
-      }
+      configSchema: DEFAULT_CONFIG_SCHEMA
     };
     this.timer = 0;
     this.showLayerInfo = this.showLayerInfo.bind(this);
@@ -259,6 +250,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
           </Col>
           <Col span={7} offset={1}>
             <Card bordered={false}>
+              {/* TODO customize the config form */}
               <Form
                 schema={this.state.configSchema}
                 onSubmit={this.configSubmit}
@@ -276,39 +268,42 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                       <Row justify="center">
                         <h3>
                           Validation Accuracy :&nbsp;
-                          <span className="ant-statistic-content">
-                            {this.state.seconds===0?
-                              `${0.00} %` // TODO replace with ajax data
-                              : '  In Progress  '
-                            }
-                          </span>
+                          {this.state.seconds===0?
+                            `${0.00} %` // TODO replace with ajax data
+                            : '  In Progress  '
+                          }
                         </h3>
                       </Row>
                     </Card> : ''
                   }
-                  <Row>
-                    <Col span={11}>
+
+                  <Space
+                    direction="vertical"
+                    style={{ alignItems: 'center', width: '100%'}}
+                  >
+                    <Tooltip placement="left" title="Submit and run finetune Job">
                       <Button 
-                        type="primary" 
+                        type="default" 
                         htmlType="submit" 
                         size="large"
-                        block
+                        style={{ width: 200 }}
                       >
                         Train
                       </Button>
-                    </Col>
-                    <Col span={11} offset={2}>
-                      
+                    </Tooltip>
+
+                    <Tooltip placement="left" title="Validate accuracy of modified model structure">
                       <Button 
-                        type="primary" 
+                        type="default" 
                         size="large" 
                         onClick={this.onClickValidate} 
                         disabled={this.state.isValidating}
-                        block>
-                        Validate
+                        style={{ width: 200 }}
+                      >
+                        Quick Validate
                       </Button>
-                    </Col>
-                  </Row>
+                    </Tooltip>
+                  </Space>
                 </div>
               </Form>
             </Card>

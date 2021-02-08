@@ -121,6 +121,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
     if not dry_run:
         # TODO return validation result for dry_run mode
         # TODO apply Semantic Versioning https://semver.org/
+        # TODO reslove duplicate model version problem in a more efficient way
         version = ModelVersion(model.version.ver + 1)
         previous_models = ModelService.get_models(
                 name=model.name,
