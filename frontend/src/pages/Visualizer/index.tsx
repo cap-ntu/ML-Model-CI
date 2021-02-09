@@ -1,12 +1,15 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { ReactD3GraphViz } from '@hikeman/react-graphviz';
-import { Row, Col, Card, Popover, Button, Divider, Progress, Modal, Space, Tooltip} from 'antd';
+import { Row, Col, Card, Popover, Button, Divider, Progress, Modal, Tooltip} from 'antd';
 import axios from 'axios';
 import { config } from 'ice';
 import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
+import {SchemaForm, FormButtonGroup, FormEffectHooks, Submit} from '@formily/antd'
+import { merge } from 'rxjs'
+import { Input, Select, Upload, Switch } from '@formily/antd-components'
 import './index.css'
 import { ModelStructure, FinetuneConfig, DEFAULT_FINETUNE_CONFIG, DEFAULT_CONFIG_SCHEMA } from './utils/type'
 
@@ -16,11 +19,20 @@ const mockStructure = require('./utils/mock.json');
 const defaultOptions: GraphvizOptions = {
   fit: true,
   height: 700,
-  width: 1000,
+  width: 800,
   zoom: true,
   zoomScaleExtent: [0.5, 20],
   zoomTranslateExtent: [[-2000, -20000], [1000, 1000]]
 };
+
+const components = {
+  Input,
+  Select,
+  Upload,
+  Switch
+}
+
+const { onFieldValueChange$, onFieldInit$ } = FormEffectHooks
 
 type VisualizerProps = { match: any };
 type VisualizerState = {
@@ -251,61 +263,67 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
           <Col span={7} offset={1}>
             <Card bordered={false}>
               {/* TODO customize the config form */}
-              <Form
-                schema={this.state.configSchema}
+              <SchemaForm
+                labelCol={8}
+                wrapperCol={10}
+                components={components}
                 onSubmit={this.configSubmit}
-                onChange={this.onConfigChange}
+                schema={this.state.configSchema}
+                effects={({ setFieldState }) => {
+                  merge(onFieldValueChange$('custom'), onFieldInit$('custom')).subscribe(
+                    fieldState => {
+                      setFieldState('select', state => {
+                        state.visible = !fieldState.value
+                      })
+                      setFieldState('upload', state => {
+                        state.visible = fieldState.value
+                      })
+                    }
+                  )
+                }}
               >
-                <div>
-                  { this.state.isValidating || this.state.seconds===0?
-                    <Card bordered={false}>
-                      <Row justify="center">
-                        <Progress
-                          percent={100 - this.state.seconds/60*100}
-                          format={()=>`${this.state.seconds} s`}
-                        />
-                      </Row>
-                      <Row justify="center">
-                        <h3>
+                <div style={{ display: this.state.isValidating || this.state.seconds===0 ? '' : 'none' }}>
+                  <Row>
+                    <h3>
                           Validation Accuracy :&nbsp;
-                          {this.state.seconds===0?
-                            `${0.00} %` // TODO replace with ajax data
-                            : '  In Progress  '
-                          }
-                        </h3>
-                      </Row>
-                    </Card> : ''
-                  }
-
-                  <Space
-                    direction="vertical"
-                    style={{ alignItems: 'center', width: '100%'}}
-                  >
-                    <Tooltip placement="left" title="Submit and run finetune Job">
-                      <Button 
-                        type="default" 
-                        htmlType="submit" 
-                        size="large"
-                        style={{ width: 200 }}
-                      >
-                        Train
-                      </Button>
-                    </Tooltip>
-
-                    <Tooltip placement="left" title="Validate accuracy of modified model structure">
-                      <Button 
-                        type="default" 
-                        size="large" 
-                        onClick={this.onClickValidate} 
-                        disabled={this.state.isValidating}
-                        style={{ width: 200 }}
-                      >
-                        Quick Validate
-                      </Button>
-                    </Tooltip>
-                  </Space>
+                      {this.state.seconds===0?
+                        `${0.00} %` // TODO replace with ajax data
+                        : '  In Progress  '
+                      }
+                    </h3>
+                  </Row>
+                  <Row justify="center" style={{width: '100%'}}>
+                    <Progress
+                      percent={100 - this.state.seconds/60*100}
+                      format={()=>`${this.state.seconds} s`}
+                    />
+                  </Row>
                 </div>
-              </Form>
+                <FormButtonGroup offset={2}>
+                  <Tooltip placement="bottom" title="Submit and run finetune Job">
+                    <Submit
+                      type="default"
+                      size="large"
+                      htmlType="submit"
+                      style={{ width: 150 }}
+                    >
+                    Start Training
+                    </Submit>
+                  </Tooltip>
+                  <Tooltip placement="bottom" title="Validate accuracy of modified model structure">
+                    <Button 
+                      type="default" 
+                      size="large" 
+                      onClick={this.onClickValidate} 
+                      disabled={this.state.isValidating}
+                      style={{ width: 150 }}
+                    >
+                      Fast Validate
+                    </Button>
+                  </Tooltip>
+                </FormButtonGroup>
+              </SchemaForm>
+
             </Card>
           </Col>
         </Row>

@@ -39,28 +39,41 @@ export const DEFAULT_FINETUNE_CONFIG: FinetuneConfig = {
 
 
 export const DEFAULT_CONFIG_SCHEMA = {
-  'title': 'Finetune Settings',
   'type': 'object',
-  'oneOf': [
-    {
-      'title': 'Select Dataset',
-      'properties': {
-        'dataset_name': {
-          'type': 'string',
-          default: 'CIFAR10',
-          enum: ['CIFAR10']
-        }
-      }
+  'properties': {
+    'custom': {
+      'key': 'custom',
+      'type': 'boolean',
+      'title': 'Custom Dataset',
+      'name': 'custom',
+      'x-component': 'switch'
     },
-    { 'title': 'Upload Custom Dataset',
-      'description': 'Please uploda compressed dataset in zip file format',
-      'properties': {
-        'dataset_path': {
-          'type': 'string',
-          'format': 'data-url',
-          'title': 'Single File with'
-        },
-      }
+    'select': {
+      'key': 'select',
+      'type': 'string',
+      'title': 'Select',
+      'name': 'Select Dataset',
+      'x-component': 'select',
+      'enum': [
+        {
+          'label': 'CIFAR10',
+          'value': 'CIFAR10'
+        }
+      ],
+      'default': 'CIFAR10'
+    },
+    'upload': {
+      'key': 'upload',
+      'type': 'array',
+      'title': 'Upload Dataset',
+      'name': 'upload',
+      'text': 'Click or drag file to this area to upload',
+      'x-component-props': {
+        'listType': 'dragger',
+        'locale': true,
+        'locale.uploadText': 'test'
+      },
+      'x-component': 'upload'
     }
-  ]
+  }
 }
