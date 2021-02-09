@@ -13,3 +13,11 @@
     top: 0;
     left: 0;
 }
+
+.ant-form-item-label > label {
+    font-size: medium;
+}
+
+.ant-row > span {
+    font-size: medium;
+}

@@ -41,23 +41,28 @@ export const DEFAULT_FINETUNE_CONFIG: FinetuneConfig = {
 export const DEFAULT_CONFIG_SCHEMA = {
   'type': 'object',
   'properties': {
-    'custom': {
-      'key': 'custom',
-      'type': 'boolean',
-      'title': 'Custom Dataset',
-      'name': 'custom',
-      'x-component': 'switch'
-    },
-    'select': {
-      'key': 'select',
+    'dataset': {
+      'key': 'dataset',
       'type': 'string',
-      'title': 'Select',
+      'title': 'dataset',
       'name': 'Select Dataset',
       'x-component': 'select',
       'enum': [
         {
           'label': 'CIFAR10',
           'value': 'CIFAR10'
+        },
+        {
+          'label': 'MNIST',
+          'value': 'MNIST'
+        },
+        {
+          'label': 'ImageNet',
+          'value': 'ImageNet'
+        },
+        {
+          'label': 'Customized',
+          'value': 'Customized'
         }
       ],
       'default': 'CIFAR10'

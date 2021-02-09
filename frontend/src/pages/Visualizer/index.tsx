@@ -270,13 +270,10 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                 onSubmit={this.configSubmit}
                 schema={this.state.configSchema}
                 effects={({ setFieldState }) => {
-                  merge(onFieldValueChange$('custom'), onFieldInit$('custom')).subscribe(
+                  merge(onFieldValueChange$('dataset'), onFieldInit$('dataset')).subscribe(
                     fieldState => {
-                      setFieldState('select', state => {
-                        state.visible = !fieldState.value
-                      })
                       setFieldState('upload', state => {
-                        state.visible = fieldState.value
+                        state.visible = fieldState.value === 'Customized'
                       })
                     }
                   )
@@ -284,13 +281,13 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
               >
                 <div style={{ display: this.state.isValidating || this.state.seconds===0 ? '' : 'none' }}>
                   <Row>
-                    <h3>
+                    <span>
                           Validation Accuracy :&nbsp;
                       {this.state.seconds===0?
                         `${0.00} %` // TODO replace with ajax data
                         : '  In Progress  '
                       }
-                    </h3>
+                    </span>
                   </Row>
                   <Row justify="center" style={{width: '100%'}}>
                     <Progress
@@ -306,6 +303,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                       size="large"
                       htmlType="submit"
                       style={{ width: 150 }}
+                      disabled={this.state.isValidating}
                     >
                     Start Training
                     </Submit>
