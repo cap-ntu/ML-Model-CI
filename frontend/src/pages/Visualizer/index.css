@@ -1,0 +1,23 @@
+.panel >.MuiFormControl-root > .MuiBox-root {
+    display: none;
+}
+
+.ant-upload-text{
+    visibility: hidden;
+    position: relative;
+}
+.ant-upload-text:after{
+    content: 'Click or drag file to this area';
+    visibility: visible;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.ant-form-item-label > label {
+    font-size: medium;
+}
+
+.ant-row > span {
+    font-size: medium;
+}

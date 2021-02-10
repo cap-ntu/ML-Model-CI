@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Table, Card, Divider, Input, Descriptions, Tag } from 'antd';
+import { Button, Table, Card, Divider, Input, Descriptions, Tag, Menu, Dropdown } from 'antd';
+import { EditOutlined, ProfileOutlined, BranchesOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { config, Link } from 'ice';
 import reqwest from 'reqwest';
@@ -69,7 +70,7 @@ const columns = [
     key: 'model_status',
     className: 'column',
     render: (modelStatus) =>  {
-      return modelStatus.map(status => <Tag color={tagColor[status]}>{status}</Tag>)
+      return modelStatus.map((status,index) => <Tag color={tagColor[status]} key={index}>{status}</Tag>)
     }
   },
   {
@@ -83,22 +84,27 @@ const columns = [
     dataIndex: 'id',
     key: 'id',
     className: 'column',
-    render: (text, record) => (
-      <div>
-        <Button type="primary" size="large">
-          Edit
-        </Button>
-        <Button style={{ marginLeft: '3px' }} type="primary" size="large">
-          Profile
-        </Button>
-        { record.engine==='PYTORCH' || record.engine==='TFS' ? 
-          (
-            <Button type="primary" size="large">
-              <Link to={`/visualizer/${text}`}>Finetune</Link>
-            </Button>
-          ) : '' }
-      </div>
-    ),
+    render: (text, record) =>{
+      const menu = (
+        <Menu>
+          <Menu.Item key="2" icon={<ProfileOutlined />} style={{fontSize: 18}}>
+            Profile
+          </Menu.Item>
+          { record.engine==='PYTORCH' || record.engine==='TFS' ?  
+            (
+              <Menu.Item key="3" icon={<BranchesOutlined />} style={{fontSize: 18}}>
+                <Link to={`/visualizer/${text}`}>Finetune</Link>
+              </Menu.Item>
+            ) : ''
+          }
+        </Menu>
+      );
+      return(
+        <Dropdown.Button overlay={menu} size="large">
+          <EditOutlined /> Edit
+        </Dropdown.Button>
+      )
+    }
   },
 ];
 

@@ -1,24 +1,38 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { ReactD3GraphViz } from '@hikeman/react-graphviz';
-import { Row, Col, Card, Popover } from 'antd';
+import { Row, Col, Card, Popover, Button, Divider, Progress, Modal, Tooltip} from 'antd';
 import axios from 'axios';
 import { config } from 'ice';
 import { GraphvizOptions } from 'd3-graphviz';
 import GenerateSchema from 'generate-schema';
 import Form from '@rjsf/material-ui';
-import { ModelStructure } from './utils/type'
+import {SchemaForm, FormButtonGroup, FormEffectHooks, Submit} from '@formily/antd'
+import { merge } from 'rxjs'
+import { Input, Select, Upload, Switch } from '@formily/antd-components'
+import './index.css'
+import { ModelStructure, FinetuneConfig, DEFAULT_FINETUNE_CONFIG, DEFAULT_CONFIG_SCHEMA } from './utils/type'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockStructure = require('./utils/mock.json');
 
 const defaultOptions: GraphvizOptions = {
   fit: true,
   height: 700,
-  width: 1000,
+  width: 800,
   zoom: true,
   zoomScaleExtent: [0.5, 20],
   zoomTranslateExtent: [[-2000, -20000], [1000, 1000]]
 };
 
+const components = {
+  Input,
+  Select,
+  Upload,
+  Switch
+}
+
+const { onFieldValueChange$, onFieldInit$ } = FormEffectHooks
 
 type VisualizerProps = { match: any };
 type VisualizerState = {
@@ -28,12 +42,15 @@ type VisualizerState = {
   currentY: number;
   graphData: string;
   isLoaded: boolean;
+  isValidating: boolean;
   modelStructure: ModelStructure;
+  finetuneConfig: FinetuneConfig;
   visible: boolean;
   currentLayerName: string;
   currentLayerInfo: object;
   layerSchema: object;
   configSchema: object;
+  seconds: number;
 };
 
 export default class Visualizer extends React.Component<VisualizerProps, VisualizerState> {
@@ -44,39 +61,66 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
       Y: 0,
       currentX: 0,
       currentY: 0,
+      seconds: 60,
       graphData: '',
       isLoaded: false,
-      modelStructure: mockStructure,
+      isValidating: false,
+      modelStructure: { layer: {}, connection: {}},
+      finetuneConfig: DEFAULT_FINETUNE_CONFIG,
       visible: false,
       currentLayerName: '',
       currentLayerInfo: {},
       layerSchema: {},
-      configSchema: {
-        'title': 'Finetune Settings',
-        'type': 'object',
-        'properties': {
-          'dataset_name': {
-            'type': 'string',
-            default: 'CIFAR10',
-            enum: ['CIFAR10']
-          }
-        }
-      }
+      configSchema: DEFAULT_CONFIG_SCHEMA
     };
+    this.timer = 0;
     this.showLayerInfo = this.showLayerInfo.bind(this);
     this.layerSubmit = this.layerSubmit.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onLayerChange = this.onLayerChange.bind(this);
+    this.onConfigChange = this.onConfigChange.bind(this);
+    this.onClickValidate = this.onClickValidate.bind(this);
+    this.countDown = this.countDown.bind(this);
   }
 
   public async componentDidMount() {
     const id: string = this.props.match.params.id;
     const graph = await axios.get(`${config.visualizerURL}/${id}`);
-    const struct = await axios.get(`${config.structureURL}/${id}`)
     this.setState({
       isLoaded: true,
       graphData: graph.data.dot,
-      modelStructure: struct.data
+      modelStructure: mockStructure
     });
+  }
+
+  /**
+   * update layer info
+   * @param layer event
+   */
+  public onLayerChange(layer: any){
+    const properties = {...this.state.layerSchema.properties}
+    Object.keys(properties).forEach(
+      (property) => {
+        properties[property].default = layer.formData[property]
+      }
+    )
+  }
+
+  /**
+   * update finetine job config
+   * TODO add more config options
+   * @param e event
+   */
+  public onConfigChange = (config: any)=>{
+	  this.setState(
+      prevState =>
+      {
+        const newConfig = prevState.finetuneConfig
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        newConfig.data_module = { ...config.formData, ...newConfig.data_module};
+        return {finetuneConfig:prevState.finetuneConfig}
+      }
+    )
   }
 
   /**
@@ -101,9 +145,19 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     }, {})
     // TODO add connection update info 
     const submittedStructure: ModelStructure = { 'layer': updatedLayers, 'connection': {} }
-    const res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`, submittedStructure)
-    console.log(res.data.id)
+    let res = await axios.patch(`${config.structureRefractorURL}/${this.props.match.params.id}`, submittedStructure)
     // TODO submit training job
+    const newConfig = {...this.state.finetuneConfig}
+    newConfig.model = res.data.id;
+    res = await axios.post(config.trainerURL, newConfig)
+    Modal.success({
+      title: 'Finetune Job Created',
+      content:
+					<h6>Your finetune job is submitted successfully<br />
+				You can visit the following link to check the training status<br />
+					  <a href='/jobs'>Job: {res.data.id}</a>
+					</h6>
+    });
   }
 
   /**
@@ -114,7 +168,6 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     const newConfig = { ...this.state.currentLayerInfo, ...layer.formData, ...modifyMark }
     const newStructure = { ...this.state.modelStructure }
     newStructure.layer[this.state.currentLayerName] = newConfig
-    this.setState({ modelStructure: newStructure })
     // close the form
     this.setState({ visible: false });
   }
@@ -139,9 +192,11 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
         delete layerInfo.type_;
         const schema = GenerateSchema.json(`Layer ${layerName}`, layerInfo)
         delete schema.$schema
-        for (const property in schema.properties) {
-          schema.properties[property].default = layerInfo[property]
-        }
+        Object.keys(schema.properties).forEach(
+          (property) =>{
+            schema.properties[property].default = layerInfo[property]
+          }
+        )
         // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState({ X: this.state.currentX, Y: this.state.currentY })
         this.setState({ layerSchema: schema, visible: true, currentLayerName: layerName })
@@ -149,12 +204,36 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
     }
   }
 
+  /**
+   * display data during validating process
+   */
+  public onClickValidate = () =>{
+    // TODO: pass parameters to validator
+    this.setState({isValidating: true})
+    this.setState({seconds: 60})
+    this.timer = setInterval(this.countDown, 1000);
+  }
+
+  // refer to https://stackoverflow.com/a/40887181
+  public countDown() {
+    this.setState(
+      prevState =>({ seconds: prevState.seconds - 1 })
+    )
+    if (this.state.seconds === 0) { 
+      clearInterval(this.timer);
+      this.setState({isValidating: false})
+      // TODO: get validate accuracy
+    }
+  }
+
   public render() {
     return (
       <div onMouseMove={this.onMouseMove}>
         <Row gutter={16}>
-          <Col span={16}>
-            <Card title="Model Structure" bordered={false}>
+          <Col span={15}>
+            <Card bordered={false}>
+              <h5 className="MuiTypography-root MuiTypography-h5">Model Structure</h5>
+              <Divider />
               <div id="graphviz">
                 <Popover
                   content={
@@ -162,6 +241,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                       <Form
                         schema={this.state.layerSchema}
                         onSubmit={this.layerSubmit}
+                        onChange={this.onLayerChange}
                       />
                     </div>
                   }
@@ -169,7 +249,7 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
                   visible={this.state.visible}
                   placement="rightTop"
                   autoAdjustOverflow
-                  overlayStyle={{left: this.state.X + 200, top: this.state.Y - 300}}
+                  overlayStyle={{left: this.state.X + 200, top: this.state.Y - 400}}
                   overlayInnerStyle={{width: 350, height: 600, overflowY: 'scroll'}}
                 />
                 <ReactD3GraphViz
@@ -180,11 +260,69 @@ export default class Visualizer extends React.Component<VisualizerProps, Visuali
               </div>
             </Card>
           </Col>
-          <Col span={8}>
-            <Form
-              schema={this.state.configSchema}
-              onSubmit={this.configSubmit}
-            />
+          <Col span={7} offset={1}>
+            <Card bordered={false}>
+              {/* TODO customize the config form */}
+              <SchemaForm
+                labelCol={8}
+                wrapperCol={10}
+                components={components}
+                onSubmit={this.configSubmit}
+                schema={this.state.configSchema}
+                effects={({ setFieldState }) => {
+                  merge(onFieldValueChange$('dataset'), onFieldInit$('dataset')).subscribe(
+                    fieldState => {
+                      setFieldState('upload', state => {
+                        state.visible = fieldState.value === 'Customized'
+                      })
+                    }
+                  )
+                }}
+              >
+                <div style={{ display: this.state.isValidating || this.state.seconds===0 ? '' : 'none' }}>
+                  <Row>
+                    <span>
+                          Validation Accuracy :&nbsp;
+                      {this.state.seconds===0?
+                        `${0.00} %` // TODO replace with ajax data
+                        : '  In Progress  '
+                      }
+                    </span>
+                  </Row>
+                  <Row justify="center" style={{width: '100%'}}>
+                    <Progress
+                      percent={100 - this.state.seconds/60*100}
+                      format={()=>`${this.state.seconds} s`}
+                    />
+                  </Row>
+                </div>
+                <FormButtonGroup offset={2}>
+                  <Tooltip placement="bottom" title="Submit and run finetune Job">
+                    <Submit
+                      type="default"
+                      size="large"
+                      htmlType="submit"
+                      style={{ width: 150 }}
+                      disabled={this.state.isValidating}
+                    >
+                    Start Training
+                    </Submit>
+                  </Tooltip>
+                  <Tooltip placement="bottom" title="Validate accuracy of modified model structure">
+                    <Button 
+                      type="default" 
+                      size="large" 
+                      onClick={this.onClickValidate} 
+                      disabled={this.state.isValidating}
+                      style={{ width: 150 }}
+                    >
+                      Fast Validate
+                    </Button>
+                  </Tooltip>
+                </FormButtonGroup>
+              </SchemaForm>
+
+            </Card>
           </Col>
         </Row>
       </div>
