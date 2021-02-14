@@ -48,7 +48,7 @@ def register_model(
         framework: Framework = None,
         engine: Engine = None,
         version: ModelVersion = None,
-        parent_model_id: str = "",
+        parent_model_id: Optional[str] = None,
         convert: bool = True,
         profile: bool = True,
         model_status: List[ModelStatus] = None
@@ -471,7 +471,5 @@ def retrieve_model_by_parent_id(parent_id: str) -> List[ModelBO]:
     # check if found
     if len(models) == 0:
         raise FileNotFoundError('Model not found!')
-
-    _get_remote_model_weights(models)
 
     return models

@@ -144,6 +144,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             framework=model.framework,
             engine=Engine.NONE,
             model_status=[ModelStatus.DRAFT],
+            parent_model_id=model.id,
             version=version,
             convert=False, profile=False
         )

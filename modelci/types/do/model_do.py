@@ -47,7 +47,7 @@ class ModelDO(Document):
     # Model task
     task = IntField(required=True)
     # Parent Model ID
-    parent_model_id = StringField(required=True)
+    parent_model_id = StringField()
     # inputs standard
     inputs = EmbeddedDocumentListField(IOShapeDO)
     # outputs standard

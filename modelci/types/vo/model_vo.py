@@ -191,9 +191,9 @@ class ModelListOut(BaseModel):
     dataset: str
     metric: Dict[Metric, float]
     task: Task
-    parent_model_id: str
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
+    parent_model_id: Optional[str] = None
     profile_result: ProfileResultVO = None
     status: Status
     model_status: List[ModelStatus]
