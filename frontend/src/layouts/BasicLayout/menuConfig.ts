@@ -6,6 +6,7 @@ const asideMenuConfig = [
   { name: 'Settings', path: '/setting', icon: 'set' },
   { name: 'About', path: '/about', icon: 'warning' },
   { name: 'Jobs', path: '/jobs', icon: 'edit' },
+  { name: 'VersionTree', path: '/versiontree', icon: 'eye' },
 ];
 
 export { headerMenuConfig, asideMenuConfig };

@@ -7,7 +7,7 @@ Date: 6/19/2020
 """
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -193,6 +193,7 @@ class ModelListOut(BaseModel):
     task: Task
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
+    parent_model_id: Optional[str] = None
     profile_result: ProfileResultVO = None
     status: Status
     model_status: List[ModelStatus]
@@ -210,6 +211,7 @@ class ModelListOut(BaseModel):
             dataset=model_bo.dataset,
             metric={Metric(key.name): val for key, val in model_bo.metric.items()},
             task=Task(model_bo.task.name),
+            parent_model_id=model_bo.parent_model_id,
             inputs=list(map(IOShapeVO.from_bo, model_bo.inputs)),
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
@@ -229,6 +231,7 @@ class ModelDetailOut(BaseModel):
     dataset: str
     metric: Dict[Metric, float]
     task: Task
+    parent_model_id: str
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
     profile_result: ProfileResultVO = None
@@ -248,6 +251,7 @@ class ModelDetailOut(BaseModel):
             dataset=model_bo.dataset,
             metric={Metric(key.name): val for key, val in model_bo.metric.items()},
             task=Task(model_bo.task.name),
+            parent_model_id=model_bo.parent_model_id,
             inputs=list(map(IOShapeVO.from_bo, model_bo.inputs)),
             outputs=list(map(IOShapeVO.from_bo, model_bo.outputs)),
             profile_result=ProfileResultVO.from_bo(model_bo.profile_result),
@@ -262,6 +266,7 @@ class ModelIn(BaseModel):
     dataset: str
     metric: Dict[Metric, float]
     task: Task
+    parent_model_id: str
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
     architecture: str
@@ -270,3 +275,17 @@ class ModelIn(BaseModel):
     model_status: List[ModelStatus]
     convert: bool
     profile: bool
+
+class TrainerConfig(BaseModel):
+    dataset_name: str
+    batch_size: int
+    num_epochs:int
+    num_workers: int
+    tuning: bool
+    lr: Optional[float]
+    loss_fn: Optional[str]
+    optimizer: Optional[str]
+    optimizer_config: Optional[Dict]
+    scheduler: Optional[str]
+
+

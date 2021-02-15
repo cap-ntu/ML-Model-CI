@@ -4,6 +4,7 @@ import About from '@/pages/About';
 import Setting from '@/pages/Setting';
 import User from '@/pages/User';
 import Visualizer from '@/pages/Visualizer';
+import VersionTree from '@/pages/VersionTree';
 import Jobs from '@/pages/Jobs';
 
 const routerConfig = [
@@ -17,6 +18,7 @@ const routerConfig = [
       { path: '/visualizer/:id', component: Visualizer },
       { path: '/', exact: true, component: Dashboard },
       { path: '/jobs', component: Jobs },
+      { path: '/versiontree', component: VersionTree }
     ],
   },
 ];

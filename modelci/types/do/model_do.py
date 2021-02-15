@@ -46,6 +46,8 @@ class ModelDO(Document):
     weight = FileField()
     # Model task
     task = IntField(required=True)
+    # Parent Model ID
+    parent_model_id = StringField()
     # inputs standard
     inputs = EmbeddedDocumentListField(IOShapeDO)
     # outputs standard

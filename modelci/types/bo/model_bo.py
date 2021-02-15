@@ -59,6 +59,7 @@ class ModelBO(object):
             task: Task,
             inputs: List[IOShape],
             outputs: List[IOShape],
+            parent_model_id: Optional[str] = None,
             model_status: List[ModelStatus] = None,
             weight: Weight = Weight(),
             profile_result: ProfileResultBO = None,
@@ -75,6 +76,7 @@ class ModelBO(object):
         self.dataset = dataset
         self.metric = metric
         self.task = task
+        self.parent_model_id = parent_model_id
         self.inputs = inputs
         self.outputs = outputs
         self.weight = weight
@@ -114,6 +116,7 @@ class ModelBO(object):
             inputs=input_dos,
             outputs=output_dos,
             task=self.task.value,
+            parent_model_id = self.parent_model_id,
             status=self.status.value,
             model_status=[item.value for item in self.model_status],
             creator=self.creator,
@@ -167,6 +170,7 @@ class ModelBO(object):
             inputs=inputs,
             outputs=outputs,
             task=Task(model_do.task),
+            parent_model_id=model_do.parent_model_id,
             status=Status(model_do.status),
             model_status=[ModelStatus(item) for item in model_do.model_status],
             creator=model_do.creator,
