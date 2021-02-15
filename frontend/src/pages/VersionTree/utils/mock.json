@@ -1,0 +1,80 @@
+[
+    {
+      "author": {
+        "name": "shanshan",
+        "email": "2021-02-14T05:53:18.573Z"
+      },
+      "hash": "5135eafa72296ab32",
+      "refs": [
+        "HEAD",
+        "Main"
+      ],
+      "parents": [
+        "root"
+      ],
+      "subject": "Original Model",
+      "created_at": "2021-02-14T13:53:18.573000"
+    },
+    {
+        "author": {
+          "name": "shanshan",
+          "email": "2021-02-14T05:52:52.904Z"
+        },
+        "hash": "fc98a52a15a25f431",
+        "refs": [
+          "ResNet50-CIFAR10"
+        ],
+        "parents": [
+          "5135eafa72296ab32"
+        ],
+        "subject": "Finetuned on CIFAR10 dataset",
+        "created_at": "2021-02-14T13:52:52.904000"
+      },
+     {
+      "author": {
+        "name": "shanshan",
+        "email": "2021-02-14T05:52:52.904Z"
+      },
+      "hash": "fc99a52a15a25f431",
+      "refs": [
+        "ResNet50-ImageNet"
+      ],
+      "parents": [
+        "5135eafa72296ab32"
+      ],
+      "subject": "Finetuned on ImageNet dataset",
+      "created_at": "2021-02-14T13:52:52.904000"
+    },
+      {
+        "author": {
+          "name": "shanshan",
+          "email": "2021-02-14T05:52:52.904Z"
+        },
+        "hash": "fc97a52a15a25f431",
+        "refs": [
+          "tag: ResNet50-ImageNet v1.1",
+          "ResNet50-ImageNet"
+        ],
+        "parents": [
+          "fc99a52a15a25f431"
+        ],
+        "subject": "10 epoch",
+        "created_at": "2021-02-14T13:52:52.904000"
+      },
+      {
+        "author": {
+          "name": "shanshan",
+          "email": "2021-02-14T05:52:52.904Z"
+        },
+        "hash": "fc96a52a15a25f431",
+        "refs": [
+          "tag: ResNet50-ImageNet v1.2",
+          "ResNet50-ImageNet"
+        ],
+        "parents": [
+          "fc99a52a15a25f431"
+        ],
+        "subject": "20 epoch with accuracy improved",
+        "created_at": "2021-02-14T13:52:52.904000"
+      }
+  ]

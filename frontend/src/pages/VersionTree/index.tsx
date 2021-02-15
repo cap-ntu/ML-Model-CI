@@ -4,6 +4,7 @@ import axios from 'axios';
 import { config } from 'ice';
 import { IGitData } from './utils/type';
 
+const mockData = require('./utils/mock.json')
 const gitGraphOption = templateExtend(TemplateName.Metro, {
   commit: {
     message: {
@@ -79,7 +80,7 @@ export default class VersionTree extends React.Component<{}, any> {
         options={{ template: gitGraphOption }}
       >
         {(gitgraph) => {
-          this.generateGitTree(gitgraph);
+          gitgraph.import(mockData);
         }}
       </Gitgraph>
     );
