@@ -16,6 +16,7 @@ onnxmltools>=1.6.0
 onnxruntime==1.2.0
 py-cpuinfo>=6.0.0
 pydantic<2.0.0,>=0.32.2
+pymongo==3.11.2
 pytest>=5.4.1
 pytest-env==0.6.2
 pytorch-lightning==1.1.4
