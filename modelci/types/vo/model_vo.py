@@ -5,12 +5,14 @@ Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 6/19/2020
 """
+import os
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, FilePath, root_validator, DirectoryPath, Field
 
+from modelci.hub.utils import generate_path, parse_path_plain
 from modelci.types.bo import (
     ModelBO,
     IOShape,
@@ -80,6 +82,7 @@ class ModelStatus(CaseInsensitiveEnum):
     DRAFT = 'Draft'
     VALIDATING = 'Validating'
     TRAINING = 'Training'
+
 
 class IOShapeVO(BaseModel):
     shape: List[int]
@@ -187,7 +190,7 @@ class ModelListOut(BaseModel):
     name: str
     framework: Framework
     engine: Engine
-    version: int
+    version: Union[int, str]
     dataset: str
     metric: Dict[Metric, float]
     task: Task
@@ -227,7 +230,7 @@ class ModelDetailOut(BaseModel):
     name: str
     framework: Framework
     engine: Engine
-    version: int
+    version: Union[int, str]
     dataset: str
     metric: Dict[Metric, float]
     task: Task
@@ -263,29 +266,61 @@ class ModelDetailOut(BaseModel):
 
 
 class ModelIn(BaseModel):
+    # noinspection PyUnresolvedReferences
+    """
+    Attributes:
+        parent_model_id: The parent model ID of current model if this model is derived from a pre-existing one.
+        convert (bool): Flag for generation of model family. Default to True.
+        profile (bool): Flag for profiling uploaded (including converted) models. Default to True.
+    """
+    weight: Optional[Union[FilePath, DirectoryPath]]
     dataset: str
     metric: Dict[Metric, float]
-    task: Task
-    parent_model_id: str
+    parent_model_id: Optional[str]
     inputs: List[IOShapeVO]
     outputs: List[IOShapeVO]
-    architecture: str
-    framework: Framework
-    version: int
-    model_status: List[ModelStatus]
-    convert: bool
-    profile: bool
+    architecture: Optional[str]
+    framework: Optional[Framework]
+    engine: Optional[Engine]
+    task: Optional[Task]
+    version: Optional[int]
+    model_status: List[ModelStatus] = Field(default_factory=list)
+    convert: Optional[bool] = True
+    profile: Optional[bool] = True
 
-class TrainerConfig(BaseModel):
-    dataset_name: str
-    batch_size: int
-    num_epochs:int
-    num_workers: int
-    tuning: bool
-    lr: Optional[float]
-    loss_fn: Optional[str]
-    optimizer: Optional[str]
-    optimizer_config: Optional[Dict]
-    scheduler: Optional[str]
+    @root_validator(pre=True)
+    def check_model_info(cls, values: dict):  # pylint: disable=no-self-use
+        """
+        Check provided model info is consistent with the one inferred from weight.
 
+        This validator also auto fill-in implicit model info from weight.
+        """
+        weight = values.get('weight')
+        weight = os.path.expanduser(weight)
+        values['weight'] = weight
 
+        model_info_provided = {
+            k: values.get(k, None) for k in ('architecture', 'framework', 'engine', 'task', 'version')
+        }
+
+        # fill in implicit model info from weight path
+        if not all(model_info_provided.values()):
+            model_info = parse_path_plain(weight)
+            for k, v in model_info_provided.items():
+                if not v:
+                    values[k] = model_info[k]
+                elif v != model_info[k]:
+                    raise ValueError(f'{k} expected to be {model_info[k]} inferred from {weight}, but got {v}.')
+
+        return values
+
+    @property
+    def saved_path(self):
+        ext = self.weight.suffix
+        path = generate_path(self.architecture, self.task, self.framework, self.engine, self.version).with_suffix(ext)
+        # create parent folders
+        if ext:
+            path.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+        return path.with_suffix(ext)
