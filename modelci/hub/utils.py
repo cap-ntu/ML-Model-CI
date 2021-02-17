@@ -36,6 +36,31 @@ def parse_path(path: Path):
         raise ValueError('Incorrect model path pattern')
 
 
+def parse_path_plain(path: Union[str, Path]):
+    """Obtain filename, task, framework and engine from saved path. Use plain object as return.
+    """
+    path = Path(path)
+    if re.match(r'^.*?[!/]*/[a-z]+-[a-z]+/[a-z_]+/\d+$', str(path.with_suffix(''))):
+        filename = path.name
+        architecture = path.parent.parent.parent.stem
+        task = path.parent.name.upper()
+        info = path.parent.parent.name.split('-')
+        framework = info[0].upper()
+        engine = info[1].upper()
+        version = Path(filename).stem
+        return {
+            'architecture': architecture,
+            'task': task,
+            'framework': framework,
+            'engine': engine,
+            'version': version,
+            'filename': filename,
+            'base_dir': path.parent
+        }
+    else:
+        raise ValueError('Incorrect model path pattern')
+
+
 def generate_path(model_name: str, task: Task, framework: Framework, engine: Engine,
                   version: Union[ModelVersion, str, int]):
     """Generate saved path from model

@@ -14,9 +14,9 @@
 
 import os
 import subprocess
-from functools import partial
 from pathlib import Path
-from typing import Iterable, Union, List, Dict, Optional
+from shutil import copy2
+from typing import Iterable, Union, List, Optional
 
 import cv2
 import tensorflow as tf
@@ -28,29 +28,21 @@ from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
-from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
+from modelci.hub.loader import load
+from modelci.hub.utils import parse_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
-from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
+from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, \
+    ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task', 'retrieve_model_by_parent_id']
 
+from modelci.types.vo import ModelIn
+
 
 def register_model(
-        origin_model,
-        dataset: str,
-        metric: Dict[Metric, float],
-        task: Task,
-        inputs: List[IOShape],
-        outputs: List[IOShape],
+        model_in: ModelIn,
         model_input: Optional[List] = None,
-        architecture: str = None,
-        framework: Framework = None,
-        engine: Engine = None,
-        version: ModelVersion = None,
-        parent_model_id: Optional[str] = None,
-        convert: bool = True,
-        profile: bool = True,
         model_status: List[ModelStatus] = None
 ):
     """Upload a model to ModelDB.
@@ -65,80 +57,32 @@ def register_model(
         This function has a super comprehensive logic, need to be simplified.
 
     Arguments:
-        origin_model: The uploaded model without optimization. When `no_generate` flag is set, this parameter should
-            be a str indicating model file path.
-        architecture (str): Model architecture name. Default to None.
-        framework (Framework): Framework name. Default to None.
-        version (ModelVersion): Model version. Default to None.
-        dataset (str): Model testing dataset.
-        metric (Dict[Metric,float]): Scoring metric and its corresponding score used for model evaluation
-        task (Task): Model task type.
-        inputs (Iterable[IOShape]): Model input tensors.
-        outputs (Iterable[IOShape]): Model output tensors.
+        model_in: Required inputs for register a model. All information is wrapped in such model.
         model_input: specify sample model input data
             TODO: specify more model conversion related params
-        engine (Engine): Model optimization engine. Default to `Engine.NONE`.
-        parent_model_id (Optional[str]): the parent model id of current model if this model is derived from a pre-existing one
         model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
-        convert (bool): Flag for generation of model family. When set, `origin_model` should be a path to model saving
-            file. Default to `True`.
-        profile (bool): Flag for profiling uploaded (including converted) models. Default to `False`.
     """
     from modelci.controller import job_executor
     from modelci.controller.executor import Job
 
     model_dir_list = list()
 
-    # type and existence check
-    if isinstance(origin_model, str):
-        model_dir = Path(origin_model).absolute()
-        assert model_dir.exists(), f'model weight does not exist at {origin_model}'
+    # copy model weight to cache directory
+    model_in_saved_path = model_in.saved_path
+    if model_in_saved_path != model_in.weight:
+        copy2(model_in.weight, model_in_saved_path)
+    model_dir_list.append(model_in_saved_path)
 
-        if all([architecture, task, framework, engine, version]):
-            # from explicit architecture, framework, engine and version
-            ext = model_dir.suffix
-            path = generate_path(architecture, task, framework, engine, version).with_suffix(ext)
-            # if already in the destination folder
-            if path == model_dir:
-                pass
-            # create destination folder
-            else:
-                if ext:
-                    path.parent.mkdir(parents=True, exist_ok=True)
-                else:
-                    path.mkdir(parents=True, exist_ok=True)
-
-                # copy to cached folder
-                subprocess.call(['cp', model_dir, path])
-        else:  # from implicit extracted from path, check validity of the path later at registration
-            path = model_dir
-        model_dir_list.append(path)
-    elif framework == Framework.PYTORCH and engine in [Engine.PYTORCH, Engine.NONE]:
-        # save original pytorch model
-        pytorch_dir = generate_path(
-            task=task,
-            model_name=architecture,
-            framework=framework,
-            engine=engine,
-            version=str(version),
-        )
-        pytorch_dir.parent.mkdir(parents=True, exist_ok=True)
-        save_path_with_ext = pytorch_dir.with_suffix('.pth')
-        torch.save(origin_model, str(save_path_with_ext))
-        model_dir_list.append(pytorch_dir.with_suffix('.pth'))
-
-    if convert:
+    original_model = load(model_in_saved_path)
+    if model_in.convert:
         # TODO: generate from path name
         # generate model variant
         model_dir_list.extend(_generate_model_family(
-            origin_model,
-            architecture,
-            task,
-            framework,
-            filename=str(version),
-            inputs=inputs,
-            outputs=outputs,
-            model_input=model_input
+            original_model,
+            model_in_saved_path.replace(f'{model_in.engine}', '{engine}'),
+            inputs=[IOShape(**i.dict()) for i in model_in.inputs],
+            outputs=[IOShape(**o.dict()) for o in model_in.inputs],
+            model_input=model_input,
         ))
 
     # register
@@ -153,27 +97,19 @@ def register_model(
 
         if model_status is not None:
             model_bo_status = model_status
-        elif engine == Engine.PYTORCH:
+        elif engine in (Engine.PYTORCH, Engine.TFS):
             model_bo_status = [ModelStatus.PUBLISHED]
         else:
             model_bo_status = [ModelStatus.CONVERTED]
 
         with open(str(model_dir), 'rb') as f:
             model = ModelBO(
-                name=architecture,
-                task=task,
-                framework=framework,
-                engine=engine,
-                version=version,
-                dataset=dataset,
-                metric=metric,
-                parent_model_id=parent_model_id,
-                inputs=inputs,
-                outputs=outputs,
-                model_status=model_bo_status,
+                name=architecture, task=task, framework=framework, engine=engine, version=version,
+                dataset=model_in.dataset, metric=Metric[model_in.metric], parent_model_id=model_in.parent_model_id,
+                inputs=[IOShape(**i.dict()) for i in model_in.inputs],
+                outputs=[IOShape(**o.dict()) for o in model_in.inputs], model_status=model_bo_status,
                 weight=Weight(f, filename=filename)
             )
-
             ModelService.post_model(model)
         # TODO refresh
         model = ModelService.get_models(
@@ -182,10 +118,9 @@ def register_model(
             framework=framework,
             engine=engine,
             version=version)[0]
-        if model.engine == Engine.PYTORCH or model.engine == Engine.TFS:
-            parent_model_id = model.id
+
         # profile registered model
-        if profile and engine != Engine.PYTORCH:
+        if model_in.profile and engine != Engine.PYTORCH:
             file = tf.keras.utils.get_file(
                 "grace_hopper.jpg",
                 "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
@@ -245,80 +180,34 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     # read yaml
     with open(file_path) as f:
         model_config = yaml.safe_load(f)
-   
-    model_weight_path = model_config['weight']
-    origin_model = os.path.expanduser(model_weight_path)
-
-    dataset = model_config['dataset']
-    metric = model_config['metric']
-    inputs_plain = model_config['inputs']
-    outputs_plain = model_config['outputs']
-    parent_model_id = model_config.get('parent_model_id', '')
-    model_input = model_config.get('model_input', None)
-    architecture = model_config.get('architecture', None)
-    task = model_config.get('task', None)
-    framework = model_config.get('framework', None)
-    engine = model_config.get('engine', None)
-    model_status = model_config.get('model_status', None)
-    version = model_config.get('version', None)
-    convert = model_config.get('convert', True)
+    model_in = ModelIn.parse_obj(model_config)
 
     # convert inputs and outputs
-    inputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(inputs_plain)))
-    outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(outputs_plain)))
-
-    # wrap POJO
-    if task is not None:
-        task = Task[task.upper()]
-    if metric is not None:
-        metric = {Metric[key.upper()]: val for key, val in metric[0].items()}
-    if framework is not None:
-        framework = Framework[framework.upper()]
-    if engine is not None:
-        engine = Engine[engine.upper()]
-    if model_status is not None:
-        model_status = [ModelStatus[item.upper()] for item in model_status]
-    if version is not None:
-        version = ModelVersion(version)
-    # os.path.expanduser
+    inputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_in.inputs)))
+    outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_in.outputs)))
 
     register_model(
-        origin_model=origin_model,
-        dataset=dataset,
-        metric=metric,
-        task=task,
-        parent_model_id=parent_model_id,
-        inputs=inputs,
-        outputs=outputs,
+        model_in,
         model_input=model_input,
-        architecture=architecture,
-        framework=framework,
-        engine=engine,
-        version=version,
         model_status=model_status,
-        convert=convert,
     )
 
 
 def _generate_model_family(
         model,
-        model_name: str,
-        task: Task,
-        framework: Framework,
-        filename: str,
+        saved_path_template: str,
         inputs: List[IOShape],
         model_input: Optional[List] = None,
         outputs: List[IOShape] = None,
         max_batch_size: int = -1
 ):
     generated_dir_list = list()
-    generate_this_path = partial(generate_path, task=task, model_name=model_name, framework=framework, version=filename)
-    torchscript_dir = generate_this_path(engine=Engine.TORCHSCRIPT)
-    tfs_dir = generate_this_path(engine=Engine.TFS)
-    onnx_dir = generate_this_path(engine=Engine.ONNX)
-    trt_dir = generate_this_path(engine=Engine.TRT)
+    torchscript_dir = Path(saved_path_template.format(engine=str(Engine.TORCHSCRIPT).lower()))
+    tfs_dir = Path(saved_path_template.format(engine=str(Engine.TFS).lower()))
+    onnx_dir = Path(saved_path_template.format(engine=str(Engine.ONNX).lower()))
+    trt_dir = Path(saved_path_template.format(engine=str(Engine.TRT).lower()))
 
-    if framework == Framework.PYTORCH:
+    if isinstance(model, torch.nn.Module):
         # to TorchScript
         if TorchScriptConverter.from_torch_module(model, torchscript_dir):
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
@@ -332,7 +221,7 @@ def _generate_model_family(
         #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
         # )
         return generated_dir_list
-    elif framework == Framework.TENSORFLOW:
+    elif isinstance(model, tf.keras.Model):
         # to TFS
         TFSConverter.from_tf_model(model, tfs_dir)
         generated_dir_list.append(tfs_dir.with_suffix('.zip'))
