@@ -80,6 +80,11 @@ def generate_path(model_name: str, task: Task, framework: Framework, engine: Eng
                          f'/{task.name.lower()}/{str(version)}'
 
 
+def generate_path_plain(architecture, task, framework, engine, version):
+    return Path.home() / f'.modelci/{architecture}/{framework.name.lower()}-{engine.name.lower()}/' \
+                         f'{task.name.lower()}/{version}'
+
+
 def GiB(val):
     return val * 1 << 30
 

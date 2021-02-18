@@ -15,8 +15,8 @@
 import os
 import subprocess
 from pathlib import Path
-from shutil import copy2
-from typing import Iterable, Union, List, Optional
+from shutil import copy2, make_archive
+from typing import Union, List
 
 import cv2
 import tensorflow as tf
@@ -29,21 +29,24 @@ from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.loader import load
-from modelci.hub.utils import parse_path, TensorRTPlatform
+from modelci.hub.utils import TensorRTPlatform, parse_path_plain
 from modelci.persistence.service import ModelService
-from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, \
-    ModelBO
+from modelci.persistence.service_ import save
+from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
+from modelci.types.models import MLModelIn
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task', 'retrieve_model_by_parent_id']
 
-from modelci.types.vo import ModelIn
+from modelci.types.models.common import Engine, ModelStatus
+
+from modelci.types.models.mlmodel import MLModelInYaml
 
 
 def register_model(
-        model_in: ModelIn,
-        model_input: Optional[List] = None,
-        model_status: List[ModelStatus] = None
+        model_in: MLModelIn,
+        convert: bool = True,
+        profile: bool = True,
 ):
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
@@ -58,69 +61,31 @@ def register_model(
 
     Arguments:
         model_in: Required inputs for register a model. All information is wrapped in such model.
-        model_input: specify sample model input data
-            TODO: specify more model conversion related params
-        model_status (List[ModelStatus]): Indicate the status of current model in its lifecycle
+        convert (bool): Flag for generation of model family. Default to True.
+        profile (bool): Flag for profiling uploaded (including converted) models. Default to True.
     """
     from modelci.controller import job_executor
     from modelci.controller.executor import Job
 
     model_dir_list = list()
+    model_in.model_status = [ModelStatus.PUBLISHED]
+    ml_model = save(model_in)
 
-    # copy model weight to cache directory
-    model_in_saved_path = model_in.saved_path
-    if model_in_saved_path != model_in.weight:
-        copy2(model_in.weight, model_in_saved_path)
-    model_dir_list.append(model_in_saved_path)
-
-    original_model = load(model_in_saved_path)
-    if model_in.convert:
-        # TODO: generate from path name
-        # generate model variant
-        model_dir_list.extend(_generate_model_family(
-            original_model,
-            model_in_saved_path.replace(f'{model_in.engine}', '{engine}'),
-            inputs=[IOShape(**i.dict()) for i in model_in.inputs],
-            outputs=[IOShape(**o.dict()) for o in model_in.inputs],
-            model_input=model_input,
-        ))
+    # generate model family
+    if convert:
+        model_dir_list.extend(_generate_model_family(model_in))
 
     # register
+    model_in_data = model_in.dict(exclude={'weight', 'id', 'model_status', 'engine'})
     for model_dir in model_dir_list:
-        parse_result = parse_path(model_dir)
-        architecture = parse_result['architecture']
-        task = parse_result['task']
-        framework = parse_result['framework']
+        parse_result = parse_path_plain(model_dir)
         engine = parse_result['engine']
-        version = parse_result['version']
-        filename = parse_result['filename']
 
-        if model_status is not None:
-            model_bo_status = model_status
-        elif engine in (Engine.PYTORCH, Engine.TFS):
-            model_bo_status = [ModelStatus.PUBLISHED]
-        else:
-            model_bo_status = [ModelStatus.CONVERTED]
-
-        with open(str(model_dir), 'rb') as f:
-            model = ModelBO(
-                name=architecture, task=task, framework=framework, engine=engine, version=version,
-                dataset=model_in.dataset, metric=Metric[model_in.metric], parent_model_id=model_in.parent_model_id,
-                inputs=[IOShape(**i.dict()) for i in model_in.inputs],
-                outputs=[IOShape(**o.dict()) for o in model_in.inputs], model_status=model_bo_status,
-                weight=Weight(f, filename=filename)
-            )
-            ModelService.post_model(model)
-        # TODO refresh
-        model = ModelService.get_models(
-            name=architecture,
-            task=task,
-            framework=framework,
-            engine=engine,
-            version=version)[0]
+        model_gen = MLModelIn(**model_in_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
+        ml_model_gen = save(model_gen)
 
         # profile registered model
-        if model_in.profile and engine != Engine.PYTORCH:
+        if profile and engine != Engine.PYTORCH:
             file = tf.keras.utils.get_file(
                 "grace_hopper.jpg",
                 "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
@@ -131,13 +96,10 @@ def register_model(
                 'batch_size': 32,
                 'batch_num': 100,
                 'asynchronous': False,
-                'model_info': model,
+                'model_info': ml_model_gen,
             }
 
-            new_status = [item for item in model.model_status if
-                          item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
-            new_status.append(ModelStatus.PROFILING)
-            model.model_status = new_status
+            model_gen.model_status = [ModelStatus.PROFILING]
             ModelService.update_model(model)
 
             if engine == Engine.TORCHSCRIPT:
@@ -151,28 +113,13 @@ def register_model(
             else:
                 raise ValueError(f'No such serving engine: {engine}')
 
-            job_cuda = Job(client=client, device='cuda:0', model_info=model)
+            job_cuda = Job(client=client, device='cuda:0', model_info=model_gen)
             # job_cpu = Job(client=client, device='cpu', model_info=model)
             job_executor.submit(job_cuda)
             # job_executor.submit(job_cpu)
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):
-    def convert_ioshape_plain_to_ioshape(ioshape_plain):
-        """Convert IOShape-like dictionary to IOShape.
-        """
-        # unpack
-        i, ioshape_plain = ioshape_plain
-
-        assert isinstance(ioshape_plain['shape'], Iterable), \
-            f'inputs[{i}].shape expected to be iterable, but got {ioshape_plain["shape"]}'
-        assert isinstance(ioshape_plain['dtype'], str), \
-            f'inputs[{i}].dtype expected to be a `DataType`, but got {ioshape_plain["dtype"]}.'
-
-        ioshape_plain['dtype'] = DataType[ioshape_plain['dtype']]
-
-        return IOShape(**ioshape_plain)
-
     # check if file exist
     file_path = Path(file_path)
     assert file_path.exists(), f'Model definition file at {str(file_path)} does not exist'
@@ -180,28 +127,33 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     # read yaml
     with open(file_path) as f:
         model_config = yaml.safe_load(f)
-    model_in = ModelIn.parse_obj(model_config)
+    model_in_yaml = MLModelInYaml.parse_obj(model_config)
+    # copy model weight to cache directory
+    model_in_saved_path = model_in_yaml.saved_path
+    if model_in_saved_path != model_in_yaml.weight:
+        copy2(model_in_yaml.weight, model_in_saved_path)
 
-    # convert inputs and outputs
-    inputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_in.inputs)))
-    outputs = list(map(convert_ioshape_plain_to_ioshape, enumerate(model_in.outputs)))
+    # zip weight folder
+    if model_in_yaml.engine == Engine.TFS:
+        weight_dir = model_in_yaml.weight
+        make_archive(weight_dir.with_suffix('.zip'), 'zip', weight_dir)
 
-    register_model(
-        model_in,
-        model_input=model_input,
-        model_status=model_status,
-    )
+    model_in = MLModelIn(**model_in_yaml.dict())
+    register_model(model_in)
 
 
 def _generate_model_family(
-        model,
-        saved_path_template: str,
-        inputs: List[IOShape],
-        model_input: Optional[List] = None,
-        outputs: List[IOShape] = None,
+        model_in: MLModelIn,
         max_batch_size: int = -1
 ):
+    model = load(model_in.saved_path)
+    saved_path_template = model_in.saved_path.replace(model.engine, '{engine}')
+    inputs = model_in.inputs
+    outputs = model_in.outputs
+    model_input = model_in.model_input
+
     generated_dir_list = list()
+
     torchscript_dir = Path(saved_path_template.format(engine=str(Engine.TORCHSCRIPT).lower()))
     tfs_dir = Path(saved_path_template.format(engine=str(Engine.TFS).lower()))
     onnx_dir = Path(saved_path_template.format(engine=str(Engine.ONNX).lower()))
