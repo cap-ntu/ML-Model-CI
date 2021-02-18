@@ -7,7 +7,6 @@ from mongoengine.fields import (
     EmbeddedDocumentField,
     EmbeddedDocumentListField,
     FileField,
-    FloatField,
     IntField,
     ListField,
     StringField,
@@ -30,8 +29,8 @@ class ModelDO(Document):
     The primary key of the model plain object is (engine, name, version) pair.
     """
 
-    # Model name
-    name = StringField(required=True)
+    # Model architecture
+    architecture = StringField(required=True)
     # Supported engine enum (aka framework, e.g.: TensorFlow (0) or PyTorch (1))
     framework = IntField(required=True)
     # ONNX or TensorRT
@@ -65,6 +64,6 @@ class ModelDO(Document):
 
     meta = {
         'indexes': [
-            {'fields': ('engine', 'name', 'framework', 'version', 'task'), 'unique': True}
+            {'fields': ('engine', 'architecture', 'framework', 'version', 'task'), 'unique': True}
         ]
     }
