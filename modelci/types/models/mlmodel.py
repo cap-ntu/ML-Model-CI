@@ -14,38 +14,25 @@ from typing import Union, Optional, Dict, List
 from gridfs import GridOut
 from pydantic import BaseModel, FilePath, DirectoryPath, Field, root_validator
 
-from modelci.hub.utils import parse_path_plain, generate_path
+from modelci.hub.utils import parse_path_plain, generate_path_plain
 from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status
 
 
 class Weight(BaseModel):
     """TODO: Only works for MLModelIn"""
 
-    id: Optional[str]
-    file: Optional[FilePath]
-    _grid_out: Optional[GridOut]
+    __slots__ = ('file',)
 
-    @classmethod
-    def validate(cls, value):
-        data = dict()
-        if isinstance(value, str):
-            data['id'] = value
-        elif isinstance(value, Path):
-            data['file'] = value
-        else:
-            data = value
-        return super().validate(data)
+    __root__: Optional[str]
 
-    @root_validator(pre=True)
-    def check_id_or_bytes(cls, values):  # pylint: disable=no-self-use
-        id_, file = values.get('id', None), values.get('file', None)
-        if not id_ and file:
-            return values
-        elif id_ and not file:
-            return values
-        else:
-            raise ValueError('Not found either field `id` nor field `file`. '
-                             'You should set one of [`id`, `file`]')
+    def __init__(self, __root__):
+        if isinstance(__root__, Path):
+            object.__setattr__(self, 'file', FilePath.validate(__root__))
+            __root__ = None
+
+        self._grid_out: Optional[GridOut]
+
+        super().__init__(__root__=__root__)
 
     @property
     def filename(self):
@@ -55,10 +42,6 @@ class Weight(BaseModel):
     def __bytes__(self):
         if self.file:
             return self.file.read_bytes()
-
-    def dict(self, **kwargs):
-        attrs = super().dict(**kwargs)
-        return attrs.pop('id', None)
 
 
 def named_enum_json_encoder(v):
@@ -83,13 +66,15 @@ class MLModel(BaseModel):
     creator: str = Field(default_factory=getpass.getuser)
     create_time: datetime = Field(default_factory=datetime.now, const=True)
 
-    class Config:
-        json_encoders = {
-            Framework: named_enum_json_encoder,
-            Engine: named_enum_json_encoder,
-            Metric: named_enum_json_encoder,
-            Status: named_enum_json_encoder,
-        }
+    def dict(self, **kwargs):
+        MLModelIn.Config.use_enum_values = True
+        data = super().dict(**kwargs)
+        # fix metric key as a Enum
+        metric: dict = data.get('metric', None)
+        if metric:
+            data['metric'] = {k.name: v for k, v in metric.items()}
+        MLModelIn.Config.use_enum_values = False
+        return data
 
 
 class MLModelIn(BaseModel):
@@ -112,19 +97,19 @@ class MLModelIn(BaseModel):
     version: int
     model_status: List[ModelStatus] = Field(default_factory=list)
 
-    class Config:
-        json_encoders = {
-            Framework: named_enum_json_encoder,
-            Engine: named_enum_json_encoder,
-            Metric: named_enum_json_encoder,
-            Task: named_enum_json_encoder,
-            Status: named_enum_json_encoder,
-            Weight: None,
-        }
-
     @property
     def saved_path(self):
-        return generate_path(self.architecture, self.task, self.framework, self.engine, self.version)
+        return generate_path_plain(self.architecture, self.task, self.framework, self.engine, self.version)
+
+    def dict(self, **kwargs):
+        MLModelIn.Config.use_enum_values = True
+        data = super().dict(**kwargs)
+        # fix metric key as a Enum
+        metric: dict = data.get('metric', None)
+        if metric:
+            data['metric'] = {k.name: v for k, v in metric.items()}
+        MLModelIn.Config.use_enum_values = False
+        return data
 
 
 class MLModelInYaml(MLModelIn):

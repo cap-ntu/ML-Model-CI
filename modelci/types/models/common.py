@@ -186,3 +186,6 @@ class IOShape(BaseModel):
 
     def __str__(self):
         return '{}, dtype={}, format={}'.format(self.shape, self.dtype, self.format.name)
+
+    class Config:
+        use_enum_values = True
