@@ -11,20 +11,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
-
-import click
-from modelci.cli.service import *
-from modelci.cli.modelhub import *
-
-@click.group()
-@click.version_option()
-def cli():
-    """A complete MLOps platform for managing, converting and profiling models and then deploying models as cloud services (MLaaS)"""
-    pass
-
-cli.add_command(service)
-cli.add_command(modelhub)
-
-if __name__ == '__main__':
-    cli()
-
