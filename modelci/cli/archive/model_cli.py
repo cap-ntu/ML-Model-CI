@@ -45,43 +45,6 @@ def models(name, framework, engine, version, list_all, quiet):
         model_view([model_list], list_all=list_all, quiet=quiet)
 
 
-@click.group('model')
-def commands():
-    """
-    ModelCI hub for Manage (CURD), convert, diagnose and deploy DL models supported by industrial
-    serving systems.
-    """
-    pass
 
 
-@commands.command()
-@click.option('-n', '--name', type=click.STRING, required=True, help='Model architecture name.')
-@click.option(
-    '-f', '--framework',
-    type=click.Choice(['TensorFlow', 'PyTorch'], case_sensitive=False),
-    required=True,
-    help='Model framework name.'
-)
-@click.option(
-    '--trt',
-    type=click.STRING,
-    is_flag=True,
-    help='Flag for exporting models served by TensorRT. Please make sure you have TensorRT installed in your machine'
-         'before set this flag.'
-)
-def export(name, framework, trt):
-    """
-    Export model from PyTorch hub / TensorFlow hub and try convert the model into various format for different serving
-    engines.
-    """
-    export_model(model_name=name, framework=framework, enable_trt=trt)
-    exit(0)
 
-
-@commands.command()
-@click.argument('model_id')
-def show(model_id):
-    """Show a single model."""
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
-        model = r.json()
-        model_detailed_view(model)
