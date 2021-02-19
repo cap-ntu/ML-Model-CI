@@ -3,6 +3,7 @@ import { Gitgraph, TemplateName, templateExtend } from '@gitgraph/react';
 import axios from 'axios';
 import { config } from 'ice';
 import { IGitData } from './utils/type';
+import moment from 'moment';
 
 const mockData = require('./utils/mock.json')
 const gitGraphOption = templateExtend(TemplateName.Metro, {
@@ -21,10 +22,10 @@ const gitGraphOption = templateExtend(TemplateName.Metro, {
 const generateGitData = (modelList: []) => {
   let dataList: IGitData[] = []
   modelList.forEach( (model: any) => {
-    const data: IGitData = {
+    let data: IGitData = {
       author: {
         name: model.creator,
-        email: new Date(model.create_time).toISOString()
+        email: moment(model.create_time).fromNow()
       },
       hash: model.id.slice(7),
       refs: [],
@@ -35,22 +36,21 @@ const generateGitData = (modelList: []) => {
   
     // original model
     if (model.parent_model_id == null) {
-      data.subject = 'Original Model'
+      data.subject = `${model.name} Original`
       data.refs.push('HEAD')
       data.refs.push('Main')
     } else if (['PYTORCH', 'None'].indexOf(model.engine) >= 0){
-      data.refs.push(`tag: v${model.version}`)
-      if (model.version > 1) {
+      data.refs.push(`${model.name}/${model.dataset}`)
+      data.subject = `Finetuned on ${model.dataset} dataset`
+      if (model.version >= 4) {
         // Finetuned model
-        data.subject = `Finetuned on ${model.dataset} dataset`
-        data.refs.push('Main')
+        data.subject = `[${model.name}][${model.dataset}] v${model.version}`
       }
-    } else {
-      // converted model
-      data.subject = `Convert to ${model.engine}`
-      data.refs.push(`${model.engine}-${model.version}`);
     }
-    dataList.push(data)
+    // overlook model varient
+    if(data.subject){
+      dataList.push(data)
+    }
   })
 
   return dataList
@@ -68,8 +68,8 @@ export default class VersionTree extends React.Component<{}, any> {
 
   public async generateGitTree(gitgraph) {
     const res = await axios.get(config.modelURL);
-    res.data.reverse().sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
-    this.setState({gitTreeData: generateGitData(res.data)})
+    // res.data.reverse().sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
+    this.setState({gitTreeData: generateGitData(res.data.reverse())})
     gitgraph.import(this.state.gitTreeData);
     console.log(this.state.gitTreeData)
   }
@@ -79,7 +79,9 @@ export default class VersionTree extends React.Component<{}, any> {
       <Gitgraph
         options={{ template: gitGraphOption }}
       >
-        {(gitgraph) => {
+        {async (gitgraph) => {
+          // use real data
+          // await this.generateGitTree(gitgraph)
           gitgraph.import(mockData);
         }}
       </Gitgraph>

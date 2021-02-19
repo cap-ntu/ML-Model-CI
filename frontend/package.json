@@ -17,7 +17,7 @@
     "axios": "^0.19.2",
     "generate-schema": "^2.6.0",
     "graphviz-react": "^1.1.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.1",
     "prop-types": "^15.7.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",

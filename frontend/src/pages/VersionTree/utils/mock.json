@@ -2,7 +2,7 @@
     {
       "author": {
         "name": "shanshan",
-        "email": "2021-02-14T05:53:18.573Z"
+        "email": "two days ago"
       },
       "hash": "5135eafa72296ab32",
       "refs": [
@@ -12,17 +12,17 @@
       "parents": [
         "root"
       ],
-      "subject": "Original Model",
+      "subject": "ResNet50 Original",
       "created_at": "2021-02-14T13:53:18.573000"
     },
     {
         "author": {
-          "name": "shanshan",
-          "email": "2021-02-14T05:52:52.904Z"
+          "name": "Yizheng",
+          "email": "two days ago"
         },
         "hash": "fc98a52a15a25f431",
         "refs": [
-          "ResNet50-CIFAR10"
+          "ResNet50/CIFAR10"
         ],
         "parents": [
           "5135eafa72296ab32"
@@ -32,12 +32,12 @@
       },
      {
       "author": {
-        "name": "shanshan",
-        "email": "2021-02-14T05:52:52.904Z"
+        "name": "Huaizheng",
+        "email": "two days ago"
       },
       "hash": "fc99a52a15a25f431",
       "refs": [
-        "ResNet50-ImageNet"
+        "ResNet50/ImageNet"
       ],
       "parents": [
         "5135eafa72296ab32"
@@ -48,33 +48,31 @@
       {
         "author": {
           "name": "shanshan",
-          "email": "2021-02-14T05:52:52.904Z"
+          "email": "two days ago"
         },
         "hash": "fc97a52a15a25f431",
         "refs": [
-          "tag: ResNet50-ImageNet v1.1",
-          "ResNet50-ImageNet"
+          "ResNet50/ImageNet"
         ],
         "parents": [
           "fc99a52a15a25f431"
         ],
-        "subject": "10 epoch",
+        "subject": "[ResNet50][ImageNet] v3",
         "created_at": "2021-02-14T13:52:52.904000"
       },
       {
         "author": {
-          "name": "shanshan",
-          "email": "2021-02-14T05:52:52.904Z"
+          "name": "Yuanming",
+          "email": "two days ago"
         },
         "hash": "fc96a52a15a25f431",
         "refs": [
-          "tag: ResNet50-ImageNet v1.2",
-          "ResNet50-ImageNet"
+          "ResNet50/ImageNet"
         ],
         "parents": [
-          "fc99a52a15a25f431"
+          "fc97a52a15a25f431"
         ],
-        "subject": "20 epoch with accuracy improved",
+        "subject": "[ResNet50][ImageNet] v4",
         "created_at": "2021-02-14T13:52:52.904000"
       }
   ]
