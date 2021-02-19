@@ -70,7 +70,7 @@
           "ResNet50/ImageNet"
         ],
         "parents": [
-          "fc97a52a15a25f431"
+          "fc99a52a15a25f431"
         ],
         "subject": "[ResNet50][ImageNet] v4",
         "created_at": "2021-02-14T13:52:52.904000"
