@@ -1,16 +1,23 @@
 import React from 'react';
 import { Gitgraph, TemplateName, templateExtend } from '@gitgraph/react';
 import axios from 'axios';
-import { config } from 'ice';
+import { config, Link } from 'ice';
 import { IGitData } from './utils/type';
 import moment from 'moment';
-
+import { Row, Col, List, Avatar, Button, Space } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
+import './index.css'
 const mockData = require('./utils/mock.json')
 const gitGraphOption = templateExtend(TemplateName.Metro, {
   commit: {
     message: {
-      displayAuthor: true,
-      displayHash: false
+      displayAuthor: false,
+      displayHash: false,
+    },
+  },
+  branch: {
+    label: {
+      display: false,
     },
   },
 });
@@ -21,34 +28,30 @@ const gitGraphOption = templateExtend(TemplateName.Metro, {
  */
 const generateGitData = (modelList: []) => {
   let dataList: IGitData[] = []
-  modelList.forEach( (model: any) => {
+  modelList.forEach((model: any) => {
     let data: IGitData = {
       author: {
-        name: model.creator,
-        email: moment(model.create_time).fromNow()
+        name: '',
+        email: ''
       },
       hash: model.id.slice(7),
       refs: [],
-      parents: model.parent_model_id == null? ['root'] : [model.parent_model_id.slice(7)],
+      parents: model.parent_model_id == null ? ['root'] : [model.parent_model_id.slice(7)],
       subject: '',
       created_at: model.create_time
     }
-  
+
     // original model
     if (model.parent_model_id == null) {
-      data.subject = `${model.name} Original`
+      data.subject = ' '
       data.refs.push('HEAD')
       data.refs.push('Main')
-    } else if (['PYTORCH', 'None'].indexOf(model.engine) >= 0){
+    } else if (['PYTORCH', 'None'].indexOf(model.engine) >= 0) {
+      data.subject = ' '
       data.refs.push(`${model.name}/${model.dataset}`)
-      data.subject = `Finetuned on ${model.dataset} dataset`
-      if (model.version >= 4) {
-        // Finetuned model
-        data.subject = `[${model.name}][${model.dataset}] v${model.version}`
-      }
     }
     // overlook model varient
-    if(data.subject){
+    if (data.subject) {
       dataList.push(data)
     }
   })
@@ -61,30 +64,60 @@ export default class VersionTree extends React.Component<{}, any> {
   constructor(props) {
     super(props);
     this.state = {
-      gitTreeData: []
+      gitTreeData: [],
+      modelData: []
     };
   };
-  public componentDidMount() {}
+  public async componentDidMount() {
+  }
 
   public async generateGitTree(gitgraph) {
-    const res = await axios.get(config.modelURL);
-    // res.data.reverse().sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
-    this.setState({gitTreeData: generateGitData(res.data.reverse())})
+    let res = await axios.get(config.modelURL);
+    let modelList = res.data.reverse();
+    this.setState({
+      gitTreeData: generateGitData(modelList),
+      modelData: modelList.filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
+    })
     gitgraph.import(this.state.gitTreeData);
     console.log(this.state.gitTreeData)
   }
 
   public render() {
     return (
-      <Gitgraph
-        options={{ template: gitGraphOption }}
-      >
-        {async (gitgraph) => {
-          // use real data
-          // await this.generateGitTree(gitgraph)
-          gitgraph.import(mockData);
-        }}
-      </Gitgraph>
+      <Row>
+        <Col span={2}>
+          <Gitgraph
+            options={{ template: gitGraphOption }}
+          >
+            {async (gitgraph) => {
+              // use real data
+              await this.generateGitTree(gitgraph)
+            }}
+          </Gitgraph>
+        </Col>
+        <Col span={22}>
+          <List
+            size="large"
+            itemLayout="horizontal"
+            dataSource={this.state.modelData}
+            renderItem={model => (
+              <List.Item>
+                <Space size="large">
+                  <Button shape="round" size="large" style={{ width: 120 }}> {model.parent_model_id? model.dataset : 'Origin'} </Button>
+                  <Button shape="round" size="large" style={{ width: 80 }}> v{model.version} </Button>
+                  <Avatar size={48} src={`https://avatars.dicebear.com/4.5/api/identicon/:${model.creator}.svg`} />
+                  {model.creator}
+                  {moment(model.create_time).fromNow()}
+                  <Link to={`/visualizer/${model.id}`}>
+                  <EditOutlined style={{ fontSize: 30}}/>
+                  </Link>                  
+                </Space>
+
+              </List.Item>
+            )}
+          />
+        </Col>
+      </Row>
     );
   };
 }

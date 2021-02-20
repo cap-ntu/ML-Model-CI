@@ -1,0 +1,11 @@
+.ant-spin-container {
+    margin-top: -20px;
+}
+
+.ant-list-item {
+    margin: 1px 0;
+}
+
+.ant-btn-round,.ant-list-item {
+    font-size: large;
+}
