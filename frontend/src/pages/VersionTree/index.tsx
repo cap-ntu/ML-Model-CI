@@ -103,14 +103,18 @@ export default class VersionTree extends React.Component<{}, any> {
             renderItem={model => (
               <List.Item>
                 <Space size="large">
-                  <Button shape="round" size="large" style={{ width: 120 }}> {model.parent_model_id? model.dataset : 'Origin'} </Button>
+                  <Button shape="round" size="large" style={{ width: 120 }}> {model.parent_model_id ? model.dataset : 'Origin'} </Button>
                   <Button shape="round" size="large" style={{ width: 80 }}> v{model.version} </Button>
                   <Avatar size={48} src={`https://avatars.dicebear.com/4.5/api/identicon/:${model.creator}.svg`} />
-                  {model.creator}
-                  {moment(model.create_time).fromNow()}
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: 100, display: 'inline-block' }}>
+                    {model.creator}
+                  </span>
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: 150, display: 'inline-block' }}>
+                    {moment(model.create_time).fromNow()}
+                  </span>
                   <Link to={`/visualizer/${model.id}`}>
-                  <EditOutlined style={{ fontSize: 30}}/>
-                  </Link>                  
+                    <EditOutlined style={{ fontSize: 30 }} />
+                  </Link>
                 </Space>
 
               </List.Item>
