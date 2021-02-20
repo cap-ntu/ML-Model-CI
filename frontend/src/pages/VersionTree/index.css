@@ -1,11 +1,19 @@
-.ant-spin-container {
-    margin-top: -20px;
+.ant-col-offset-2 {
+    margin-top: 20px;
 }
 
-.ant-list-item {
-    margin: 1px 0;
+.ant-table-thead{
+    display: none;
+}
+.ant-table{
+    background: transparent;
 }
 
-.ant-btn-round,.ant-list-item {
-    font-size: large;
+.ant-tag{
+    height: 40px;
+    border-radius:30px;
+    min-width: 80px;
+    text-align: center;
+    padding-top: 10px;
+    background-color: transparent;
 }

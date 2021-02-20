@@ -4,10 +4,9 @@ import axios from 'axios';
 import { config, Link } from 'ice';
 import { IGitData } from './utils/type';
 import moment from 'moment';
-import { Row, Col, List, Avatar, Button, Space } from 'antd';
+import { Row, Col, Avatar, Tag, Space, Table } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import './index.css'
-const mockData = require('./utils/mock.json')
 const gitGraphOption = templateExtend(TemplateName.Metro, {
   commit: {
     message: {
@@ -23,7 +22,7 @@ const gitGraphOption = templateExtend(TemplateName.Metro, {
 });
 
 /**
- *  TODO parse multiple version tree
+ *  TODO parse multiple version tree, display different variant of models
  * @param modelList list of model bo object
  */
 const generateGitData = (modelList: []) => {
@@ -40,7 +39,6 @@ const generateGitData = (modelList: []) => {
       subject: '',
       created_at: model.create_time
     }
-
     // original model
     if (model.parent_model_id == null) {
       data.subject = ' '
@@ -71,6 +69,10 @@ export default class VersionTree extends React.Component<{}, any> {
   public async componentDidMount() {
   }
 
+  /**
+   * TODO: display optimized formats(variant) of models
+   * @param gitgraph GitgraphUserApi Object
+   */
   public async generateGitTree(gitgraph) {
     let res = await axios.get(config.modelURL);
     let modelList = res.data.reverse();
@@ -79,13 +81,60 @@ export default class VersionTree extends React.Component<{}, any> {
       modelData: modelList.filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
     })
     gitgraph.import(this.state.gitTreeData);
-    console.log(this.state.gitTreeData)
   }
 
+  const columns = [
+    {
+      title: 'Tags',
+      dataIndex: 'name',
+      key: 'tag',
+      render: (name, record) =>
+        <div>
+          {record.parent_model_id ? '' : <Tag color='gold'>Original</Tag>}
+          <Tag>{record.dataset}</Tag>
+        </div>,
+    },
+    {
+      title: 'version',
+      dataIndex: 'version',
+      key: 'version',
+      render: version => <Tag color='green'>v{version}</Tag>
+    },
+    {
+      title: 'Creator',
+      dataIndex: 'creator',
+      key: 'creator',
+      render: creator =>
+        <div>
+          <Space size="large">
+            <Avatar size={48} src={`https://avatars.dicebear.com/4.5/api/identicon/:${creator}.svg`} />
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: 100, display: 'inline-block' }}>
+              {creator}
+            </span>
+          </Space>
+        </div>
+    },
+    {
+      title: 'Create time',
+      key: 'create_time',
+      dataIndex: 'create_time',
+      render: create_time => moment(create_time).fromNow()
+    },
+    {
+      title: 'Action',
+      dataIndex: 'id',
+      key: 'action',
+      render: (id) => (
+        <Link to={`/visualizer/${id}`}>
+          <EditOutlined style={{ fontSize: 30 }} />
+        </Link>
+      ),
+    },
+  ];
   public render() {
     return (
       <Row>
-        <Col span={2}>
+        <Col span={2} offset={2}>
           <Gitgraph
             options={{ template: gitGraphOption }}
           >
@@ -95,30 +144,11 @@ export default class VersionTree extends React.Component<{}, any> {
             }}
           </Gitgraph>
         </Col>
-        <Col span={22}>
-          <List
-            size="large"
-            itemLayout="horizontal"
-            dataSource={this.state.modelData}
-            renderItem={model => (
-              <List.Item>
-                <Space size="large">
-                  <Button shape="round" size="large" style={{ width: 120 }}> {model.parent_model_id ? model.dataset : 'Origin'} </Button>
-                  <Button shape="round" size="large" style={{ width: 80 }}> v{model.version} </Button>
-                  <Avatar size={48} src={`https://avatars.dicebear.com/4.5/api/identicon/:${model.creator}.svg`} />
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: 100, display: 'inline-block' }}>
-                    {model.creator}
-                  </span>
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: 150, display: 'inline-block' }}>
-                    {moment(model.create_time).fromNow()}
-                  </span>
-                  <Link to={`/visualizer/${model.id}`}>
-                    <EditOutlined style={{ fontSize: 30 }} />
-                  </Link>
-                </Space>
-
-              </List.Item>
-            )}
+        <Col span={12}>
+          <Table 
+          columns={this.columns} 
+          dataSource={this.state.modelData} 
+          pagination={false}
           />
         </Col>
       </Row>
