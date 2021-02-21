@@ -65,6 +65,6 @@ class ModelDO(Document):
 
     meta = {
         'indexes': [
-            {'fields': ('engine', 'name', 'framework', 'version', 'task'), 'unique': True}
+            {'fields': ('engine', 'name', 'framework', 'version', 'task', 'dataset'), 'unique': True}
         ]
     }

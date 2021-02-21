@@ -1,0 +1,19 @@
+.ant-col-offset-2 {
+    margin-top: 20px;
+}
+
+.ant-table-thead{
+    display: none;
+}
+.ant-table{
+    background: transparent;
+}
+
+.ant-tag{
+    height: 40px;
+    border-radius:30px;
+    min-width: 80px;
+    text-align: center;
+    padding-top: 10px;
+    background-color: transparent;
+}

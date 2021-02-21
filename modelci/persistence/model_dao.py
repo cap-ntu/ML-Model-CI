@@ -33,7 +33,7 @@ class ModelDAO(object):
                 engine (int): Driving engine enum value.
                 framework (int): Model framework enum value.
                 version (int): Model version number.
-                parent_id (str): the ID of Model parent
+                dataset (str): the dataset used to train the model
 
         Returns:
             bool: Existence of the model.
