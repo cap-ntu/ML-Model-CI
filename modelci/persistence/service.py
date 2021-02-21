@@ -130,7 +130,7 @@ class ModelService(object):
         ):
             raise ServiceException(
                 f'Model business object with primary keys name={model_po.name}, task={model_po.task}, '
-                f'framework={model_po.framework}, engine={model_po.engine}, version={model_po.version}'
+                f'framework={model_po.framework}, engine={model_po.engine}, version={model_po.version}, '
                 f'dataset={model_po.dataset} has exists.'
             )
 

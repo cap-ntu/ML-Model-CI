@@ -31,13 +31,13 @@ const generateGitData = (modelList: []) => {
   modelList.forEach((model: any) => {
     let data: IGitData = {
       author: {
-        name: '',
-        email: ''
+        name: null,
+        email: null
       },
       hash: model.id.slice(7),
       refs: [],
       parents: model.parent_model_id == null ? ['root'] : [model.parent_model_id.slice(7)],
-      subject: '',
+      subject: null,
       created_at: model.create_time
     }
     // original model
@@ -66,8 +66,6 @@ export default class VersionTree extends React.Component<{}, any> {
       modelData: []
     };
   };
-  public async componentDidMount() {
-  }
 
   /**
    * TODO: display optimized formats(variant) of models
@@ -75,7 +73,7 @@ export default class VersionTree extends React.Component<{}, any> {
    */
   public async generateGitTree(gitgraph) {
     let res = await axios.get(config.modelURL);
-    let modelList = res.data;
+    let modelList = res.data.sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
     this.setState({
       gitTreeData: generateGitData(modelList),
       modelData: modelList.reverse().filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
@@ -142,7 +140,6 @@ export default class VersionTree extends React.Component<{}, any> {
             {async (gitgraph) => {
               // use real data
               await this.generateGitTree(gitgraph)
-              console.log(gitgraph)
             }}
           </Gitgraph>
         </Col>

@@ -1,8 +1,8 @@
 [
   {
     "author": {
-      "name": "",
-      "email": ""
+      "name": null,
+      "email": null
     },
     "hash": "eb239973072bc1944",
     "refs": [
@@ -16,8 +16,8 @@
   },
   {
     "author": {
-      "name": "",
-      "email": ""
+      "name": null,
+      "email": null
     },
     "hash": "aca769f0d9e6586e4",
     "refs": [
@@ -31,8 +31,8 @@
   },
   {
     "author": {
-      "name": "",
-      "email": ""
+      "name": null,
+      "email": null
     },
     "hash": "d3013089bbc6ebdc0",
     "refs": [
@@ -46,8 +46,8 @@
   },
   {
     "author": {
-      "name": "",
-      "email": ""
+      "name": null,
+      "email": null
     },
     "hash": "2c387c4f1c449f251",
     "refs": [
@@ -61,8 +61,8 @@
   },
   {
     "author": {
-      "name": "",
-      "email": ""
+      "name": null,
+      "email": null
     },
     "hash": "7f7e3ab454788d99c",
     "refs": [
