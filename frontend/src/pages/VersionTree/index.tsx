@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gitgraph, TemplateName, templateExtend, Orientation } from '@gitgraph/react';
+import { Gitgraph, TemplateName, templateExtend } from '@gitgraph/react';
 import axios from 'axios';
 import { config, Link } from 'ice';
 import { IGitData } from './utils/type';
@@ -76,7 +76,7 @@ export default class VersionTree extends React.Component<{}, any> {
     let modelList = res.data.sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
     this.setState({
       gitTreeData: generateGitData(modelList),
-      modelData: modelList.reverse().filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
+      modelData: modelList.filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
     })
     gitgraph.import(this.state.gitTreeData);
     // gitgraph.import(mockData)
@@ -135,7 +135,7 @@ export default class VersionTree extends React.Component<{}, any> {
       <Row>
         <Col span={2} offset={2}>
           <Gitgraph
-            options={{ template: gitGraphOption, orientation: Orientation.VerticalReverse }}
+            options={{ template: gitGraphOption }}
           >
             {async (gitgraph) => {
               // use real data
