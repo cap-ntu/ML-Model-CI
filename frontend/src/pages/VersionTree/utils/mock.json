@@ -4,46 +4,15 @@
       "name": "",
       "email": ""
     },
-    "hash": "7f7e3ab454788d99c",
-    "refs": [
-      "HEAD",
-      "Main"
-    ],
-    "parents": [
-      "root"
-    ],
-    "subject": " ",
-    "created_at": "2021-02-20T17:30:09.246000"
-  },
-  {
-    "author": {
-      "name": "",
-      "email": ""
-    },
-    "hash": "2c387c4f1c449f251",
-    "refs": [
-      "ResNet50/MNIST"
-    ],
-    "parents": [
-      "7f7e3ab454788d99c"
-    ],
-    "subject": " ",
-    "created_at": "2021-02-20T17:31:46.160000"
-  },
-  {
-    "author": {
-      "name": "",
-      "email": ""
-    },
-    "hash": "d3013089bbc6ebdc0",
+    "hash": "eb239973072bc1944",
     "refs": [
       "ResNet50/CIFAR10"
     ],
     "parents": [
-      "7f7e3ab454788d99c"
+      "aca769f0d9e6586e4"
     ],
     "subject": " ",
-    "created_at": "2021-02-20T17:32:29.488000"
+    "created_at": "2021-02-20T17:33:17.922000"
   },
   {
     "author": {
@@ -65,14 +34,44 @@
       "name": "",
       "email": ""
     },
-    "hash": "eb239973072bc1944",
+    "hash": "d3013089bbc6ebdc0",
     "refs": [
       "ResNet50/CIFAR10"
     ],
     "parents": [
-      "d3013089bbc6ebdc0"
+      "7f7e3ab454788d99c"
     ],
     "subject": " ",
-    "created_at": "2021-02-20T17:33:17.922000"
+    "created_at": "2021-02-20T17:32:29.488000"
+  },
+  {
+    "author": {
+      "name": "",
+      "email": ""
+    },
+    "hash": "2c387c4f1c449f251",
+    "refs": [
+      "ResNet50/MNIST"
+    ],
+    "parents": [
+      "7f7e3ab454788d99c"
+    ],
+    "subject": " ",
+    "created_at": "2021-02-20T17:31:46.160000"
+  },
+  {
+    "author": {
+      "name": "",
+      "email": ""
+    },
+    "hash": "7f7e3ab454788d99c",
+    "refs": [
+      "HEAD"
+    ],
+    "parents": [
+      "root"
+    ],
+    "subject": " ",
+    "created_at": "2021-02-20T17:30:09.246000"
   }
 ]

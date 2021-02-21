@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gitgraph, TemplateName, templateExtend } from '@gitgraph/react';
+import { Gitgraph, TemplateName, templateExtend, Orientation } from '@gitgraph/react';
 import axios from 'axios';
 import { config, Link } from 'ice';
 import { IGitData } from './utils/type';
@@ -21,6 +21,7 @@ const gitGraphOption = templateExtend(TemplateName.Metro, {
   },
 });
 
+const mockData = require('./utils/mock.json')
 /**
  *  TODO parse multiple version tree, display different variant of models
  * @param modelList list of model bo object
@@ -43,7 +44,6 @@ const generateGitData = (modelList: []) => {
     if (model.parent_model_id == null) {
       data.subject = ' '
       data.refs.push('HEAD')
-      data.refs.push('Main')
     } else if (['PYTORCH', 'None'].indexOf(model.engine) >= 0) {
       data.subject = ' '
       data.refs.push(`${model.name}/${model.dataset}`)
@@ -75,12 +75,13 @@ export default class VersionTree extends React.Component<{}, any> {
    */
   public async generateGitTree(gitgraph) {
     let res = await axios.get(config.modelURL);
-    let modelList = res.data.reverse();
+    let modelList = res.data;
     this.setState({
       gitTreeData: generateGitData(modelList),
-      modelData: modelList.filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
+      modelData: modelList.reverse().filter(model => ['PYTORCH', 'None'].indexOf(model.engine) >= 0)
     })
     gitgraph.import(this.state.gitTreeData);
+    // gitgraph.import(mockData)
   }
 
   const columns = [
@@ -136,11 +137,12 @@ export default class VersionTree extends React.Component<{}, any> {
       <Row>
         <Col span={2} offset={2}>
           <Gitgraph
-            options={{ template: gitGraphOption }}
+            options={{ template: gitGraphOption, orientation: Orientation.VerticalReverse }}
           >
             {async (gitgraph) => {
               // use real data
               await this.generateGitTree(gitgraph)
+              console.log(gitgraph)
             }}
           </Gitgraph>
         </Col>
