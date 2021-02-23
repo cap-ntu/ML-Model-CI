@@ -8,7 +8,6 @@ Date: 2/17/2021
 Persistence service using PyMongo.
 """
 import gridfs
-from bson import ObjectId
 
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
@@ -36,15 +35,20 @@ def save(model_in: MLModelIn):
     """
 
     if _collection.count_documents(
-            filter=model_in.dict(include={'architecture', 'framework', 'engine', 'version', 'task'}), limit=1
+            filter=model_in.dict(
+                use_enum_values=True,
+                include={'architecture', 'framework', 'engine', 'version', 'task', 'dataset'}
+            ),
+            limit=1
     ):
         raise ServiceException(
-            f'Model business object with primary keys architecture={model_in.architecture}, task={model_in.task}, '
-            f'framework={model_in.framework}, engine={model_in.engine}, version={model_in.version} has exists.'
+            f'Model business object with primary keys architecture={model_in.architecture}, '
+            f'framework={model_in.framework}, engine={model_in.engine}, version={model_in.version},'
+            f'task={model_in.task}, and dataset={model_in.dataset}  has exists.'
         )
 
     # TODO: update weight ID in the MLModelIn
     weight_id = _fs.put(bytes(model_in.weight), filename=model_in.weight.filename)
     model = MLModel(**model_in.dict(exclude={'weight'}), weight=weight_id)
-    model.id = _collection.insert_one(model.dict(exclude_none=True, by_alias=True)).inserted_id
+    model.id = _collection.insert_one(model.dict(exclude_none=True, by_alias=True, use_enum_values=True)).inserted_id
     return model

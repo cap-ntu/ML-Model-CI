@@ -64,12 +64,11 @@ def register_model(
         convert (bool): Flag for generation of model family. Default to True.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to True.
     """
-    from modelci.controller import job_executor
-    from modelci.controller.executor import Job
+    models = list()
 
     model_dir_list = list()
     model_in.model_status = [ModelStatus.PUBLISHED]
-    ml_model = save(model_in)
+    models.append(save(model_in))
 
     # generate model family
     if convert:
@@ -81,26 +80,30 @@ def register_model(
         parse_result = parse_path_plain(model_dir)
         engine = parse_result['engine']
 
-        model_gen = MLModelIn(**model_in_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
-        ml_model_gen = save(model_gen)
+        model_cvt = MLModelIn(**model_in_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
+        models.append(save(model_cvt))
 
-        # profile registered model
-        if profile and engine != Engine.PYTORCH:
-            file = tf.keras.utils.get_file(
-                "grace_hopper.jpg",
-                "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
-            test_img_bytes = cv2.imread(file)
+    # profile registered model
+    if profile:
+        from modelci.controller import job_executor
+        from modelci.controller.executor import Job
 
-            kwargs = {
-                'repeat_data': test_img_bytes,
-                'batch_size': 32,
-                'batch_num': 100,
-                'asynchronous': False,
-                'model_info': ml_model_gen,
-            }
+        file = tf.keras.utils.get_file(
+            "grace_hopper.jpg",
+            "https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg")
+        test_img_bytes = cv2.imread(file)
 
-            model_gen.model_status = [ModelStatus.PROFILING]
+        kwargs = {
+            'repeat_data': test_img_bytes,
+            'batch_size': 32,
+            'batch_num': 100,
+            'asynchronous': False,
+        }
+
+        for model in models:
+            model.model_status = [ModelStatus.PROFILING]
             ModelService.update_model(model)
+            kwargs['model_info'] = model
 
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
@@ -113,7 +116,7 @@ def register_model(
             else:
                 raise ValueError(f'No such serving engine: {engine}')
 
-            job_cuda = Job(client=client, device='cuda:0', model_info=model_gen)
+            job_cuda = Job(client=client, device='cuda:0', model_info=model)
             # job_cpu = Job(client=client, device='cpu', model_info=model)
             job_executor.submit(job_cuda)
             # job_executor.submit(job_cpu)
@@ -138,26 +141,30 @@ def register_model_from_yaml(file_path: Union[Path, str]):
         weight_dir = model_in_yaml.weight
         make_archive(weight_dir.with_suffix('.zip'), 'zip', weight_dir)
 
-    model_in = MLModelIn(**model_in_yaml.dict())
-    register_model(model_in)
+    model_in_data = model_in_yaml.dict(exclude_none=True, exclude={'convert', 'profile'})
+    model_in = MLModelIn.parse_obj(model_in_data)
+    register_model(model_in, convert=model_in_yaml.convert, profile=model_in_yaml.profile)
 
 
 def _generate_model_family(
         model_in: MLModelIn,
         max_batch_size: int = -1
 ):
+    def build_saved_dir_from_engine(engine: Engine):
+        return Path(saved_path_template.format(engine=str(engine.name).lower()))
+
     model = load(model_in.saved_path)
-    saved_path_template = model_in.saved_path.replace(model.engine, '{engine}')
+    saved_path_template = str(model_in.saved_path).replace(model_in.engine.name.lower(), '{engine}')
     inputs = model_in.inputs
     outputs = model_in.outputs
     model_input = model_in.model_input
 
     generated_dir_list = list()
 
-    torchscript_dir = Path(saved_path_template.format(engine=str(Engine.TORCHSCRIPT).lower()))
-    tfs_dir = Path(saved_path_template.format(engine=str(Engine.TFS).lower()))
-    onnx_dir = Path(saved_path_template.format(engine=str(Engine.ONNX).lower()))
-    trt_dir = Path(saved_path_template.format(engine=str(Engine.TRT).lower()))
+    torchscript_dir = build_saved_dir_from_engine(Engine.TORCHSCRIPT)
+    tfs_dir = build_saved_dir_from_engine(Engine.TFS)
+    onnx_dir = build_saved_dir_from_engine(Engine.ONNX)
+    trt_dir = build_saved_dir_from_engine(Engine.TRT)
 
     if isinstance(model, torch.nn.Module):
         # to TorchScript
@@ -172,7 +179,7 @@ def _generate_model_family(
         # TRTConverter.from_onnx(
         #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
         # )
-        return generated_dir_list
+
     elif isinstance(model, tf.keras.Model):
         # to TFS
         TFSConverter.from_tf_model(model, tfs_dir)
