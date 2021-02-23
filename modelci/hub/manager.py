@@ -28,7 +28,7 @@ from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
-from modelci.hub.loader import load
+from modelci.hub.model_loader import load
 from modelci.hub.utils import TensorRTPlatform, parse_path_plain
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import save
