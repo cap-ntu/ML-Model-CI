@@ -8,6 +8,7 @@ Date: 2/17/2021
 Persistence service using PyMongo.
 """
 import gridfs
+from bson import ObjectId
 
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
@@ -45,5 +46,5 @@ def save(model_in: MLModelIn):
     # TODO: update weight ID in the MLModelIn
     weight_id = _fs.put(bytes(model_in.weight), filename=model_in.weight.filename)
     model = MLModel(**model_in.dict(exclude={'weight'}), weight=weight_id)
-    model.id = _collection.insert_one(model.dict()).inserted_id
+    model.id = _collection.insert_one(model.dict(exclude_none=True, by_alias=True)).inserted_id
     return model

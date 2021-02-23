@@ -11,11 +11,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union, Optional, Dict, List
 
+from bson import ObjectId
 from gridfs import GridOut
 from pydantic import BaseModel, FilePath, DirectoryPath, Field, root_validator
 
-from modelci.hub.utils import parse_path_plain, generate_path_plain
-from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status
+from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId
+from ...hub.utils import parse_path_plain, generate_path_plain
 
 
 class Weight(BaseModel):
@@ -23,7 +24,7 @@ class Weight(BaseModel):
 
     __slots__ = ('file',)
 
-    __root__: Optional[str]
+    __root__: Optional[PydanticObjectId]
 
     def __init__(self, __root__):
         if isinstance(__root__, Path):
@@ -49,7 +50,7 @@ def named_enum_json_encoder(v):
 
 
 class MLModel(BaseModel):
-    id: Optional[str]
+    id: Optional[PydanticObjectId] = Field(default=None, alias='_id')
     architecture: str
     framework: Framework
     engine: Engine
@@ -67,14 +68,20 @@ class MLModel(BaseModel):
     create_time: datetime = Field(default_factory=datetime.now, const=True)
 
     def dict(self, **kwargs):
-        MLModelIn.Config.use_enum_values = True
+        self.Config.use_enum_values = True
         data = super().dict(**kwargs)
         # fix metric key as a Enum
         metric: dict = data.get('metric', None)
         if metric:
             data['metric'] = {k.name: v for k, v in metric.items()}
-        MLModelIn.Config.use_enum_values = False
+        self.Config.use_enum_values = False
         return data
+
+    class Config:
+        allow_population_by_field_name = True
+        json_encoders = {
+            ObjectId: str
+        }
 
 
 class MLModelIn(BaseModel):
@@ -102,14 +109,19 @@ class MLModelIn(BaseModel):
         return generate_path_plain(self.architecture, self.task, self.framework, self.engine, self.version)
 
     def dict(self, **kwargs):
-        MLModelIn.Config.use_enum_values = True
+        self.Config.use_enum_values = True
         data = super().dict(**kwargs)
         # fix metric key as a Enum
         metric: dict = data.get('metric', None)
         if metric:
             data['metric'] = {k.name: v for k, v in metric.items()}
-        MLModelIn.Config.use_enum_values = False
+        self.Config.use_enum_values = False
         return data
+
+    class Config:
+        json_encoders = {
+            ObjectId: str
+        }
 
 
 class MLModelInYaml(MLModelIn):
@@ -119,6 +131,8 @@ class MLModelInYaml(MLModelIn):
     engine: Optional[Engine]
     task: Optional[Task]
     version: Optional[int]
+    convert: Optional[bool] = True
+    profile: Optional[bool] = False
 
     @root_validator(pre=True)
     def check_model_info(cls, values: dict):  # pylint: disable=no-self-use

@@ -13,6 +13,7 @@ from typing import List
 import numpy as np
 import tensorflow as tf
 import torch
+from bson import ObjectId
 from pydantic import BaseModel
 
 from modelci.types.bo import DataType
@@ -42,6 +43,25 @@ class NamedEnum(Enum):
                 # save to value -> member mapper
                 cls._value2member_map_[value] = member
                 return member
+
+
+class PydanticObjectId(ObjectId):
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if isinstance(v, str):
+            v = ObjectId(v)
+        if not isinstance(v, ObjectId):
+            raise ValueError('Not a valid ObjectId')
+        return v
+
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        field_schema.update(type='string')
 
 
 class Framework(NamedEnum):
