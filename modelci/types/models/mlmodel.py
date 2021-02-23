@@ -67,14 +67,23 @@ class MLModel(BaseModel):
     creator: str = Field(default_factory=getpass.getuser)
     create_time: datetime = Field(default_factory=datetime.now, const=True)
 
-    def dict(self, **kwargs):
-        self.Config.use_enum_values = True
-        data = super().dict(**kwargs)
-        # fix metric key as a Enum
-        metric: dict = data.get('metric', None)
-        if metric:
-            data['metric'] = {k.name: v for k, v in metric.items()}
-        self.Config.use_enum_values = False
+    def dict(self, use_enum_values: bool = False, **kwargs):
+        """
+        Args:
+            use_enum_values: Export the model as dict with included :class:`enum.Enum` to be their value.
+            **kwargs: Other keyword arguments in :meth:`pydantic.BaseModel.dict`.
+        """
+        if use_enum_values:
+            self.Config.use_enum_values = True
+            data = super().dict(**kwargs)
+            # fix metric key as a Enum
+            metric: dict = data.get('metric', None)
+            if metric:
+                data['metric'] = {k.name: v for k, v in metric.items()}
+            self.Config.use_enum_values = False
+        else:
+            data = super().dict(**kwargs)
+
         return data
 
     class Config:
@@ -108,14 +117,23 @@ class MLModelIn(BaseModel):
     def saved_path(self):
         return generate_path_plain(self.architecture, self.task, self.framework, self.engine, self.version)
 
-    def dict(self, **kwargs):
-        self.Config.use_enum_values = True
-        data = super().dict(**kwargs)
-        # fix metric key as a Enum
-        metric: dict = data.get('metric', None)
-        if metric:
-            data['metric'] = {k.name: v for k, v in metric.items()}
-        self.Config.use_enum_values = False
+    def dict(self, use_enum_values: bool = False, **kwargs):
+        """
+        Args:
+            use_enum_values: Export the model as dict with included :class:`enum.Enum` to be their value.
+            **kwargs: Other keyword arguments in :meth:`pydantic.BaseModel.dict`.
+        """
+        if use_enum_values:
+            self.Config.use_enum_values = True
+            data = super().dict(**kwargs)
+            # fix metric key as a Enum
+            metric: dict = data.get('metric', None)
+            if metric:
+                data['metric'] = {k.name: v for k, v in metric.items()}
+            self.Config.use_enum_values = False
+        else:
+            data = super().dict(**kwargs)
+
         return data
 
     class Config:

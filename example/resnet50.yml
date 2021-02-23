@@ -1,12 +1,14 @@
-weight: ~/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip
+weight: "~/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth"
 dataset: ImageNet
 task: IMAGE_CLASSIFICATION
 metric:
   acc: 0.76
 inputs:
-  - shape: [-1, 224, 224, 3]
+  - name: "input"
+    shape: [ -1, 3, 224, 224 ]
     dtype: TYPE_FP32
 outputs:
-  - shape: [-1, 1000]
+  - name: "output"
+    shape: [ -1, 1000 ]
     dtype: TYPE_FP32
 convert: true

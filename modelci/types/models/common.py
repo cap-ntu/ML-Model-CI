@@ -16,7 +16,7 @@ import torch
 from bson import ObjectId
 from pydantic import BaseModel
 
-from modelci.types.bo import DataType
+from modelci.types.trtis_objects import DataType
 
 
 class NamedEnum(Enum):
@@ -138,7 +138,7 @@ class IOShape(BaseModel):
 
     shape: List[int]
     dtype: DataType
-    name: str = None
+    name: str
     format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
 
     def __init__(self, **data):
@@ -153,7 +153,7 @@ class IOShape(BaseModel):
                 # try if the dtype is `DataType`
                 dtype = DataType[dtype.upper()]
         elif isinstance(dtype, (type, int)):
-            dtype = type_to_data_type(dtype)
+            dtype = DataType(dtype)
         elif isinstance(dtype, (torch.dtype, tf.dtypes.DType, np.dtype)):
             dtype = type_to_data_type(dtype)
         elif isinstance(dtype, DataType):
