@@ -45,12 +45,7 @@ class Weight(BaseModel):
             return self.file.read_bytes()
 
 
-def named_enum_json_encoder(v):
-    return v.name()
-
-
-class MLModel(BaseModel):
-    id: Optional[PydanticObjectId] = Field(default=None, alias='_id')
+class BaseMLModel(BaseModel):
     architecture: str
     framework: Framework
     engine: Engine
@@ -60,12 +55,6 @@ class MLModel(BaseModel):
     task: Task
     inputs: List[IOShape]
     outputs: List[IOShape]
-    weight: Weight
-    # profile_result: Optional[ProfileResult]
-    status: Status = Status.UNKNOWN
-    model_status: List[ModelStatus] = Field(default_factory=list)
-    creator: str = Field(default_factory=getpass.getuser)
-    create_time: datetime = Field(default_factory=datetime.now, const=True)
 
     def dict(self, use_enum_values: bool = False, **kwargs):
         """
@@ -92,54 +81,31 @@ class MLModel(BaseModel):
             ObjectId: str
         }
 
+    @property
+    def saved_path(self):
+        return generate_path_plain(self.architecture, self.task, self.framework, self.engine, self.version)
 
-class MLModelIn(BaseModel):
+
+class MLModel(BaseMLModel):
+    id: Optional[PydanticObjectId] = Field(default=None, alias='_id')
+    parent_model_id: Optional[PydanticObjectId]
+    weight: Weight
+    # profile_result: Optional[ProfileResult]
+    status: Status = Status.UNKNOWN
+    model_status: List[ModelStatus] = Field(default_factory=list)
+    creator: str = Field(default_factory=getpass.getuser)
+    create_time: datetime = Field(default_factory=datetime.now, const=True)
+
+
+class MLModelIn(BaseMLModel):
     # noinspection PyUnresolvedReferences
     """
     Attributes:
         parent_model_id: The parent model ID of current model if this model is derived from a pre-existing one.
     """
-    weight: Optional[Weight]
-    dataset: str
-    metric: Dict[Metric, float]
-    parent_model_id: Optional[str]
-    inputs: List[IOShape]
-    outputs: List[IOShape]
+    weight: Weight
     model_input: Optional[list]  # TODO: merge into field `inputs`
-    architecture: str
-    framework: Framework
-    engine: Engine
-    task: Task
-    version: int
     model_status: List[ModelStatus] = Field(default_factory=list)
-
-    @property
-    def saved_path(self):
-        return generate_path_plain(self.architecture, self.task, self.framework, self.engine, self.version)
-
-    def dict(self, use_enum_values: bool = False, **kwargs):
-        """
-        Args:
-            use_enum_values: Export the model as dict with included :class:`enum.Enum` to be their value.
-            **kwargs: Other keyword arguments in :meth:`pydantic.BaseModel.dict`.
-        """
-        if use_enum_values:
-            self.Config.use_enum_values = True
-            data = super().dict(**kwargs)
-            # fix metric key as a Enum
-            metric: dict = data.get('metric', None)
-            if metric:
-                data['metric'] = {k.name: v for k, v in metric.items()}
-            self.Config.use_enum_values = False
-        else:
-            data = super().dict(**kwargs)
-
-        return data
-
-    class Config:
-        json_encoders = {
-            ObjectId: str
-        }
 
 
 class MLModelInYaml(MLModelIn):
