@@ -89,6 +89,8 @@ The below figurs illusrates the
 
 Once you have installed, start MLModelCI service on a leader server by:
 ```shell script
+# setup environment
+source scripts/setup_env.sh
 modelci service init
 ```
 
