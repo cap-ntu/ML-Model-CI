@@ -33,21 +33,20 @@ from modelci.hub.utils import TensorRTPlatform, parse_path_plain
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import save
 from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
-from modelci.types.models import MLModelIn
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
            'retrieve_model_by_task', 'retrieve_model_by_parent_id']
 
 from modelci.types.models.common import Engine, ModelStatus
 
-from modelci.types.models.mlmodel import MLModelInYaml
+from modelci.types.models.mlmodel import MLModelIn, MLModelInYaml, MLModel
 
 
 def register_model(
         model_in: MLModelIn,
         convert: bool = True,
         profile: bool = True,
-):
+) -> List[MLModel]:
     """Upload a model to ModelDB.
     This function will upload the given model into the database with some variation. It may optionally generate a
         branch of models (i.e. model family) with different optimization techniques. Besides, a benchmark will be
@@ -104,6 +103,7 @@ def register_model(
             model.model_status = [ModelStatus.PROFILING]
             ModelService.update_model(model)
             kwargs['model_info'] = model
+            engine = model.engine
 
             if engine == Engine.TORCHSCRIPT:
                 client = CVTorchClient(**kwargs)
@@ -120,6 +120,8 @@ def register_model(
             # job_cpu = Job(client=client, device='cpu', model_info=model)
             job_executor.submit(job_cuda)
             # job_executor.submit(job_cpu)
+
+    return models
 
 
 def register_model_from_yaml(file_path: Union[Path, str]):

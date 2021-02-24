@@ -27,7 +27,7 @@ def save(model_in: MLModelIn):
         model_in (MLModelIn): model object to be registered
 
     Return:
-        str: Saved model ID.
+        MLModel: Saved ML model object.
 
     Raises:
         BadRequestValueException: If `model.id` is not None.

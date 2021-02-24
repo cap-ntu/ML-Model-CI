@@ -99,7 +99,7 @@ class MLModelIn(BaseModel):
     Attributes:
         parent_model_id: The parent model ID of current model if this model is derived from a pre-existing one.
     """
-    weight: Weight
+    weight: Optional[Weight]
     dataset: str
     metric: Dict[Metric, float]
     parent_model_id: Optional[str]
