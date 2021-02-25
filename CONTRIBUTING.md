@@ -16,12 +16,14 @@ conda env create -f environment.yml
 conda install pytorch torchvision cudatoolkit=<YOUR_CUDA_VERSION> -c pytorch
 conda install pytorch-lightning -c conda-forge
 pip install hummingbird-ml==0.2.1 torchviz==0.0.1
+
+# set PYTHONPATH
+export PYTHONPATH="${PWD}"
 ```
 
 ### Start Services
 
 ```shell script
-source scripts/setup_env.sh
 python modelci/cli/__init__.py service init
 ```
 
