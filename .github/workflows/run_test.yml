@@ -2,10 +2,13 @@ name: Build
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ master ]
+    paths-ignore:
+    - 'frontend/**'
   pull_request:
-    branches: [ $default-branch ]
-
+    branches: [ master ]
+    paths-ignore:
+    - 'frontend/**'
 jobs:
   test:
     runs-on: ubuntu-latest

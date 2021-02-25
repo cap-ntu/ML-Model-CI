@@ -142,7 +142,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         model_info = cadvisor.get_model_info(all_information)
         stats = model_info[list(model_info.keys())[0]]['stats']
         val_stats = [x for x in stats[-int(SLEEP_TIME + all_data_latency):] if
-                     x['accelerators'][0]['duty_cycle'] is not 0]
+                     x['accelerators'][0]['duty_cycle'] != 0]
         all_batch_avg_memory_total = sum([i['accelerators'][0]['memory_total'] for i in val_stats]) / len(val_stats)
         all_batch_avg_memory_used = sum([i['accelerators'][0]['memory_used'] for i in val_stats]) / len(val_stats)
         all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
