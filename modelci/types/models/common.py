@@ -44,6 +44,13 @@ class NamedEnum(Enum):
                 cls._value2member_map_[value] = member
                 return member
 
+    @classmethod
+    def __modify_schema__(cls, field_schema: dict):
+        """
+        Use enum name rather than enum value for schema used by OpenAPI.
+        """
+        field_schema.update(enum=[item.name for item in cls])
+
 
 class PydanticObjectId(ObjectId):
 

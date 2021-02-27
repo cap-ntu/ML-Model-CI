@@ -161,7 +161,7 @@ def as_form(cls: Type[BaseModel]) -> Type[BaseModel]:
         # parse literal back to dictionary
         for field_alias in literal_fields:
             value = data.pop(field_alias, None)
-            data[field_alias] = ast.literal_eval(value)
+            data[field_alias] = ast.literal_eval(str(value))
         try:
             cls.parse_obj(data)
             return cls(**data)
