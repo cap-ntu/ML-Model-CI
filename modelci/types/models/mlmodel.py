@@ -40,6 +40,7 @@ class Weight(BaseModel):
     def filename(self):
         if self.file:
             return self.file.name
+        return ''
 
     def __bytes__(self):
         if self.file:
@@ -108,6 +109,11 @@ class MLModelIn(BaseMLModel):
     model_input: Optional[list]  # TODO: merge into field `inputs`
     model_status: List[ModelStatus] = Field(default_factory=list)
 
+    @property
+    def saved_path(self):
+        suffix = Path(self.weight.filename).suffix
+        return super().saved_path.with_suffix(suffix)
+
 
 class MLModelInYaml(MLModelIn):
     weight: Union[FilePath, DirectoryPath]
@@ -145,6 +151,11 @@ class MLModelInYaml(MLModelIn):
                     raise ValueError(f'{k} expected to be {model_info[k]} inferred from {weight}, but got {v}.')
 
         return values
+
+    @property
+    def saved_path(self):
+        suffix = Path(self.weight).suffix
+        return super(MLModelIn, self).saved_path.with_suffix(suffix)
 
 
 @as_form

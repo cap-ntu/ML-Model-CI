@@ -48,5 +48,5 @@ def load(model_weight_path: os.PathLike, *args, **kwargs):
 
     if model_info['framework'] == 'PYTORCH' and model_info['engine'] in ('NONE', 'PYTORCH'):  # PyTorch
         return pytorch_loader(model_weight_path)
-    elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('None', 'PYTORCH'):  # TensorFlow
+    elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('None', 'TENSORFLOW'):  # TensorFlow
         return savedmodel_loader(model_weight_path)
