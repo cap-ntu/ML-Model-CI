@@ -93,7 +93,7 @@ class MLModel(BaseMLModel):
     parent_model_id: Optional[PydanticObjectId]
     weight: Weight
     # profile_result: Optional[ProfileResult]
-    status: Status = Status.UNKNOWN
+    status: Status = Status.Unknown
     model_status: List[ModelStatus] = Field(default_factory=list)
     creator: str = Field(default_factory=getpass.getuser)
     create_time: datetime = Field(default_factory=datetime.now, const=True)

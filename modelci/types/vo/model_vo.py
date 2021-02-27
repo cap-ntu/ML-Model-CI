@@ -38,8 +38,8 @@ class ModelInputFormat(CaseInsensitiveEnum):
 
 
 class Task(CaseInsensitiveEnum):
-    IMAGE_CLASSIFICATION = 'Image Classification'
-    OBJECT_DETECTION = 'Object Detection'
+    IMAGE_CLASSIFICATION = 'Image_Classification'
+    OBJECT_DETECTION = 'Object_Detection'
     SEGMENTATION = 'Segmentation'
 
 

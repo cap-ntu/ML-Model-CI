@@ -10,7 +10,7 @@ Basic patterns for creation of required components.
 import ast
 import inspect
 from enum import Enum
-from typing import Type, Any, List, _GenericAlias, _SpecialForm, Union  # noqa
+from typing import Type, Any, _GenericAlias, _SpecialForm, Union  # noqa
 
 from fastapi import Form
 from fastapi.exceptions import RequestValidationError

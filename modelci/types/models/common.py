@@ -72,8 +72,8 @@ class PydanticObjectId(ObjectId):
 
 
 class Framework(NamedEnum):
-    TENSORFLOW = 0
-    PYTORCH = 1
+    TensorFlow = 0
+    PyTorch = 1
 
 
 class Engine(NamedEnum):
@@ -88,9 +88,9 @@ class Engine(NamedEnum):
 
 
 class Task(NamedEnum):
-    IMAGE_CLASSIFICATION = 0
-    OBJECT_DETECTION = 1
-    SEGMENTATION = 2
+    Image_Classification = 0
+    Object_Detection = 1
+    Segmentation = 2
 
 
 class Metric(NamedEnum):
@@ -106,10 +106,10 @@ class ModelInputFormat(NamedEnum):
 
 
 class Status(NamedEnum):
-    UNKNOWN = 0
-    PASS = 1
-    RUNNING = 2
-    FAIL = 3
+    Unknown = 0
+    Pass = 1
+    Running = 2
+    Fail = 3
 
 
 @unique
