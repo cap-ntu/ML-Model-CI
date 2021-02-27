@@ -13,7 +13,7 @@ from typing import Union, Optional, Dict, List
 
 from bson import ObjectId
 from gridfs import GridOut
-from pydantic import BaseModel, FilePath, DirectoryPath, Field, root_validator
+from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, root_validator
 
 from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId
 from .pattern import as_form
@@ -48,15 +48,21 @@ class Weight(BaseModel):
 
 
 class BaseMLModel(BaseModel):
-    architecture: str
+    architecture: str = Field(..., example='ResNet50')
     framework: Framework
     engine: Engine
-    version: int
-    dataset: str
-    metric: Dict[Metric, float]
+    version: PositiveInt = Field(..., example=1)
+    dataset: str = Field(..., example='ImageNet')
+    metric: Dict[Metric, float] = Field(..., example='{"acc": 0.76}')
     task: Task
-    inputs: List[IOShape]
-    outputs: List[IOShape]
+    inputs: List[IOShape] = Field(
+        ...,
+        example='[{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}]'
+    )
+    outputs: List[IOShape] = Field(
+        ...,
+        example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
+    )
 
     def dict(self, use_enum_values: bool = False, **kwargs):
         """
