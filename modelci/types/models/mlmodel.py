@@ -16,6 +16,7 @@ from gridfs import GridOut
 from pydantic import BaseModel, FilePath, DirectoryPath, Field, root_validator
 
 from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId
+from .pattern import as_form
 from ...hub.utils import parse_path_plain, generate_path_plain
 
 
@@ -144,3 +145,8 @@ class MLModelInYaml(MLModelIn):
                     raise ValueError(f'{k} expected to be {model_info[k]} inferred from {weight}, but got {v}.')
 
         return values
+
+
+@as_form
+class MLModelInForm(BaseMLModel):
+    model_input: Optional[list]

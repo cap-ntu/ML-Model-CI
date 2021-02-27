@@ -148,7 +148,7 @@ class IOShape(BaseModel):
         if isinstance(dtype, str):
             try:
                 # if the type name is unified python type
-                dtype = type_to_data_type(eval(dtype))
+                dtype = type_to_data_type(eval(dtype))  # nosec
             except NameError:
                 # try if the dtype is `DataType`
                 dtype = DataType[dtype.upper()]
@@ -209,3 +209,10 @@ class IOShape(BaseModel):
 
     class Config:
         use_enum_values = True
+        schema_extra = {
+            'example': {
+                'shape': [-1, 3, 224, 224],
+                'dtype': DataType.TYPE_FP32,
+                'name': 'input0',
+            }
+        }
