@@ -14,6 +14,7 @@
 
 import os
 import subprocess
+from functools import partial
 from pathlib import Path
 from shutil import copy2, make_archive
 from typing import Union, List
@@ -29,7 +30,7 @@ from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
 from modelci.hub.model_loader import load
-from modelci.hub.utils import TensorRTPlatform, parse_path_plain
+from modelci.hub.utils import TensorRTPlatform, parse_path_plain, generate_path_plain
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import save
 from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
@@ -152,21 +153,21 @@ def _generate_model_family(
         model_in: MLModelIn,
         max_batch_size: int = -1
 ):
-    def build_saved_dir_from_engine(engine: Engine):
-        return Path(saved_path_template.format(engine=str(engine.name).lower()))
-
     model = load(model_in.saved_path)
-    saved_path_template = str(model_in.saved_path).replace(model_in.engine.name.lower(), '{engine}')
+    build_saved_dir_from_engine = partial(
+        generate_path_plain,
+        **model_in.dict(include={'architecture', 'framework', 'task', 'version'}),
+    )
     inputs = model_in.inputs
     outputs = model_in.outputs
     model_input = model_in.model_input
 
     generated_dir_list = list()
 
-    torchscript_dir = build_saved_dir_from_engine(Engine.TORCHSCRIPT)
-    tfs_dir = build_saved_dir_from_engine(Engine.TFS)
-    onnx_dir = build_saved_dir_from_engine(Engine.ONNX)
-    trt_dir = build_saved_dir_from_engine(Engine.TRT)
+    torchscript_dir = build_saved_dir_from_engine(engine=Engine.TORCHSCRIPT)
+    tfs_dir = build_saved_dir_from_engine(engine=Engine.TFS)
+    onnx_dir = build_saved_dir_from_engine(engine=Engine.ONNX)
+    trt_dir = build_saved_dir_from_engine(engine=Engine.TRT)
 
     if isinstance(model, torch.nn.Module):
         # to TorchScript
