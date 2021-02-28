@@ -10,12 +10,14 @@ Basic patterns for creation of required components.
 import ast
 import inspect
 from enum import Enum
-from typing import Type, Any, _GenericAlias, _SpecialForm, Union  # noqa
+from typing import Type, Any, Union
 
 from fastapi import Form
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ValidationError
 from pydantic.fields import ModelField, FieldInfo
+
+from modelci.utils.misc import isgeneric
 
 
 def _make_form_parameter(field_info: FieldInfo) -> Any:
@@ -87,8 +89,7 @@ def make_annotation(field: ModelField):
     is_literal = False
 
     # check outer type
-    if isinstance(field_outer_type, _GenericAlias) or \
-            isinstance(field_outer_type, _SpecialForm) and field_outer_type is not Any:
+    if isgeneric(field_outer_type):
         # outer type is a generic class
         if field_outer_type.__origin__ is Union:
             # only Union is valid generic class
