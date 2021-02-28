@@ -21,6 +21,7 @@ from modelci.utils import Logger
 
 logger = Logger('converter', welcome=False)
 
+
 class TFSConverter(object):
     supported_framework = ["tensorflow"]
 

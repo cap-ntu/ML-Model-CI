@@ -106,7 +106,6 @@ class PyTorchConverter(object):
     ):
         if extra_config is None:
             extra_config = dict()
-        inputs = {input_.name: input_ for input_ in model.graph.input}
 
         extra_config_ = PyTorchConverter.hb_common_extra_config.copy()
         extra_config_.update({
@@ -116,4 +115,3 @@ class PyTorchConverter(object):
         extra_config_.update(extra_config)
 
         return _convert_onnxml(model, 'torch', test_input=None, device=device, extra_config=extra_config_)
-

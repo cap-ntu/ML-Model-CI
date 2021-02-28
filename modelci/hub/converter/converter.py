@@ -20,7 +20,6 @@ from .tfs.converter import TFSConverter
 from .torchscript.converter import TorchScriptConverter
 from .trt.converter import TRTConverter
 
-
 framework_supported = {
     "onnx": ONNXConverter,
     "pytorch": PyTorchConverter,
@@ -35,7 +34,7 @@ def convert(model, src_framework: str, dst_framework: str, **kwargs):
         raise NotImplementedError(f"Conversion to {dst_framework} is not supported yet")
 
     elif src_framework in getattr(framework_supported[dst_framework], "supported_framework"):
-        converter = getattr(framework_supported[dst_framework],f"from_{src_framework}")
+        converter = getattr(framework_supported[dst_framework], f"from_{src_framework}")
         return converter(model, **kwargs)
 
     else:

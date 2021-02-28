@@ -39,7 +39,7 @@ class TorchScriptConverter(object):
             traced.save(str(save_path.with_suffix('.zip')))
             logger.info('Torchscript format converted successfully')
             return True
-        except:
+        except Exception:
             # TODO catch different types of error
             logger.warning("This model is not supported as torchscript format")
             return False

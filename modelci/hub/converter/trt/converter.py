@@ -34,11 +34,10 @@ from modelci.types.trtis_objects import (
     ModelInstanceGroupKind,
 )
 
-
 logger = Logger('converter', welcome=False)
 
-class TRTConverter(object):
 
+class TRTConverter(object):
     supported_framework = ["onnx", "tfs"]
 
     @staticmethod

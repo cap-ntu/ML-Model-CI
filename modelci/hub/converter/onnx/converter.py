@@ -22,7 +22,6 @@ import onnxmltools as onnxmltools
 import torch
 import torch.jit
 import torch.onnx
-from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
 from modelci.utils import Logger
 
 from modelci.types.type_conversion import model_data_type_to_torch, model_data_type_to_onnx
@@ -31,6 +30,8 @@ from tensorflow import keras
 from modelci.types.bo import IOShape
 
 logger = Logger('converter', welcome=False)
+
+
 class ONNXConverter(object):
     """Convert model to ONNX format."""
 
@@ -155,13 +156,12 @@ class ONNXConverter(object):
 
             logger.info('ONNX format converted successfully')
             return True
-        except:
-            #TODO catch different types of error
+        except Exception:
+            # TODO catch different types of error
             logger.warning("This model is not supported as ONNX format")
             return False
 
     @staticmethod
-    @_Wrapper.save
     def from_keras(
             model: keras.models.Model,
             opset: int = DEFAULT_OPSET,
