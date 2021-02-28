@@ -19,10 +19,11 @@ import requests
 import typer
 
 from modelci.app import SERVER_HOST, SERVER_PORT
+from modelci.hub.init_data import export_model
 from modelci.hub.manager import register_model_from_yaml
 from modelci.hub.publish import _download_model_from_url
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric, MLModelInForm
-from modelci.ui import model_view
+from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null
 
@@ -162,3 +163,37 @@ def download_model_from_url(url, path):
     """
     _download_model_from_url(url, path)
     logger.info("{} model downloaded succussfuly.".format(path))
+
+
+
+@modelhub.command('export')
+@click.option('-n', '--name', type=click.STRING, required=True, help='Model architecture name.')
+@click.option(
+    '-f', '--framework',
+    type=click.Choice(['TensorFlow', 'PyTorch'], case_sensitive=False),
+    required=True,
+    help='Model framework name.'
+)
+@click.option(
+    '--trt',
+    type=click.STRING,
+    is_flag=True,
+    help='Flag for exporting models served by TensorRT. Please make sure you have TensorRT installed in your machine'
+         'before set this flag.'
+)
+def export(name, framework, trt):
+    """
+    Export model from PyTorch hub / TensorFlow hub and try convert the model into various format for different serving
+    engines.
+    """
+    export_model(model_name=name, framework=framework, enable_trt=trt)
+    exit(0)
+
+
+@modelhub.command('detail')
+@click.argument('model_id')
+def show(model_id):
+    """Show a single model."""
+    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
+        model = r.json()
+        model_detailed_view(model)

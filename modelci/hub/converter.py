@@ -27,9 +27,10 @@ from google.protobuf import json_format
 from hummingbird.ml import constants as hb_constants
 from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
 from hummingbird.ml.operator_converters import constants as hb_op_constants
-from hummingbird.ml.supported import xgb_operator_list, lgbm_operator_list, sklearn_operator_list
+from lightgbm import LGBMModel
 from onnx import optimizer
 from tensorflow import keras
+from xgboost import XGBModel
 
 from modelci.types.bo import IOShape
 from modelci.types.trtis_objects import (
@@ -52,7 +53,7 @@ class PyTorchConverter(object):
 
     @staticmethod
     def from_xgboost(
-            model: Union.__getitem__(tuple(xgb_operator_list)),  # noqa
+            model: XGBModel,
             inputs: Sequence[IOShape],
             device: str = 'cpu',
             extra_config: Optional[dict] = None,
@@ -83,7 +84,7 @@ class PyTorchConverter(object):
 
     @staticmethod
     def from_lightgbm(
-            model: Union.__getitem__(tuple(lgbm_operator_list)),  # noqa
+            model: LGBMModel,
             inputs: Optional[Sequence[IOShape]] = None,
             device: str = 'cpu',
             extra_config: Optional[dict] = None
@@ -100,7 +101,7 @@ class PyTorchConverter(object):
 
     @staticmethod
     def from_sklearn(
-            model: Union.__getitem__(tuple(sklearn_operator_list)),  # noqa
+            model,
             device: str = 'cpu',
             extra_config: Optional[dict] = None,
     ):
@@ -134,7 +135,6 @@ class PyTorchConverter(object):
 
         return _convert_onnxml(model, 'torch', test_input=None, device=device, extra_config=extra_config_)
 
-__all__ = ['TorchScriptConverter', 'TFSConverter', 'ONNXConverter', 'TRTConverter', 'to_tvm']
 
 class TorchScriptConverter(object):
     @staticmethod
@@ -633,3 +633,6 @@ class TRTConverter(object):
 
 def to_tvm(*args, **kwargs):
     raise NotImplementedError('Method `to_tvm` is not implemented.')
+
+
+__all__ = ['TorchScriptConverter', 'TFSConverter', 'ONNXConverter', 'TRTConverter', 'to_tvm']

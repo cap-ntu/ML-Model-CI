@@ -20,9 +20,8 @@ import typer
 from pydantic import BaseModel
 from typer.main import lenient_issubclass
 
-from modelci.cli import model_cli
-from modelci.cli.model_manager import modelhub, app as modelhub_app
-from modelci.cli.modelci_service import service
+from modelci.cli.modelhub import modelhub, app as modelhub_app
+from modelci.cli.service import service
 from modelci.types.models.common import NamedEnum
 from modelci.utils.misc import isgeneric
 
@@ -121,8 +120,6 @@ app.add_typer(modelhub_app, name='modelhub_typer')
 typer_click_object: click.Group = typer.main.get_command(app)  # noqa
 typer_click_object.add_command(service)
 typer_click_object.add_command(modelhub)
-typer_click_object.add_command(model_cli.commands)
-typer_click_object.add_command(model_cli.models)
 
 if __name__ == '__main__':
     typer_click_object()
