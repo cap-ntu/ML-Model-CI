@@ -11,25 +11,30 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
+from pathlib import Path
+from typing import Dict, List, Optional
 
-import os
 import click
 import requests
-
-from modelci.utils import Logger
+import typer
 
 from modelci.app import SERVER_HOST, SERVER_PORT
-from modelci.hub.init_data import export_model
-from modelci.ui import model_view, model_detailed_view
-from modelci.utils.misc import remove_dict_null
-from modelci.hub.publish import _download_model_from_url
 from modelci.hub.manager import register_model_from_yaml
+from modelci.hub.publish import _download_model_from_url
+from modelci.types.models import Framework, Engine, IOShape, Task, Metric, MLModelInForm
+from modelci.ui import model_view
+from modelci.utils import Logger
+from modelci.utils.misc import remove_dict_null
 
 logger = Logger(__name__)
+
+app = typer.Typer()
+
 
 @click.group()
 def modelhub():
     pass
+
 
 @modelhub.command("publish")
 @click.option('-p', '--ymal_path', required=True, type=str, help='the yaml file path')
@@ -39,9 +44,75 @@ def register_model(ymal_path):
     Args:
         ymal_path ([type]): a ymal file that contains model registeration info
     """
-    
+
     register_model_from_yaml(ymal_path)
     logger.info("model published")
+
+
+@app.command()
+def publish(
+        file_or_dir: Path = typer.Argument(..., help='Model weight files', exists=True),
+        architecture: str = typer.Option(..., '-name', '--architecture', help='Architecture'),
+        framework: Framework = typer.Option(..., '-f', '--framework', help='Framework'),
+        engine: Engine = typer.Option(..., '-e', '--engine', help='Engine'),
+        version: int = typer.Option(..., '-v', '--version', min=1, help='Version number'),
+        task: Task = typer.Option(..., '-t', '--task', help='Task'),
+        dataset: str = typer.Option(..., '-d', '--dataset', help='Dataset name'),
+        metric: Dict[Metric, float] = typer.Option(
+            ...,
+            help='Metrics in the form of mapping JSON string. The map type is '
+                 '`Dict[types.models.mlmodel.Metric, float]`. An example is \'{"acc": 0.76}.\'',
+        ),
+        inputs: List[IOShape] = typer.Option(
+            ...,
+            '-i', '--input',
+            help='List of shape definitions for input tensors. An example of one shape definition is '
+                 '\'{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}\'',
+        ),
+        outputs: List[IOShape] = typer.Option(
+            ...,
+            '-o', '--output',
+            help='List of shape definitions for output tensors. An example of one shape definition is '
+                 '\'{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}\'',
+        ),
+        convert: Optional[bool] = typer.Option(
+            True,
+            '-c', '--convert',
+            help='Convert the model to other possible format.',
+        ),
+        profile: Optional[bool] = typer.Option(
+            False,
+            '-p', '--profile',
+            help='Profile the published model(s).',
+        ),
+):
+    payload = {'convert': convert, 'profile': profile}
+    model_in_form = MLModelInForm(
+        architecture=architecture, framework=framework, engine=engine, version=version, dataset=dataset,
+        metric=metric, task=task, inputs=inputs, outputs=outputs
+    )
+    data = model_in_form.dict(exclude_none=True, use_enum_values=True)
+    form_data = {k: str(v) for k, v in data.items()}
+
+    files = list()
+    key = 'files'
+    try:
+        # read weight file
+        if file_or_dir.is_dir():
+            for file in filter(Path.is_file, file_or_dir.rglob('*')):
+                name = Path(file).relative_to(file_or_dir.parent)
+                files.append((key, (str(name), open(file, 'rb'), 'application/example')))
+        else:
+            files.append((key, (file_or_dir.name, open(file_or_dir, 'rb'), 'application/example')))
+
+        with requests.post(
+                f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/',
+                params=payload, data=form_data, files=files,
+        ) as r:
+            typer.echo(r.json())
+    finally:
+        for file in files:
+            file[1][1].close()
 
 
 @modelhub.command("list")
@@ -78,6 +149,7 @@ def show_models(name, framework, engine, version, list_all):
 def download_model():
     raise NotImplementedError
 
+
 @modelhub.command("get")
 @click.option('-u', '--url', required=True, type=str, help='the link to a model')
 @click.option('-p', '--path', required=True, type=str, help='the saved path and file name.')
@@ -90,4 +162,3 @@ def download_model_from_url(url, path):
     """
     _download_model_from_url(url, path)
     logger.info("{} model downloaded succussfuly.".format(path))
-
