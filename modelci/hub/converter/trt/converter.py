@@ -13,15 +13,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
-
-import subprocess
+import shutil
 from pathlib import Path
 from typing import Union, List
 
 from betterproto import Casing
 from google.protobuf import json_format
-from hummingbird.ml.convert import _convert_xgboost, _convert_lightgbm, _convert_onnxml, _convert_sklearn  # noqa
-from modelci.utils import Logger
 
 from modelci.hub.utils import parse_path, GiB, TensorRTPlatform
 from modelci.types.bo import IOShape
@@ -33,6 +30,7 @@ from modelci.types.trtis_objects import (
     ModelInstanceGroup,
     ModelInstanceGroupKind,
 )
+from modelci.utils import Logger
 
 logger = Logger('converter', welcome=False)
 
@@ -168,7 +166,7 @@ class TRTConverter(object):
         converter.save(str(tf_saved_model_path))
 
         # zip
-        subprocess.call(['zip', '-r', save_path.with_suffix('.zip'), save_path])
+        shutil.make_archive(save_path, 'zip', root_dir=save_path.parent)
 
         # create model configuration
         if create_model_config:

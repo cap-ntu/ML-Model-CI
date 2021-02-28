@@ -13,8 +13,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
-
-import subprocess
+import shutil
 from pathlib import Path
 
 from modelci.utils import Logger
@@ -35,6 +34,6 @@ class TFSConverter(object):
                 return True
 
         tf.compat.v1.saved_model.save(model, str(save_path))
-        subprocess.call(['zip', '-r', save_path.with_suffix('.zip'), save_path])
+        shutil.make_archive(save_path, 'zip', root_dir=save_path.parent)
 
         return True
