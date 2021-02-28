@@ -142,6 +142,7 @@ dependencies:
   - scikit-learn=0.23.2
   - scipy=1.5.2
   - setuptools=51.1.2
+  - shellingham=1.4.0
   - six=1.15.0
   - sqlite=3.33.0
   - starlette=0.13.6
@@ -149,13 +150,15 @@ dependencies:
   - tensorboard-plugin-wit=1.6.0
   - tensorflow=2.1.0
   - tensorflow-base=2.1.0
-  - tensorflow-estimator=2.1.0
+  - tensorflow-estimator=2.4.0
   - tensorflow-gpu=2.1.0
   - termcolor=1.1.0
   - threadpoolctl=2.1.0
   - tk=8.6.10
   - toml=0.10.1
   - tqdm=4.55.1
+  - typer=0.3.2
+  - typer-cli=0.0.11
   - typing-extensions=3.7.4.3
   - typing_extensions=3.7.4.3
   - ujson=4.0.1

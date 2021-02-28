@@ -30,6 +30,8 @@ tensorflow>=2.1.2
 torchvision==0.6.0
 torchviz==0.0.1
 tensorflow-serving-api>=2.1.0
+typer>=0.3.2
+typer-cli>=0.0.11
 toolz==0.10.0
 torch>=1.5.0
 tqdm==4.55.1
