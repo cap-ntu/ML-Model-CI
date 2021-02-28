@@ -27,7 +27,7 @@ from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
-from modelci.hub.converter import TorchScriptConverter, TFSConverter, TRTConverter, ONNXConverter
+from modelci.hub import converter
 from modelci.hub.utils import parse_path, generate_path, TensorRTPlatform
 from modelci.persistence.service import ModelService
 from modelci.types.bo import IOShape, Task, Metric, ModelStatus, ModelVersion, Engine, Framework, Weight, DataType, ModelBO
@@ -320,11 +320,11 @@ def _generate_model_family(
 
     if framework == Framework.PYTORCH:
         # to TorchScript
-        if TorchScriptConverter.from_torch_module(model, torchscript_dir):
+        if converter.convert(model, 'pytorch', 'torchscript', save_path=torchscript_dir):
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape, opset version
-        if ONNXConverter.from_torch_module(model, onnx_dir, inputs, outputs, model_input, optimize=False):
+        if converter.convert(model, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs, model_input=model_input, optimize=False):
             generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
@@ -334,11 +334,11 @@ def _generate_model_family(
         return generated_dir_list
     elif framework == Framework.TENSORFLOW:
         # to TFS
-        TFSConverter.from_tf_model(model, tfs_dir)
+        converter.convert(model, 'tensorflow', 'tfs', save_path=tfs_dir)
         generated_dir_list.append(tfs_dir.with_suffix('.zip'))
 
         # to TRT
-        TRTConverter.from_saved_model(tfs_dir, trt_dir, inputs, outputs, max_batch_size=32)
+        converter.convert(model, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs, max_batch_size=32)
         generated_dir_list.append(trt_dir.with_suffix('.zip'))
 
     return generated_dir_list
@@ -370,7 +370,7 @@ def get_remote_model_weight(model: ModelBO):
             subprocess.call(['unzip', save_path, '-d', '/'])
             os.remove(save_path)
 
-            TRTConverter.generate_trt_config(
+            converter.trt.TRTConverter.generate_trt_config(
                 save_path.parent,  # ~/.modelci/<model-arch-name>/<framework>-<engine>/<task>/
                 inputs=model.inputs,
                 outputs=model.outputs,

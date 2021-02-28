@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 from torchvision import models
 
-from modelci.hub.converter import TFSConverter
+from modelci.hub.converter.tfs import TFSConverter
 from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
 from modelci.types.bo import Framework, IOShape, ModelVersion, Engine, Task, Metric
@@ -47,7 +47,7 @@ class ModelExporter(object):
                     engine=Engine.TFS,
                     version=str(version)
                 )
-                TFSConverter.from_tf_model(model, tfs_dir)
+                TFSConverter.from_tensorflow(model, tfs_dir)
                 model = str(tfs_dir.with_suffix('.zip'))
 
             register_model(
