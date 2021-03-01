@@ -17,7 +17,7 @@ from typing import Any
 
 import click
 import typer
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typer.main import lenient_issubclass
 
 from modelci.cli.modelhub import modelhub, app as modelhub_app
@@ -33,7 +33,11 @@ class PydanticModelParamType(click.ParamType):
         self._annotation = annotation
 
     def convert(self, value, param, ctx):
-        return self._annotation.parse_raw(value)
+        try:
+            return self._annotation.parse_raw(value)
+        except ValidationError as exc:
+            typer.echo(exc, err=True, color=True)
+            raise typer.Exit(code=1)
 
 
 class DictParamType(click.ParamType):
@@ -52,10 +56,14 @@ class DictParamType(click.ParamType):
     def convert(self, value, param, ctx):
         key_type, value_type = self._annotation.__args__
 
-        return {
-            self._get_parser(key_type)(k): self._get_parser(value_type)(v)
-            for k, v in ast.literal_eval(str(value)).items()
-        }
+        try:
+            return {
+                self._get_parser(key_type)(k): self._get_parser(value_type)(v)
+                for k, v in ast.literal_eval(str(value)).items()
+            }
+        except ValidationError as exc:
+            typer.echo(exc, err=True, color=True)
+            raise typer.Exit(422)
 
 
 def _get_click_type_wrapper(get_click_type):

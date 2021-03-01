@@ -193,7 +193,3 @@ def test_delete_model():
 
 def test_drop_test_database():
     mongo.db.drop_database('test')
-
-
-if __name__ == '__main__':
-    test_register_model()

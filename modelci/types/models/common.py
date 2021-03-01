@@ -37,9 +37,17 @@ class NamedEnum(Enum):
     """
 
     @classmethod
+    def get_case_insensitive(cls):
+        return True
+
+    @classmethod
     def _missing_(cls, value):
+        if cls.get_case_insensitive():
+            condition = lambda m: str(m.name).lower() == str(value).lower()
+        else:
+            condition = lambda m: m.name == value
         for member in cls:
-            if member.name == value:
+            if condition(member):
                 # save to value -> member mapper
                 cls._value2member_map_[value] = member
                 return member
