@@ -53,12 +53,73 @@ def register_model(ymal_path):
     logger.info("model published")
 
 
-def _publish_model_from_requests(model_in_yaml: MLModelInYaml):
+@app.command()
+def publish(
+        file_or_dir: Optional[Path] = typer.Argument(..., help='Model weight files', exists=True),
+        architecture: Optional[str] = typer.Option(..., '-name', '--architecture', help='Architecture'),
+        framework: Optional[Framework] = typer.Option(..., '-fw', '--framework', help='Framework'),
+        engine: Optional[Engine] = typer.Option(..., '-e', '--engine', help='Engine'),
+        version: Optional[int] = typer.Option(..., '-v', '--version', min=1, help='Version number'),
+        task: Optional[Task] = typer.Option(..., '-t', '--task', help='Task'),
+        dataset: Optional[str] = typer.Option(..., '-d', '--dataset', help='Dataset name'),
+        metric: Dict[Metric, float] = typer.Option(
+            '{}',
+            help='Metrics in the form of mapping JSON string. The map type is '
+                 '`Dict[types.models.mlmodel.Metric, float]`. An example is \'{"acc": 0.76}.\'',
+        ),
+        inputs: List[IOShape] = typer.Option(
+            [],
+            '-i', '--input',
+            help='List of shape definitions for input tensors. An example of one shape definition is '
+                 '\'{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}\'',
+        ),
+        outputs: List[IOShape] = typer.Option(
+            [],
+            '-o', '--output',
+            help='List of shape definitions for output tensors. An example of one shape definition is '
+                 '\'{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}\'',
+        ),
+        convert: Optional[bool] = typer.Option(
+            True,
+            '-c', '--convert',
+            help='Convert the model to other possible format.',
+        ),
+        profile: Optional[bool] = typer.Option(
+            False,
+            '-p', '--profile',
+            help='Profile the published model(s).',
+        ),
+        yaml_file: Optional[Path] = typer.Option(
+            None, '-f', '--yaml-file', exists=True, file_okay=True, help='Yaml configuration'
+        ),
+):
+    meta_info = (file_or_dir, architecture, framework, engine, version, task, dataset, metric, inputs, outputs)
+    # check either using parameters, or using YAML
+    if yaml_file and not any(meta_info):
+        with open(yaml_file) as f:
+            model_config = yaml.safe_load(f)
+        try:
+            model_in_yaml = MLModelInYaml.parse_obj(model_config)
+        except ValidationError as exc:
+            typer.echo(exc, err=True, color=True)
+            raise typer.Exit(422)
+    elif not yaml_file and all(meta_info):
+        model_in_yaml = MLModelInYaml(
+            weight=file_or_dir, architecture=architecture, framework=framework, engine=engine, version=version,  # noqa
+            dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs, convert=convert, profile=profile
+        )
+    else:
+        typer.echo('Incorrect parameter, you should set either YAML_FILE, or all of the (FILE_OR_DIR, ARCHITECTURE,'
+                   'FRAMEWORK, ENGINE, VERSION, TASK, DATASET, METRIC')
+        raise typer.Exit(422)
+
+    # build request parameters
     payload = {'convert': model_in_yaml.convert, 'profile': model_in_yaml.profile}
     data = model_in_yaml.dict(use_enum_values=True, exclude_none=True, exclude={'convert', 'profile', 'weight'})
     form_data = {k: str(v) for k, v in data.items()}
     file_or_dir = model_in_yaml.weight
 
+    # read weight files
     files = list()
     key = 'files'
     try:
@@ -77,67 +138,6 @@ def _publish_model_from_requests(model_in_yaml: MLModelInYaml):
     finally:
         for file in files:
             file[1][1].close()
-
-
-@app.command()
-def publish(
-        file_or_dir: Path = typer.Argument(..., help='Model weight files', exists=True),
-        architecture: str = typer.Option(..., '-name', '--architecture', help='Architecture'),
-        framework: Framework = typer.Option(..., '-fw', '--framework', help='Framework'),
-        engine: Engine = typer.Option(..., '-e', '--engine', help='Engine'),
-        version: int = typer.Option(..., '-v', '--version', min=1, help='Version number'),
-        task: Task = typer.Option(..., '-t', '--task', help='Task'),
-        dataset: str = typer.Option(..., '-d', '--dataset', help='Dataset name'),
-        metric: Dict[Metric, float] = typer.Option(
-            ...,
-            help='Metrics in the form of mapping JSON string. The map type is '
-                 '`Dict[types.models.mlmodel.Metric, float]`. An example is \'{"acc": 0.76}.\'',
-        ),
-        inputs: List[IOShape] = typer.Option(
-            ...,
-            '-i', '--input',
-            help='List of shape definitions for input tensors. An example of one shape definition is '
-                 '\'{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}\'',
-        ),
-        outputs: List[IOShape] = typer.Option(
-            ...,
-            '-o', '--output',
-            help='List of shape definitions for output tensors. An example of one shape definition is '
-                 '\'{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}\'',
-        ),
-        convert: Optional[bool] = typer.Option(
-            True,
-            '-c', '--convert',
-            help='Convert the model to other possible format.',
-        ),
-        profile: Optional[bool] = typer.Option(
-            False,
-            '-p', '--profile',
-            help='Profile the published model(s).',
-        ),
-):
-    model_in_form = MLModelInYaml(
-        weight=file_or_dir, architecture=architecture, framework=framework, engine=engine, version=version,  # noqa
-        dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs, convert=convert, profile=profile
-    )
-
-    _publish_model_from_requests(model_in_form)
-
-
-@app.command()
-def publish_yaml(
-        file: Path = typer.Argument(..., exists=True, file_okay=True, help='Yaml configuration')
-):
-    # read yaml
-    with open(file) as f:
-        model_config = yaml.safe_load(f)
-    try:
-        model_in_yaml = MLModelInYaml.parse_obj(model_config)
-    except ValidationError as exc:
-        typer.echo(exc, err=True, color=True)
-        raise typer.Exit(422)
-
-    _publish_model_from_requests(model_in_yaml)
 
 
 @modelhub.command("list")
@@ -187,7 +187,6 @@ def download_model_from_url(url, path):
     """
     _download_model_from_url(url, path)
     logger.info("{} model downloaded succussfuly.".format(path))
-
 
 
 @modelhub.command('export')
