@@ -14,11 +14,11 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-from .onnx.converter import ONNXConverter
-from .pytorch.converter import PyTorchConverter
-from .tfs.converter import TFSConverter
-from .torchscript.converter import TorchScriptConverter
-from .trt.converter import TRTConverter
+from modelci.hub.converter.to_onnx import ONNXConverter
+from modelci.hub.converter.to_pytorch import PyTorchConverter
+from modelci.hub.converter.to_tfs import TFSConverter
+from modelci.hub.converter.to_torchscript import TorchScriptConverter
+from modelci.hub.converter.to_trt import TRTConverter
 
 framework_supported = {
     "onnx": ONNXConverter,

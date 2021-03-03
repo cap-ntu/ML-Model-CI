@@ -44,14 +44,13 @@ class TestXgboostConverter(unittest.TestCase):
         onnx.checker.check_model(onnx_model)
         ort_session = onnxruntime.InferenceSession(onnx_model.SerializeToString())
         ort_inputs = {ort_session.get_inputs()[0].name: self.sample_input}
-        onnx_model_out, onnx_model_probs  = ort_session.run(None, ort_inputs)
+        onnx_model_out, onnx_model_probs = ort_session.run(None, ort_inputs)
         np.testing.assert_array_equal(onnx_model_out, self.xgboost_model_out)
         np.testing.assert_allclose(np.array(onnx_model_probs), self.xgboost_model_probs, rtol=1e-05, atol=1e-05)
 
-
     def test_xgboost_to_torch(self):
         model = convert(self.xgboost_model, 'xgboost', 'pytorch', inputs=self.inputs)
-        torch_model_out, torch_model_probs  = model(self.sample_input)
+        torch_model_out, torch_model_probs = model(self.sample_input)
         np.testing.assert_array_equal(torch_model_out.numpy(), self.xgboost_model_out)
         np.testing.assert_allclose(torch_model_probs.numpy(), self.xgboost_model_probs, rtol=1e-05, atol=1e-05)
 
