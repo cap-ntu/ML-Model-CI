@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, File, UploadFile, Depends
+from fastapi.exceptions import RequestValidationError
+from pydantic.error_wrappers import ErrorWrapper
 
 from modelci.hub.manager import register_model
 from modelci.persistence.service import ModelService
@@ -97,7 +99,11 @@ async def publish_model(
         suffix = Path(file.filename).suffix
         try:
             # create directory
-            assert len(suffix) != 0, f'Expect a suffix for file {file.filename}, got None.'
+            if len(suffix) != 0:
+                error = ErrorWrapper(
+                    ValueError(f'Expect a suffix for file {file.filename}, got None.'), loc='[0]'
+                )
+                raise RequestValidationError([error])
             saved_path = saved_path.with_suffix(suffix)
             saved_path.parent.mkdir(exist_ok=True, parents=True)
 
