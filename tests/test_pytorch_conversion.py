@@ -19,6 +19,8 @@ from pathlib import Path
 
 import torch
 import onnx
+import torchvision
+
 from modelci.types.bo import IOShape
 
 from modelci.types.trtis_objects import ModelInputFormat
@@ -32,15 +34,15 @@ class TestPytorchConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.torch_model = torch.hub.load('pytorch/vision:v0.6.0', 'resnet50', pretrained=True)
-        cls.inputs = [IOShape([-1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NCHW)]
+        cls.torch_model = torchvision.models.alexnet(pretrained=True)
+        cls.inputs = [IOShape([1, 3, 224, 224], dtype=float, name='INPUT__0', format=ModelInputFormat.FORMAT_NCHW)]
         cls.outputs = [IOShape([-1, 1000], dtype=float, name='probs')]
-        cls.X = torch.rand(1, 3, 224, 224, dtype=torch.float)
+        cls.X = torch.rand(1, 3, 224, 224, dtype=torch.float32)
         cls.onnx_path = Path(tempfile.gettempdir() + '/test.onnx')
         cls.torchscript_path = Path(tempfile.gettempdir() + '/test_torchscript.zip')
 
     def test_torch_to_onnx(self):
-        convert(self.torch_model, 'pytorch', 'onnx', save_path=self.onnx_path, inputs=self.inputs, outputs=self.outputs)
+        convert(self.torch_model, 'pytorch', 'onnx', save_path=self.onnx_path, inputs=self.inputs, outputs=self.outputs, opset=11)
         onnx_model = onnx.load(self.onnx_path)
         # TODO add checker after upgrade ONNX version to 1.7
         sess = rt.InferenceSession(onnx_model.SerializeToString())
