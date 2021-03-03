@@ -37,8 +37,8 @@ class TestSklearnConverter(unittest.TestCase):
 
         cls.sklearn_model = RandomForestClassifier(n_estimators=10, max_depth=10)
         cls.sklearn_model.fit(X_bc, y_bc)
-        cls.inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=X_bc.dtype, name='input_0')]
-        cls.sample_input = X_bc[0:2, :]
+        cls.inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=float, name='input_0')]
+        cls.sample_input = X_bc[0:2, :].astype(np.float32)
         cls.sklearn_model_out = cls.sklearn_model.predict(cls.sample_input)
         cls.sklearn_model_probs = cls.sklearn_model.predict_proba(cls.sample_input)
 

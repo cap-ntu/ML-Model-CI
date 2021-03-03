@@ -37,10 +37,10 @@ class TestONNXConverter(unittest.TestCase):
         y_bc: np.ndarray = y_bc[0:nrows]
         sklearn_model = RandomForestClassifier(n_estimators=10, max_depth=10)
         sklearn_model.fit(X_bc, y_bc)
-        inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=X_bc.dtype, name='input_0')]
+        inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=float, name='input_0')]
         cls.onnx_model = convert(sklearn_model, 'sklearn', 'onnx', inputs=inputs_bc, optimize=False)
         sess = rt.InferenceSession(cls.onnx_model.SerializeToString())
-        cls.sample_input = torch.rand(2, X_bc.shape[1], dtype=torch.float64)
+        cls.sample_input = torch.rand(2, X_bc.shape[1], dtype=torch.float32)
         cls.onnx_model_predict = sess.run(None, {'input_0': cls.sample_input.numpy()})[0].flatten()
 
     # noinspection DuplicatedCode
