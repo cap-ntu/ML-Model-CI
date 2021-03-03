@@ -28,6 +28,9 @@ from modelci.types.vo import Status
 class BaseTrainer(abc.ABC):
     """Trainer interface."""
 
+    def __init__(self, id):
+        self.id = id
+
     @classmethod
     @abc.abstractmethod
     def from_training_job(cls, training_job: TrainingJob):
@@ -76,11 +79,11 @@ class PyTorchTrainer(BaseTrainer):
             self,
             model: pl.LightningModule,
             model_id: str,
+            id: str = None,
             data_loader_kwargs: dict = None,
             trainer_kwargs: dict = None,
-            id: str = None
     ):
-        self._id = id
+        super().__init__(id)
         self.model = model
         trainer_kwargs = trainer_kwargs or dict()
         self.model_id = model_id
@@ -139,13 +142,13 @@ class PyTorchTrainer(BaseTrainer):
 
     def start(self):
         def training_done_callback(future):
-            model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.PASS))
+            model_train_curd.update(TrainingJobUpdate(_id=self.id, status=Status.PASS))
             # TODO: save to database and update model_status, engine
             print(self.export_model())
 
         self._task = self._executor.submit(self.trainer_engine.fit, self.model, **self._data_loader_kwargs)
         self._task.add_done_callback(training_done_callback)
-        model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.RUNNING))
+        model_train_curd.update(TrainingJobUpdate(_id=self.id, status=Status.RUNNING))
 
         model_bo = ModelService.get_model_by_id(self.model_id)
         model_bo.model_status.remove(ModelStatus.DRAFT)
@@ -160,7 +163,7 @@ class PyTorchTrainer(BaseTrainer):
         if self._task:
             # trigger pytorch lighting training graceful shutdown via a ^C
             self._task.set_exception(KeyboardInterrupt())
-            model_train_curd.update(TrainingJobUpdate(_id=self._id, status=Status.FAIL))
+            model_train_curd.update(TrainingJobUpdate(_id=self.id, status=Status.FAIL))
             model_bo = ModelService.get_model_by_id(self.model_id)
             model_bo.model_status.remove(ModelStatus.TRAINING)
             model_bo.model_status.append(ModelStatus.DRAFT)

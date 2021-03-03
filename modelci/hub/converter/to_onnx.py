@@ -88,6 +88,7 @@ class ONNXConverter(object):
             override: bool = False,
     ):
         """Save a loaded model in ONNX.
+            TODO: reuse inputs to pass model_input parameter later
 
         Arguments:
             model (nn.Module): PyTorch model.
@@ -95,7 +96,6 @@ class ONNXConverter(object):
             inputs (Iterable[IOShape]): Model input shapes. Batch size is indicated at the dimension.
             outputs (Iterable[IOShape]): Model output shapes.
             model_input (Optional[List]) : Sample Model input data
-            TODO reuse inputs to pass model_input parameter later
             opset (int): ONNX op set version.
             optimize (bool): Flag to optimize ONNX network. Default to `True`.
             override (bool): Flag to override if the file with path to `save_path` has existed. Default to `False`.
@@ -156,9 +156,10 @@ class ONNXConverter(object):
 
             logger.info('ONNX format converted successfully')
             return True
-        except Exception:
+        except Exception as e:
             # TODO catch different types of error
-            logger.warning("This model is not supported as ONNX format")
+            logger.error('Unable to convert to ONNX format, reason:')
+            logger.error(e)
             return False
 
     @staticmethod

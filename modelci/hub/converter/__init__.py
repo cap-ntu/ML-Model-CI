@@ -15,5 +15,10 @@
 #  permissions and limitations under the License.
 
 from .converter import convert
+from .to_trt import TRTConverter
+from .to_tfs import TFSConverter
+from .to_onnx import ONNXConverter
+from .to_pytorch import PyTorchConverter
+from .to_torchscript import TorchScriptConverter
 
-__all__ = ["convert"]
+__all__ = ["convert", "TRTConverter", "TFSConverter", "ONNXConverter", "PyTorchConverter", "TorchScriptConverter"]

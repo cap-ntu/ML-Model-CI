@@ -16,7 +16,7 @@ class ModelService(object):
     @classmethod
     def get_models(
             cls,
-            name: str = None,
+            architecture: str = None,
             task: Task = None,
             framework: Framework = None,
             engine: Engine = None,
@@ -25,7 +25,7 @@ class ModelService(object):
         """Get a list of model BO given primary key(s).
 
         Args:
-            name (str): model name for searching
+            architecture (str): model architecture for searching
             task (Task): model task for searching
             framework (Framework): model framework. Default to None, having no effect on the searching result.
             engine (Engine): model engine. Default to None, having no effect on the searching result.
@@ -36,8 +36,8 @@ class ModelService(object):
         """
         # build kwargs
         kwargs = dict()
-        if name is not None:
-            kwargs['name'] = name
+        if architecture is not None:
+            kwargs['architecture'] = architecture
         if task is not None:
             kwargs['task'] = task.value
         if framework is not None:
@@ -110,7 +110,8 @@ class ModelService(object):
 
         Raises:
             BadRequestValueException: If `model.id` is not None.
-            ServiceException: If model has exists with the same primary keys (name, framework, engine and version).
+            ServiceException: If model has exists with the same primary keys (architecture, framework, engine
+                and version).
         """
         # check model id
         if model.id is not None:
@@ -121,7 +122,7 @@ class ModelService(object):
 
         model_po = model.to_model_do()
         if cls.__model_DAO.exists_by_primary_keys(
-                name=model_po.name,
+                architecture=model_po.architecture,
                 task=model_po.task,
                 framework=model_po.framework,
                 engine=model_po.engine,
@@ -129,9 +130,9 @@ class ModelService(object):
                 dataset=model_po.dataset
         ):
             raise ServiceException(
-                f'Model business object with primary keys name={model_po.name}, task={model_po.task}, '
-                f'framework={model_po.framework}, engine={model_po.engine}, version={model_po.version}, '
-                f'dataset={model_po.dataset} has exists.'
+                f'Model business object with primary keys architecture={model_po.architecture}, '
+                f'task={model_po.task}, framework={model_po.framework}, engine={model_po.engine}, '
+                f'version={model_po.version}, dataset={model_po.dataset} has exists.'
             )
 
         return bool(cls.__model_DAO.save_model(model_po))
@@ -165,7 +166,7 @@ class ModelService(object):
 
             # build arguments
             valid_keys = [
-                'name', 'framework', 'engine', 'version', 'dataset', 'metric',
+                'architecture', 'framework', 'engine', 'version', 'dataset', 'metric',
                 'weight', 'task', 'inputs', 'outputs', 'status', 'model_status'
             ]
             kwargs = dict()
