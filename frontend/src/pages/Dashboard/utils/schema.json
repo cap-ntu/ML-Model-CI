@@ -1,0 +1,314 @@
+{
+  "type": "object",
+  "properties": {
+
+    "NO_NAME_FIELD_$0": {
+      "key": "NO_NAME_FIELD_$0",
+      "type": "object",
+      "name": "NO_NAME_FIELD_$0",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "labelCol": 4
+      },
+      "properties": {
+        "files": {
+          "required": true,
+          "title": "Upload Model File",
+          "x-component": "Upload",
+          "x-component-props": {
+            "listType": "text"
+          }
+      },
+      "architecture":{ 
+          "required": true,
+          "title": "Architecture",
+          "x-component": "Input",
+          "x-component-props": {
+              "placeholder": "ResNet50"
+          },
+          "default": "ResNet50"
+      },
+      "framework": {
+          "required": true,
+          "title": "Framework",
+          "x-component": "select",
+          "enum": [
+              {
+                "label": "PyTorch",
+                "value": "PyTorch"
+              },
+              {
+                "label": "Tensorflow",
+                "value": "Tensorflow"
+              }
+            ],
+            "default": "PyTorch"
+      },
+      "engine": {
+          "required": true,
+          "title": "Engine",
+          "x-component": "select",
+          "enum": [
+              {
+                "label": "TFS",
+                "value": "TFS"
+              },
+              {
+                "label": "TORCHSCRIPT",
+                "value": "TorchScript"
+              },
+              {
+                "label": "ONNX",
+                "value": "ONNX"
+              },
+              {
+                "label": "TRT",
+                "value": "TRT"
+              },
+              {
+                "label": "TVM",
+                "value": "TVM"
+              },
+              {
+                "label": "PYTORCH",
+                "value": "PYTORCH"
+              },
+              {
+                "label": "CUSTOMIZED",
+                "value": "CUSTOMIZED"
+              }
+            ],
+            "default": "PYTORCH"
+      },
+      "version": {
+        "required": true,
+        "title": "Version",
+        "x-component-props": {
+          "min": 0
+        },
+        "x-component": "NumberPicker",
+        "minimum": 0
+      },
+      "dataset":{ 
+        "required": true,
+        "title": "Dataset",
+        "x-component": "Input",
+        "default": "ImageNet"
+      },
+      "task": {
+        "required": true,
+        "title": "Task",
+        "x-component": "select",
+        "enum": [
+          {
+            "label": "Image Classification",
+            "value": "Image Classification"
+          },
+          {
+            "label": "Object Detection",
+            "value": "Object Detection"
+          },
+          {
+            "label": "Segmentation",
+            "value": "Segmentation"
+          }
+        ],
+        "default": "Image Classification"
+      },
+      "metric": {
+        "type": "object",
+        "name": "metric",
+        "x-component": "mega-layout",
+        "x-component-props": {
+          "label": "Metric",
+          "grid": true,
+          "full": true,
+          "columns": 2,
+          "labelCol": null
+        },
+        "properties": {
+          "metric.name":{ 
+            "title": "Type",
+            "x-component": "select",
+            "enum": [
+              {
+                "label": "acc",
+                "value": "acc"
+              },
+              {
+                "label": "mAp",
+                "value": "mAp"
+              },
+              {
+                "label": "IoU",
+                "value": "IoU"
+              }
+            ],
+            "default": "acc"
+          },
+          "metric.score":{ 
+            "title": "Score",
+            "x-component": "NumberPicker"
+          }
+        }
+      },
+      "Output": {
+        "type": "object",
+        "name": "Input",
+        "x-component": "mega-layout",
+        "x-component-props": {
+          "label": "Input",
+          "grid": true,
+          "full": true,
+          "labelCol": null
+        },
+        "properties": {
+          "input.name": {
+            "title": "Name",
+            "x-component": "Input",
+            "default": "input0"
+          },
+          "input.shape": {
+            "title": "Shape",
+            "x-component": "Input",
+            "default": "-1,3,224,224"
+          },
+          "input.dtype": {
+            "title": "dtype",
+            "x-component": "Input",
+            "default": "float"
+          }
+        }
+      },
+      "Input": {
+        "name": "Input",
+        "x-component": "mega-layout",
+        "x-component-props": {
+          "label": "Input",
+          "labelCol": null
+        },
+        "properties": {
+          "input.name": {
+            "title": "Name",
+            "x-component": "Input",
+            "default": "input0"
+          },
+          "input.dtype": {
+            "title": "dtype",
+            "x-component": "Input",
+            "default": "float"
+          },
+          "shape": {
+            "name": "NO_NAME_FIELD_$13",
+            "x-component": "mega-layout",
+            "x-component-props": {
+              "inline": true,
+              "label": "嵌套行内"
+            },
+            "properties": {
+              "confns2": {
+                "key": "confns2",
+                "name": "confns2",
+                "title": "字段2",
+                "x-component": "datepicker"
+              },
+              "confns3": {
+                "key": "confns3",
+                "name": "confns3",
+                "title": "字段3",
+                "x-component": "datepicker"
+              },
+              "confns4": {
+                "key": "confns4",
+                "name": "confns4",
+                "title": "字段4",
+                "x-component": "datepicker"
+              }
+            }
+          },
+          "NO_NAME_FIELD_$14": {
+            "key": "NO_NAME_FIELD_$14",
+            "type": "object",
+            "name": "NO_NAME_FIELD_$14",
+            "x-component": "mega-layout",
+            "x-component-props": {
+              "grid": true,
+              "label": "嵌套栅格",
+              "full": true,
+              "autoRow": true
+            },
+            "properties": {
+              "confngt1": {
+                "key": "confngt1",
+                "name": "confngt1",
+                "title": "字段1",
+                "x-component": "datepicker"
+              },
+              "confngt2": {
+                "key": "confngt2",
+                "name": "confngt2",
+                "x-mega-props": {
+                  "span": 2
+                },
+                "title": "字段2",
+                "x-component": "datepicker"
+              },
+              "confngt3": {
+                "key": "confngt3",
+                "name": "confngt3",
+                "x-mega-props": {
+                  "span": 2
+                },
+                "title": "字段3",
+                "x-component": "datepicker"
+              },
+              "confngt4": {
+                "key": "confngt4",
+                "name": "confngt4",
+                "title": "字段4",
+                "x-component": "datepicker"
+              },
+              "confngt5": {
+                "key": "confngt5",
+                "name": "confngt5",
+                "title": "字段5",
+                "x-component": "datepicker"
+              },
+              "NO_NAME_FIELD_$15": {
+                "key": "NO_NAME_FIELD_$15",
+                "type": "object",
+                "name": "NO_NAME_FIELD_$15",
+                "x-component": "mega-layout",
+                "x-component-props": {
+                  "columns": 3,
+                  "span": 2
+                },
+                "properties": {
+                  "confngtc1": {
+                    "key": "confngtc1",
+                    "name": "confngtc1",
+                    "title": "字段1",
+                    "x-component": "datepicker"
+                  },
+                  "confngtc2": {
+                    "key": "confngtc2",
+                    "name": "confngtc2",
+                    "title": "字段2",
+                    "x-component": "datepicker"
+                  },
+                  "confngtc3": {
+                    "key": "confngtc3",
+                    "name": "confngtc3",
+                    "title": "字段3",
+                    "x-component": "datepicker"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      }
+    }
+  }
+}

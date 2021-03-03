@@ -1,12 +1,28 @@
 import React from 'react';
-import { Button, Table, Card, Divider, Input, Descriptions, Tag, Menu, Dropdown } from 'antd';
+import { Button, Table, Card, Divider, Input as search, Descriptions, Tag, Menu, Dropdown, Modal } from 'antd';
 import { EditOutlined, ProfileOutlined, BranchesOutlined } from '@ant-design/icons';
+import {SchemaForm} from '@formily/antd'
 import axios from 'axios';
 import { config, Link } from 'ice';
 import reqwest from 'reqwest';
 import './index.css';
+import { Input, Select, Upload, Switch, NumberPicker, FormMegaLayout, DatePicker,FormLayout, ArrayTable } from '@formily/antd-components'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const registerSchema = require('./utils/test.json');
 
-const { Search } = Input;
+const components = {
+  Input,
+  Select,
+  Upload,
+  Switch,
+  NumberPicker,
+  FormMegaLayout,
+  DatePicker,
+  FormLayout,
+  ArrayTable
+}
+
+const { Search } = search;
 
 const tagColor = {
   'Published': 'geekblue',
@@ -128,8 +144,13 @@ export default class Dashboard extends React.Component {
         pageSize: 10,
       },
       loading: false,
+      showRegisterForm: false,
+      loadingRegisterForm: false
     };
     this.loadAllModels();
+    this.handleCancelRegister.bind(this);
+    this.showRegisterForm.bind(this);
+    this.submitRegisterForm.bind(this);
   }
 
   public componentDidMount() {
@@ -183,6 +204,19 @@ export default class Dashboard extends React.Component {
       });
   };
 
+  public showRegisterForm = () => {
+    this.setState({ showRegisterForm: true});
+  };
+
+
+  public handleCancelRegister = () => {
+    this.setState({ showRegisterForm: false});
+  };
+
+  public submitRegisterForm = () =>{
+
+  }
+
   public render() {
     return (
       <Card>
@@ -196,12 +230,33 @@ export default class Dashboard extends React.Component {
           <Button
             size="large"
             type="primary"
-            onClick={() => {
-              console.log('You clicked Register Model');
-            }}
+            onClick={this.showRegisterForm}
           >
             Register Model
           </Button>
+          <Modal
+            title="Title"
+            visible={this.state.showRegisterForm}
+            onOk={this.submitRegisterForm}
+            confirmLoading={this.state.loadingRegisterForm}
+            onCancel={this.handleCancelRegister}
+            width={1000}
+          >
+            <SchemaForm 
+              components={components}
+              onSubmit={this.submitRegisterForm}
+              schema={registerSchema}
+            >
+              <Button 
+                type="default" 
+                size="large" 
+                style={{ width: 150 }}
+              >
+               Fast Validate
+              </Button>
+            </SchemaForm>
+          </Modal>
+
           <Button
             size="large"
             style={{ marginLeft: '5px' }}
@@ -259,14 +314,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="volcano"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="volcano" >
                       {record.name}
                     </Tag>
                   </Descriptions.Item>
@@ -283,15 +331,8 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="blue"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
-                      {record.engine == 'PYTORCH' ? '' : record.framework}
+                    <Tag color="blue" >
+                      {record.engine === 'PYTORCH' ? '' : record.framework}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -307,14 +348,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="pink"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="pink" >
                       {(() => {
                         switch (record.engine) {
                           case 'TorchScript': return 'PyTorch JIT + FastAPI';
@@ -384,14 +418,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="geekblue"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="geekblue" >
                       {record.profile_result ? record.profile_result.dynamic_results[0].device_name : ''}
                     </Tag>
                   </Descriptions.Item>
@@ -408,14 +435,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="gold"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="gold" >
                       {record.profile_result ? record.profile_result.dynamic_results[0].batch : ''}
                     </Tag>
                   </Descriptions.Item>
@@ -432,14 +452,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="blue"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="blue" >
                       {record.profile_result ? (record.profile_result.dynamic_results[0].memory.utilization * 100).toFixed(2): ''} %
                     </Tag>
                   </Descriptions.Item>
@@ -456,14 +469,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="cyan"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="cyan" >
                       {record.profile_result ? (record.profile_result.dynamic_results[0].latency.preprocess_latency.avg * 1000).toFixed(2) : ''} ms
                     </Tag>
                   </Descriptions.Item>
@@ -481,14 +487,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="geekblue"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="geekblue">
                       {record.profile_result ? (record.profile_result.dynamic_results[0].throughput.inference_throughput).toFixed(2): ''} req/sec
                     </Tag>
                   </Descriptions.Item>
@@ -505,14 +504,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="gold"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="gold" >
                       {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p50 * 1000).toFixed(2): ''} ms
                     </Tag>
                   </Descriptions.Item>
@@ -529,14 +521,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="green"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="green" >
                       {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p95 * 1000).toFixed(2): ''} ms
                     </Tag>
                   </Descriptions.Item>
@@ -553,14 +538,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag
-                      color="pink"
-                      style={{
-                        height: '25px',
-                        textAlign: 'center',
-                        fontSize: 25,
-                      }}
-                    >
+                    <Tag color="pink" >
                       {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p99 * 1000).toFixed(2): ''} ms
                     </Tag>
                   </Descriptions.Item>

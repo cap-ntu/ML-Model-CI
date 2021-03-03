@@ -7,3 +7,15 @@
 .ant-tag {
   font-size: 20px;
 }
+
+.ant-row .ant-form-item .mega-layout-item, .mega-layout-item  tr.ant-table-row > td > div{
+  margin-bottom: 0;
+}
+
+.ant-table-placeholder, .ant-empty-normal {
+  display: none;
+}
+
+.ant-table-row-level-0 > .ant-table-cell {
+  padding-top: 0;
+}
