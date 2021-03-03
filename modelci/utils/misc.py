@@ -12,12 +12,13 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-import os
 import collections
 import logging
+import os
 import re
 import socket
 import subprocess
+from typing import _GenericAlias, _SpecialForm, Any  # noqa
 
 
 def json_update(d, u):
@@ -91,3 +92,8 @@ def make_dir(dir_path):
         pass
     else:
         os.mkdir(dir_path)
+
+
+def isgeneric(obj: object):
+    """Return true if the object is a generic type."""
+    return isinstance(obj, _GenericAlias) or isinstance(obj, _SpecialForm) and obj is not Any

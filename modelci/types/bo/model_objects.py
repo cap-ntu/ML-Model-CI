@@ -145,6 +145,9 @@ class IOShape(object):
         # input / output tensor shape
         self.shape = shape
         # input format
+        if isinstance(format, str):
+            # TODO: for the convenience of `model.hub.manager`, to be removed
+            format = ModelInputFormat[format.upper()]
         self.format = format
         if isinstance(dtype, str):
             try:

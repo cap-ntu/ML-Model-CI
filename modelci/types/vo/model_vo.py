@@ -7,7 +7,7 @@ Date: 6/19/2020
 """
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from pydantic import BaseModel
 
@@ -38,8 +38,8 @@ class ModelInputFormat(CaseInsensitiveEnum):
 
 
 class Task(CaseInsensitiveEnum):
-    IMAGE_CLASSIFICATION = 'Image Classification'
-    OBJECT_DETECTION = 'Object Detection'
+    IMAGE_CLASSIFICATION = 'Image_Classification'
+    OBJECT_DETECTION = 'Object_Detection'
     SEGMENTATION = 'Segmentation'
 
 
@@ -80,6 +80,7 @@ class ModelStatus(CaseInsensitiveEnum):
     DRAFT = 'Draft'
     VALIDATING = 'Validating'
     TRAINING = 'Training'
+
 
 class IOShapeVO(BaseModel):
     shape: List[int]
@@ -187,7 +188,7 @@ class ModelListOut(BaseModel):
     name: str
     framework: Framework
     engine: Engine
-    version: int
+    version: Union[int, str]
     dataset: str
     metric: Dict[Metric, float]
     task: Task
@@ -227,7 +228,7 @@ class ModelDetailOut(BaseModel):
     name: str
     framework: Framework
     engine: Engine
-    version: int
+    version: Union[int, str]
     dataset: str
     metric: Dict[Metric, float]
     task: Task
@@ -260,32 +261,3 @@ class ModelDetailOut(BaseModel):
             creator=model_bo.creator,
             create_time=model_bo.create_time,
         )
-
-
-class ModelIn(BaseModel):
-    dataset: str
-    metric: Dict[Metric, float]
-    task: Task
-    parent_model_id: str
-    inputs: List[IOShapeVO]
-    outputs: List[IOShapeVO]
-    architecture: str
-    framework: Framework
-    version: int
-    model_status: List[ModelStatus]
-    convert: bool
-    profile: bool
-
-class TrainerConfig(BaseModel):
-    dataset_name: str
-    batch_size: int
-    num_epochs:int
-    num_workers: int
-    tuning: bool
-    lr: Optional[float]
-    loss_fn: Optional[str]
-    optimizer: Optional[str]
-    optimizer_config: Optional[Dict]
-    scheduler: Optional[str]
-
-
