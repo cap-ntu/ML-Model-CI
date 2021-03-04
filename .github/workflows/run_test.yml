@@ -48,12 +48,3 @@ jobs:
     
     - name: Test with pytest
       run: python -m pytest tests/
-    
-    - name: Slack Notifications
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always()
