@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 from torchvision import models
 
-from modelci.hub.converter.tfs import TFSConverter
+from modelci.hub.converter import TFSConverter
 from modelci.hub.manager import register_model
 from modelci.hub.utils import generate_path
 from modelci.types.bo import Framework, IOShape, ModelVersion, Engine, Task, Metric
