@@ -13,18 +13,31 @@
 #  permissions and limitations under the License.
 
 import click
-from modelci.cli.service import *
-from modelci.cli.modelhub import *
+import typer
 
-@click.group()
-@click.version_option()
-def cli():
-    """A complete MLOps platform for managing, converting and profiling models and then deploying models as cloud services (MLaaS)"""
-    pass
+from modelci.cli._fixup import _get_click_type_wrapper, _generate_enum_convertor_wrapper
+from modelci.cli.modelhub import modelhub, app as modelhub_app
+from modelci.cli.service import service
 
-cli.add_command(service)
-cli.add_command(modelhub)
+# Fixup for typer argument and options annotations
+typer.main.get_click_type = _get_click_type_wrapper(typer.main.get_click_type)
+typer.main.generate_enum_convertor = _generate_enum_convertor_wrapper(typer.main.generate_enum_convertor)
+
+app = typer.Typer()
+
+
+@app.callback()
+def callback():
+    """
+    A complete MLOps platform for managing, converting and profiling models and
+    then deploying models as cloud services (MLaaS)
+    """
+
+
+app.add_typer(modelhub_app, name='modelhub_typer')
+typer_click_object: click.Group = typer.main.get_command(app)  # noqa
+typer_click_object.add_command(service)
+typer_click_object.add_command(modelhub)
 
 if __name__ == '__main__':
-    cli()
-
+    typer_click_object()

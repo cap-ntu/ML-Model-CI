@@ -107,7 +107,7 @@ class ModelBO(object):
         output_dos = list(map(IOShape.to_io_shape_po, self.outputs))
 
         model_do = ModelDO(
-            name=self.name,
+            architecture=self.name,
             framework=self.framework.value,
             engine=self.engine.value,
             version=self.version.ver,
@@ -116,7 +116,7 @@ class ModelBO(object):
             inputs=input_dos,
             outputs=output_dos,
             task=self.task.value,
-            parent_model_id = self.parent_model_id,
+            parent_model_id=self.parent_model_id,
             status=self.status.value,
             model_status=[item.value for item in self.model_status],
             creator=self.creator,
@@ -161,7 +161,7 @@ class ModelBO(object):
         outputs = list(map(IOShape.from_io_shape_po, model_do.outputs))
 
         model = ModelBO(
-            name=model_do.name,
+            name=model_do.architecture,
             framework=Framework(model_do.framework),
             engine=Engine(model_do.engine),
             version=ModelVersion(model_do.version),
