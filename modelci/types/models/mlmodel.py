@@ -73,20 +73,25 @@ class BaseMLModel(BaseModel):
         if use_enum_values:
             self.Config.use_enum_values = True
             data = super().dict(**kwargs)
-            # fix metric key as a Enum
-            metric: dict = data.get('metric', None)
-            if metric:
-                data['metric'] = {k.name: v for k, v in metric.items()}
             self.Config.use_enum_values = False
         else:
             data = super().dict(**kwargs)
+
+        # fix metric key as a Enum
+        metric: dict = data.get('metric', None)
+        if metric:
+            data['metric'] = {k.name: v for k, v in metric.items()}
 
         return data
 
     class Config:
         allow_population_by_field_name = True
         json_encoders = {
-            ObjectId: str
+            ObjectId: str,
+            Framework: lambda e: e.name,
+            Engine: lambda e: e.name,
+            Status: lambda e: e.name,
+            ModelStatus: lambda e: e.name,
         }
 
     @property
@@ -102,7 +107,7 @@ class MLModel(BaseMLModel):
     status: Status = Status.Unknown
     model_status: List[ModelStatus] = Field(default_factory=list)
     creator: str = Field(default_factory=getpass.getuser)
-    create_time: datetime = Field(default_factory=datetime.now, const=True)
+    create_time: datetime = Field(default_factory=datetime.now)
 
 
 class MLModelIn(BaseMLModel):

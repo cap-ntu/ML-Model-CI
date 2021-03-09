@@ -16,10 +16,10 @@ from pydantic.error_wrappers import ErrorWrapper
 
 from modelci.hub.manager import register_model
 from modelci.persistence.service import ModelService
+from modelci.persistence.service_ import get_by_id
 from modelci.types.bo import Framework, Engine, Task
-from modelci.types.models import MLModelIn
-from modelci.types.models.mlmodel import MLModelInForm
-from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_, \
+from modelci.types.models import MLModelIn, MLModelInForm
+from modelci.types.vo.model_vo import ModelListOut, Framework as Framework_, Engine as Engine_, \
     Task as Task_
 
 router = APIRouter()
@@ -40,10 +40,13 @@ def get_all_model(architecture: str = None, framework: Framework_ = None, engine
     return list(map(ModelListOut.from_bo, models))
 
 
-@router.get('/{id}', response_model=ModelDetailOut)
+@router.get('/{id}')
 def get_model(*, id: str):  # noqa
-    model = ModelService.get_model_by_id(id)
-    return ModelDetailOut.from_bo(model)
+    # Due to FastAPI use default json encoder before customer encoder, we have to rely on
+    # Pydantic BaseModel.json and convert it back
+    # Check https://github.com/tiangolo/fastapi/blob/master/fastapi/encoders.py#L118 to see if this
+    # issue is fixed.
+    return get_by_id(id).json(exclude={'weight'}, by_alias=False)
 
 
 @router.post('/', status_code=201)
@@ -100,9 +103,9 @@ async def publish_model(
         suffix = Path(file.filename).suffix
         try:
             # create directory
-            if len(suffix) != 0:
+            if len(suffix) == 0:
                 error = ErrorWrapper(
-                    ValueError(f'Expect a suffix for file {file.filename}, got None.'), loc='[0]'
+                    ValueError(f'Expect a suffix for file {file.filename}, got None.'), loc='files[0]'
                 )
                 raise RequestValidationError([error])
             saved_path = saved_path.with_suffix(suffix)
