@@ -28,7 +28,7 @@ from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null
 
-logger = Logger(__name__)
+logger = Logger(__name__, welcome=False)
 
 app = typer.Typer()
 
@@ -41,12 +41,12 @@ def modelhub():
 @app.command()
 def publish(
         file_or_dir: Optional[Path] = typer.Argument(None, help='Model weight files', exists=True),
-        architecture: Optional[str] = typer.Option(..., '-n', '--name', help='Architecture'),
-        framework: Optional[Framework] = typer.Option(..., '-fw', '--framework', help='Framework'),
-        engine: Optional[Engine] = typer.Option(..., '-e', '--engine', help='Engine'),
-        version: Optional[int] = typer.Option(..., '-v', '--version', min=1, help='Version number'),
-        task: Optional[Task] = typer.Option(..., '-t', '--task', help='Task'),
-        dataset: Optional[str] = typer.Option(..., '-d', '--dataset', help='Dataset name'),
+        architecture: Optional[str] = typer.Option(None, '-n', '--name', help='Architecture'),
+        framework: Optional[Framework] = typer.Option(None, '-fw', '--framework', help='Framework'),
+        engine: Optional[Engine] = typer.Option(None, '-e', '--engine', help='Engine'),
+        version: Optional[int] = typer.Option(None, '-v', '--version', min=1, help='Version number'),
+        task: Optional[Task] = typer.Option(None, '-t', '--task', help='Task'),
+        dataset: Optional[str] = typer.Option(None, '-d', '--dataset', help='Dataset name'),
         metric: Dict[Metric, float] = typer.Option(
             '{}',
             help='Metrics in the form of mapping JSON string. The map type is '
@@ -84,7 +84,6 @@ def publish(
         ),
 ):
     meta_info = (file_or_dir, architecture, framework, engine, version, task, dataset, metric, inputs, outputs)
-    print(meta_info)
     # check either using parameters, or using YAML
     if yaml_file and not any(meta_info):
         with open(yaml_file) as f:
@@ -131,8 +130,8 @@ def publish(
             file[1][1].close()
 
 
-@app.command()
-def list(
+@app.command('ls')
+def list_models(
         architecture: Optional[str] = typer.Option(None, '-n', '--name', help='Model architecture name'),
         framework: Optional[Framework] = typer.Option(None, '-fw', '--framework', case_sensitive=False,
                                                       help='Framework'),
@@ -160,7 +159,7 @@ def download():
     raise NotImplementedError
 
 
-@app.command("get")
+@app.command('get')
 def download_model_from_url(
         url: str = typer.Argument(..., help='The link to a model'),
         path: Path = typer.Argument(..., file_okay=True, help='The saved path and file name.')
