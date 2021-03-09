@@ -90,6 +90,7 @@ class BaseMLModel(BaseModel):
             ObjectId: str,
             Framework: lambda e: e.name,
             Engine: lambda e: e.name,
+            Task: lambda e: e.name,
             Status: lambda e: e.name,
             ModelStatus: lambda e: e.name,
         }

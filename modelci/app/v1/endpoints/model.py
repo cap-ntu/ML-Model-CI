@@ -6,6 +6,7 @@ Email: yli056@e.ntu.edu.sg
 Date: 6/20/2020
 """
 import asyncio
+import json
 import shutil
 from pathlib import Path
 from typing import List
@@ -13,6 +14,7 @@ from typing import List
 from fastapi import APIRouter, File, UploadFile, Depends
 from fastapi.exceptions import RequestValidationError
 from pydantic.error_wrappers import ErrorWrapper
+from starlette.responses import JSONResponse
 
 from modelci.hub.manager import register_model
 from modelci.persistence.service import ModelService
@@ -46,7 +48,8 @@ def get_model(*, id: str):  # noqa
     # Pydantic BaseModel.json and convert it back
     # Check https://github.com/tiangolo/fastapi/blob/master/fastapi/encoders.py#L118 to see if this
     # issue is fixed.
-    return get_by_id(id).json(exclude={'weight'}, by_alias=False)
+    content = json.loads(get_by_id(id).json(exclude={'weight'}, by_alias=False))
+    return JSONResponse(content=content)
 
 
 @router.post('/', status_code=201)

@@ -99,14 +99,16 @@ def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
 
 
 def model_detailed_view(model: dict):
+    # TODO: update the print fields
     dim_color = 'grey62'
 
     grid = Table.grid(padding=(0, 2))
     # Basic Info
-    grid.add_row('ID', 'Model Name', 'Framework', 'Version', 'Pretrained Dataset', 'Metric', 'Score', 'Task', style='b')
+    grid.add_row('ID', 'Architecture', 'Framework', 'Version', 'Pretrained Dataset', 'Metric', 'Score', 'Task',
+                 style='b')
     grid.add_row(
         model['id'],
-        model['name'],
+        model['architecture'],
         model['framework'],
         str(model['version']),
         model['dataset'],
@@ -120,7 +122,7 @@ def model_detailed_view(model: dict):
         converted_grid.add_column(style=dim_color, justify='right')
         converted_grid.add_column()
     # Converted model info
-    create_time = datetime.strptime(model['create_time'], '%Y-%m-%dT%H:%M:%S.%f')
+    create_time = datetime.strptime(model['create_time'], '%Y-%m-%dT%H:%M:%S.%f%z')
     time_delta = humanize.naturaltime(datetime.now() - create_time)
     converted_grid.add_row(Text('Converted Model Info', style='bold cyan3', justify='left'))
     converted_grid.add_row(
