@@ -59,9 +59,9 @@ const tagColor = {
 
 const columns = [
   {
-    title: 'Model Name',
-    dataIndex: 'name',
-    key: 'name',
+    title: 'Architecture',
+    dataIndex: 'architecture',
+    key: 'architecture',
     className: 'column',
   },
   {
@@ -100,6 +100,12 @@ const columns = [
     title: 'Task',
     dataIndex: 'task',
     key: 'task',
+    className: 'column',
+  },
+  {
+    title: 'Version',
+    dataIndex: 'version',
+    key: 'version',
     className: 'column',
   },
   {
@@ -177,8 +183,7 @@ export default class Dashboard extends React.Component {
         pageSize: 10,
       },
       loading: false,
-      showRegisterForm: false,
-      loadingRegisterForm: false,
+      showRegisterForm: false
     };
     this.loadAllModels();
     this.handleCancelRegister.bind(this);
@@ -260,7 +265,8 @@ export default class Dashboard extends React.Component {
       formData.append(key, values[key]);
     }
     await axios.post(config.modelURL, formData);
-    this.setState({ showRegisterForm: false });    
+    this.setState({ showRegisterForm: false });
+    window.location.reload();    
   };
 
   public setModelFileData = (e) =>{
@@ -284,7 +290,6 @@ export default class Dashboard extends React.Component {
             title="Model Registration"
             visible={this.state.showRegisterForm}
             onOk={this.submitRegisterForm}
-            confirmLoading={this.state.loadingRegisterForm}
             onCancel={this.handleCancelRegister}
             width={1000}
             footer={null}
@@ -345,62 +350,22 @@ export default class Dashboard extends React.Component {
                   style={{ width: '92%', margin: '0 auto' }}
                   column={3}
                   size="middle"
-                  title={
-                    <a
-                      style={{
-                        whiteSpace: 'nowrap',
-                        fontSize: 25,
-                        color: 'black',
-                      }}
-                    >
-                      Converted Model Info
-                    </a>
-                  }
+                  title="Converted Model Info"
                 >
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Model Name
-                      </a>
-                    }
+                    label="Model Name"
                   >
                     <Tag color="volcano">{record.architecture}</Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Converted Version
-                      </a>
-                    }
+                    label="Converted Version"
                   >
                     <Tag color="blue">
                       {record.engine === 'PYTORCH' ? '' : record.framework}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Serving Engine
-                      </a>
-                    }
+                    label="Serving Engine"
                   >
                     <Tag color="pink">
                       {(() => {
@@ -421,21 +386,11 @@ export default class Dashboard extends React.Component {
                   </Descriptions.Item>
                   <Descriptions.Item
                     span={2}
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Conversion State
-                      </a>
-                    }
+                    label="Conversion State"
                   >
                     <a
                       style={{
-                        fontSize: 25,
+                        fontSize: 20,
                         whiteSpace: 'nowrap',
                         color: 'green',
                       }}
@@ -452,30 +407,10 @@ export default class Dashboard extends React.Component {
                   style={{ width: '92%', margin: '0 auto' }}
                   column={3}
                   size="small"
-                  title={
-                    <a
-                      style={{
-                        whiteSpace: 'nowrap',
-                        fontSize: 25,
-                        color: 'black',
-                      }}
-                    >
-                      Profiling Results
-                    </a>
-                  }
+                  title="Profiling Results"
                 >
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Profiling Device
-                      </a>
-                    }
+                    label="Profiling Device"
                   >
                     <Tag color="geekblue">
                       {record.profile_result
@@ -484,17 +419,7 @@ export default class Dashboard extends React.Component {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Profiling Batch Size
-                      </a>
-                    }
+                    label="Profiling Batch Size"
                   >
                     <Tag color="gold">
                       {record.profile_result
@@ -503,17 +428,7 @@ export default class Dashboard extends React.Component {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Device Memory Utilization
-                      </a>
-                    }
+                    label="Device Memory Utilization"
                   >
                     <Tag color="blue">
                       {record.profile_result
@@ -526,17 +441,7 @@ export default class Dashboard extends React.Component {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        Preprocess Latency
-                      </a>
-                    }
+                    label="Preprocess Latency"
                   >
                     <Tag color="cyan">
                       {record.profile_result
@@ -550,17 +455,7 @@ export default class Dashboard extends React.Component {
                   </Descriptions.Item>
                   <Descriptions.Item
                     span={2}
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        All Batch Throughput
-                      </a>
-                    }
+                    label="All Batch Throughput"
                   >
                     <Tag color="geekblue">
                       {record.profile_result
@@ -572,17 +467,7 @@ export default class Dashboard extends React.Component {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        P50 Latency
-                      </a>
-                    }
+                    label="P50 Latency"
                   >
                     <Tag color="gold">
                       {record.profile_result
@@ -595,17 +480,7 @@ export default class Dashboard extends React.Component {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        P95 Latency
-                      </a>
-                    }
+                    label="P95 Latency"
                   >
                     <Tag color="green">
                       {record.profile_result
@@ -618,17 +493,7 @@ export default class Dashboard extends React.Component {
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
-                    label={
-                      <a
-                        style={{
-                          whiteSpace: 'nowrap',
-                          fontSize: 25,
-                          color: 'black',
-                        }}
-                      >
-                        P99 Latency
-                      </a>
-                    }
+                    label="P99 Latency"
                   >
                     <Tag color="pink">
                       {record.profile_result

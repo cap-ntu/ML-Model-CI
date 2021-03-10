@@ -2,8 +2,13 @@
     margin-top: 20px;
 }
 
-.ant-table-thead{
+.ant-col-12 .ant-table-thead, .mega-layout-item-content .ant-table-thead{
     display: none;
+}
+
+
+.ant-col-12 .ant-table table{
+    border-spacing: 0 15px;
 }
 .ant-table{
     background: transparent;

@@ -1,7 +1,7 @@
 @import '~antd/dist/antd.css';
 
 .column {
-  font-size: 25px;
+  font-size: 20px;
 }
 
 .ant-tag {
@@ -18,4 +18,9 @@
 
 .ant-table-row-level-0 > .ant-table-cell {
   padding-top: 0;
+}
+
+.ant-descriptions-item-label, .ant-descriptions-title{
+  font-size: 20px;
+  white-space: 'nowrap';
 }
