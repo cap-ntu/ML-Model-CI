@@ -29,7 +29,7 @@
 ## Introduction
 Machine Learning Model CI is a **one-stop machine learning MLOps platform on clouds**, aiming to solve the "last mile" problem between model training and model serving. We implement a highly automated pipeline between the trained models and the online machine learning applications.
 
-The system is currently under rapid iterative development. We offer the following features and users 1) can register models to our system and enjoy the automated pipeline, 2) or use them individually.
+We offer the following features and users 1) can register models to our system and enjoy the automated pipeline, 2) or use them individually.
 
 - **Housekeeper** provides a refined management for model (service) registration, deletion, update and selection.
 - **Converter** is designed to convert models to serialized and optimized formats so that the models can be deployed to cloud. Support **Tensorflow SavedModel**, **ONNX**, **TorchScript**, **TensorRT**
@@ -42,6 +42,8 @@ Several features are in beta testing and will be available in the next release s
 
 - [ ] **Automatic model quantization and pruning.** 
 - [ ] **Model visulization and fine-tune.**
+
+*The system is currently under rapid iterative development. Some APIs or CLIs may be broken. Please go to [Wiki](https://github.com/cap-ntu/ML-Model-CI/wiki) for more details*
 
 *If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
 
@@ -85,84 +87,37 @@ The below figurs illusrates the
 |:------------:|:--------------:|
 | <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
-### 1. Start the ModelCI service
+### 0. Start the ModelCI service
 
 Once you have installed, start MLModelCI service on a leader server by:
 ```shell script
 modelci service init
 ```
 
-### 2. Register and publish a model
+**We provide three options for users to use MLModelCI: CLI, Web interface and import it as a python package**
+### 1. CLI
 
 ```python
-from modelci.hub.manager import register_model
-from modelci.types.bo import IOShape, Task, Metric
-
-# Publish a newly trained ResNet50 model to our system.
-register_model(
-    'home/ResNet50/pytorch/1.zip',
-    dataset='ImageNet',
-    metric={Metric.ACC: 0.76},
-    task=Task.IMAGE_CLASSIFICATION,
-    inputs=[IOShape([-1, 3, 224, 224], float)],
-    outputs=[IOShape([-1, 1000], float)],
-    convert=True,
-    profile=True
-)
+# publish a model to the system
+modelci modelhub publish registration_example.yml
 ```
 
-### 3. Automatic model conversion
+Please refer to [WIKI](https://github.com/cap-ntu/ML-Model-CI/wiki) for more CLIs.
+
+### 2. Python Package
 
 ```python
+# utilize the convert function
 from modelci.hub.converter import ONNXConverter
 from modelci.types.bo import IOShape
 
-# the system will trigger the function automaticlly
+# the system can trigger the function automaticlly
 # users can call the function individually 
 ONNXConverter.from_torch_module(
     '<path to torch model>', 
     '<path to export onnx model>', 
     inputs=[IOShape([-1, 3, 224, 224], float)],
 )
-```
-
-### 4. Automatic model profiling
-
-```python
-from modelci.hub.client.torch_client import CVTorchClient
-from modelci.hub.profiler import Profiler
-
-# the system will trigger the function and dispatch the profiling jobs to idle workers automaticlly
-# users can call the function individually 
-
-test_data_item = ...
-batch_num = ...
-batch_size = ...
-model_info = ...
-
-# create a client
-torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
-
-# init the profiler
-profiler = Profiler(model_info=model_info, server_name='name of your server', inspector=torch_client)
-
-# start profiling model
-profiler.diagnose('device name')
-```
-
-### 5. Model dispatch
-
-```python
-from modelci.hub.deployer.dispatcher import serve
-from modelci.hub.manager import retrieve_model
-from modelci.types.bo import Framework, Engine
-
-model_info = ...
-
-# get saved model information and bind the model with a ML serving system
-model_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
-
-serve(save_path=model_info[0].saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
 ```
 
 ## Quickstart with Notebook

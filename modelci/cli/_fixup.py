@@ -166,10 +166,11 @@ def _generate_enum_convertor_wrapper(enum_converter_factory):
                     key = lower_val_map[low]
                     return enum(key)
 
-        if issubclass(enum, NamedEnum):
-            lower_val_map = {str(val.name).lower(): val for val in enum}
-            return convertor
-        else:
-            return enum_converter_factory
+        if enum is not None:
+            if issubclass(enum, NamedEnum):
+                lower_val_map = {str(val.name).lower(): val for val in enum}
+                return convertor
+            else:
+                return enum_converter_factory
 
     return generate_named_enum_converter
