@@ -47,7 +47,7 @@ class ModelExporter(object):
                     engine=Engine.TFS,
                     version=str(version)
                 )
-                TFSConverter.from_tf_model(model, tfs_dir)
+                TFSConverter.from_tensorflow(model, tfs_dir)
                 model = str(tfs_dir.with_suffix('.zip'))
 
             register_model(
