@@ -114,7 +114,7 @@ class MLModel(BaseMLModel):
     status: Status = Status.Unknown
     model_status: List[ModelStatus] = Field(default_factory=list)
     creator: str = Field(default_factory=getpass.getuser)
-    create_time: datetime = Field(default_factory=lambda: datetime.now().astimezone())
+    create_time: datetime = Field(default_factory=datetime.utcnow)
 
 
 class MLModelIn(BaseMLModel):
