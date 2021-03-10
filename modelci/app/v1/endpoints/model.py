@@ -48,7 +48,7 @@ def get_model(*, id: str):  # noqa
     # Pydantic BaseModel.json and convert it back
     # Check https://github.com/tiangolo/fastapi/blob/master/fastapi/encoders.py#L118 to see if this
     # issue is fixed.
-    content = json.loads(get_by_id(id).json(exclude={'weight'}, by_alias=False))
+    content = json.loads(get_by_id(id).json(by_alias=False))
     return JSONResponse(content=content)
 
 

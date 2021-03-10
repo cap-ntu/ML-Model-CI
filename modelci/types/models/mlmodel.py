@@ -9,13 +9,14 @@ import getpass
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Optional, Dict, List
+from typing import Union, Optional, Dict, List, Any
 
 from bson import ObjectId
 from gridfs import GridOut
 from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, root_validator
 
-from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId
+from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId, \
+    named_enum_json_encoder
 from .pattern import as_form
 from ...hub.utils import parse_path_plain, generate_path_plain
 
@@ -72,8 +73,11 @@ class BaseMLModel(BaseModel):
         """
         if use_enum_values:
             self.Config.use_enum_values = True
+            # TODO: auto find field who contains `Enum`
+            IOShape.Config.use_enum_values = True
             data = super().dict(**kwargs)
             self.Config.use_enum_values = False
+            IOShape.Config.use_enum_values = False
         else:
             data = super().dict(**kwargs)
 
@@ -88,11 +92,13 @@ class BaseMLModel(BaseModel):
         allow_population_by_field_name = True
         json_encoders = {
             ObjectId: str,
-            Framework: lambda e: e.name,
-            Engine: lambda e: e.name,
-            Task: lambda e: e.name,
-            Status: lambda e: e.name,
-            ModelStatus: lambda e: e.name,
+            Framework: named_enum_json_encoder,
+            Engine: named_enum_json_encoder,
+            Task: named_enum_json_encoder,
+            Status: named_enum_json_encoder,
+            ModelStatus: named_enum_json_encoder,
+            # TODO: check whether we can auto detect sub-model's json encoder
+            **IOShape.__config__.json_encoders,
         }
 
     @property
@@ -104,11 +110,11 @@ class MLModel(BaseMLModel):
     id: Optional[PydanticObjectId] = Field(default=None, alias='_id')
     parent_model_id: Optional[PydanticObjectId]
     weight: Weight
-    # profile_result: Optional[ProfileResult]
+    profile_result: Optional[Any]
     status: Status = Status.Unknown
     model_status: List[ModelStatus] = Field(default_factory=list)
     creator: str = Field(default_factory=getpass.getuser)
-    create_time: datetime = Field(default_factory=datetime.now)
+    create_time: datetime = Field(default_factory=lambda: datetime.now().astimezone())
 
 
 class MLModelIn(BaseMLModel):

@@ -23,7 +23,7 @@ from modelci.app import SERVER_HOST, SERVER_PORT
 from modelci.hub.init_data import export_model
 from modelci.hub.publish import _download_model_from_url
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric
-from modelci.types.models.mlmodel import MLModelInYaml
+from modelci.types.models.mlmodel import MLModelInYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null
@@ -192,5 +192,5 @@ def export(
 def detail(model_id: str = typer.Argument(..., help='Model ID')):
     """Show a single model."""
     with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
-        model = r.json()
-        model_detailed_view(model)
+        data = r.json()
+        model_detailed_view(MLModel.parse_obj(data))
