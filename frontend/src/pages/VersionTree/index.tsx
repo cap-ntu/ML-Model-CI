@@ -41,12 +41,14 @@ const generateGitData = (modelList: []) => {
       created_at: model.create_time
     }
     // original model
-    if (model.parent_model_id == null) {
-      data.subject = ' '
-      data.refs.push('HEAD')
-    } else if (['PYTORCH', 'None'].indexOf(model.engine) >= 0) {
-      data.subject = ' '
-      data.refs.push(`${model.name}/${model.dataset}`)
+    if (['PYTORCH', 'None'].indexOf(model.engine) >= 0){
+      if (model.parent_model_id == null) {
+        data.subject = ' '
+        data.refs.push('HEAD')
+      } else {
+        data.subject = ' '
+        data.refs.push(`${model.name}/${model.dataset}`)
+      }
     }
     // overlook model varient
     if (data.subject) {

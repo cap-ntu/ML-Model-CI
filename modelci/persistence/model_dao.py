@@ -28,7 +28,7 @@ class ModelDAO(object):
 
         Args:
             **kwargs: Keyword arguments of primary keys. Supported values:
-                name (str): Model name.
+                architecture (str): Model name.
                 task (int): Model task enum value.
                 engine (int): Driving engine enum value.
                 framework (int): Model framework enum value.
@@ -66,7 +66,7 @@ class ModelDAO(object):
         Return:
             List[ModelDO]: A list of model plain objects.
         """
-        return ModelDO.objects(**kwargs).order_by('name', 'task', 'framework', 'engine', '-version')
+        return ModelDO.objects(**kwargs).order_by('architecture', 'task', 'framework', 'engine', '-version')
 
     @staticmethod
     def get_models_by_task(task: int) -> List[ModelDO]:

@@ -43,8 +43,8 @@ class Engine(Enum):
     ONNX = 3
     TRT = 4
     TVM = 5
-    PYTORCH = 6
-    CUSTOMIZED = 7
+    CUSTOMIZED = 6
+    PYTORCH = 7
 
 
 @unique

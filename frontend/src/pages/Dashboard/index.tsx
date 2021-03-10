@@ -1,39 +1,61 @@
 import React from 'react';
-import { Button, Table, Card, Divider, Input as search, Descriptions, Tag, Menu, Dropdown, Modal } from 'antd';
-import { EditOutlined, ProfileOutlined, BranchesOutlined } from '@ant-design/icons';
-import {SchemaForm} from '@formily/antd'
+import {
+  Button,
+  Table,
+  Card,
+  Divider,
+  Input as search,
+  Descriptions,
+  Tag,
+  Menu,
+  Dropdown,
+  Modal
+} from 'antd';
+import {
+  EditOutlined,
+  ProfileOutlined,
+  BranchesOutlined,
+} from '@ant-design/icons';
+import { SchemaForm, FormButtonGroup, Submit, Reset } from '@formily/antd';
 import axios from 'axios';
 import { config, Link } from 'ice';
 import reqwest from 'reqwest';
 import './index.css';
-import { Input, Select, Upload, Switch, NumberPicker, FormMegaLayout, DatePicker,FormLayout, ArrayTable } from '@formily/antd-components'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const registerSchema = require('./utils/test.json');
-
-const components = {
-  Input,
+import { Input, Form } from 'antd';
+import {
   Select,
-  Upload,
   Switch,
   NumberPicker,
   FormMegaLayout,
   DatePicker,
   FormLayout,
-  ArrayTable
-}
+  ArrayTable,
+} from '@formily/antd-components';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const registerSchema = require('./utils/schema.json');
+
+const components = {
+  Input,
+  Select,
+  Switch,
+  NumberPicker,
+  FormMegaLayout,
+  DatePicker,
+  FormLayout,
+  ArrayTable,
+};
 
 const { Search } = search;
 
 const tagColor = {
-  'Published': 'geekblue',
-  'Converted' : 'cyan',
-  'Profiling' : 'purple',
-  'In Service' : 'lime',
-  'Draft': 'red',
-  'Validating': 'magenta',
-  'Training': 'volcano'
-
-}
+  Published: 'geekblue',
+  Converted: 'cyan',
+  Profiling: 'purple',
+  'In Service': 'lime',
+  Draft: 'red',
+  Validating: 'magenta',
+  Training: 'volcano',
+};
 
 const columns = [
   {
@@ -65,14 +87,14 @@ const columns = [
     dataIndex: 'metric',
     key: 'metric',
     className: 'column',
-    render: (metric) =>  Object.keys(metric)[0]
+    render: (metric) => Object.keys(metric)[0],
   },
   {
     title: 'Score',
     dataIndex: 'metric',
     key: 'score',
     className: 'column',
-    render: (metric) =>  metric[Object.keys(metric)[0]]
+    render: (metric) => metric[Object.keys(metric)[0]],
   },
   {
     title: 'Task',
@@ -85,9 +107,13 @@ const columns = [
     dataIndex: 'model_status',
     key: 'model_status',
     className: 'column',
-    render: (modelStatus) =>  {
-      return modelStatus.map((status,index) => <Tag color={tagColor[status]} key={index}>{status}</Tag>)
-    }
+    render: (modelStatus) => {
+      return modelStatus.map((status, index) => (
+        <Tag color={tagColor[status]} key={index}>
+          {status}
+        </Tag>
+      ));
+    },
   },
   {
     title: 'Model User',
@@ -100,30 +126,37 @@ const columns = [
     dataIndex: 'id',
     key: 'id',
     className: 'column',
-    render: (text, record) =>{
+    render: (text, record) => {
       const menu = (
         <Menu>
-          <Menu.Item key="2" icon={<ProfileOutlined />} style={{fontSize: 18}}>
+          <Menu.Item
+            key="2"
+            icon={<ProfileOutlined />}
+            style={{ fontSize: 18 }}
+          >
             Profile
           </Menu.Item>
-          { record.engine==='PYTORCH' || record.engine==='TFS' ?  
-            (
-              <Menu.Item key="3" icon={<BranchesOutlined />} style={{fontSize: 18}}>
-                <Link to={`/visualizer/${text}`}>Finetune</Link>
-              </Menu.Item>
-            ) : ''
-          }
+          {record.engine === 'PYTORCH' || record.engine === 'TFS' ? (
+            <Menu.Item
+              key="3"
+              icon={<BranchesOutlined />}
+              style={{ fontSize: 18 }}
+            >
+              <Link to={`/visualizer/${text}`}>Finetune</Link>
+            </Menu.Item>
+          ) : (
+            ''
+          )}
         </Menu>
       );
-      return(
+      return (
         <Dropdown.Button overlay={menu} size="large">
           <EditOutlined /> Edit
         </Dropdown.Button>
-      )
-    }
+      );
+    },
   },
 ];
-
 
 const getRandomuserParams = (params) => {
   return {
@@ -145,12 +178,13 @@ export default class Dashboard extends React.Component {
       },
       loading: false,
       showRegisterForm: false,
-      loadingRegisterForm: false
+      loadingRegisterForm: false,
     };
     this.loadAllModels();
     this.handleCancelRegister.bind(this);
     this.showRegisterForm.bind(this);
     this.submitRegisterForm.bind(this);
+    this.setModelFileData.bind(this);
   }
 
   public componentDidMount() {
@@ -182,6 +216,7 @@ export default class Dashboard extends React.Component {
           ...params.pagination,
           total: this.state.allModelInfo.length,
         },
+        files: null
       });
     });
   };
@@ -195,7 +230,7 @@ export default class Dashboard extends React.Component {
         // console.log(response.data);
         this.setState({ allModelInfo: response.data });
       })
-      .catch((error) => {
+      .catch(() => {
         // handle error
         // console.log(error);
       })
@@ -205,16 +240,31 @@ export default class Dashboard extends React.Component {
   };
 
   public showRegisterForm = () => {
-    this.setState({ showRegisterForm: true});
+    this.setState({ showRegisterForm: true });
   };
-
 
   public handleCancelRegister = () => {
-    this.setState({ showRegisterForm: false});
+    this.setState({ showRegisterForm: false });
   };
 
-  public submitRegisterForm = () =>{
+  public submitRegisterForm = async (values) => {
+    values.files = this.state.files;
+    values.metric[values.metric.name] = values.metric.score;
+    delete values.metric.name;
+    delete values.metric.score;
+    values.metric = JSON.stringify(values.metric);
+    values.inputs = JSON.stringify(values.inputs);
+    values.outputs = JSON.stringify(values.outputs);
+    var formData = new FormData();
+    for ( var key in values ) {
+      formData.append(key, values[key]);
+    }
+    await axios.post(config.modelURL, formData);
+    this.setState({ showRegisterForm: false });    
+  };
 
+  public setModelFileData = (e) =>{
+    this.setState({ files: e.target.files[0] });
   }
 
   public render() {
@@ -227,33 +277,39 @@ export default class Dashboard extends React.Component {
             flexDirection: 'row',
           }}
         >
-          <Button
-            size="large"
-            type="primary"
-            onClick={this.showRegisterForm}
-          >
+          <Button size="large" type="primary" onClick={this.showRegisterForm}>
             Register Model
           </Button>
           <Modal
-            title="Title"
+            title="Model Registration"
             visible={this.state.showRegisterForm}
             onOk={this.submitRegisterForm}
             confirmLoading={this.state.loadingRegisterForm}
             onCancel={this.handleCancelRegister}
             width={1000}
+            footer={null}
           >
-            <SchemaForm 
-              components={components}
-              onSubmit={this.submitRegisterForm}
-              schema={registerSchema}
+            <Form.Item
+              label="Model File"
+              name="files"
+              rules={[
+                { required: true, message: 'Please select your model file!' },
+              ]}
             >
-              <Button 
-                type="default" 
-                size="large" 
-                style={{ width: 150 }}
-              >
-               Fast Validate
-              </Button>
+              <Input type="file" onChange={this.setModelFileData}/>
+            </Form.Item>
+            <SchemaForm
+              components={components}
+              schema={registerSchema}
+              style={{
+                fontSize: 'medium',
+              }}
+              onSubmit={this.submitRegisterForm}
+            >
+              <FormButtonGroup>
+                <Submit>Submit</Submit>
+                <Reset>Reset</Reset>
+              </FormButtonGroup>
             </SchemaForm>
           </Modal>
 
@@ -314,9 +370,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="volcano" >
-                      {record.name}
-                    </Tag>
+                    <Tag color="volcano">{record.architecture}</Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
                     label={
@@ -331,7 +385,7 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="blue" >
+                    <Tag color="blue">
                       {record.engine === 'PYTORCH' ? '' : record.framework}
                     </Tag>
                   </Descriptions.Item>
@@ -348,14 +402,19 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="pink" >
+                    <Tag color="pink">
                       {(() => {
                         switch (record.engine) {
-                          case 'TorchScript': return 'PyTorch JIT + FastAPI';
-                          case 'ONNX':  return 'ONNX Runtime + FastAPI';
-                          case 'tensorrt': return 'Triton Inference Server';
-                          case 'TFS': return 'TensorFlow Serving';
-                          default: return 'FastAPI';
+                          case 'TorchScript':
+                            return 'PyTorch JIT + FastAPI';
+                          case 'ONNX':
+                            return 'ONNX Runtime + FastAPI';
+                          case 'tensorrt':
+                            return 'Triton Inference Server';
+                          case 'TFS':
+                            return 'TensorFlow Serving';
+                          default:
+                            return 'FastAPI';
                         }
                       })()}
                     </Tag>
@@ -418,8 +477,10 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="geekblue" >
-                      {record.profile_result ? record.profile_result.dynamic_results[0].device_name : ''}
+                    <Tag color="geekblue">
+                      {record.profile_result
+                        ? record.profile_result.dynamic_results[0].device_name
+                        : ''}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -435,8 +496,10 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="gold" >
-                      {record.profile_result ? record.profile_result.dynamic_results[0].batch : ''}
+                    <Tag color="gold">
+                      {record.profile_result
+                        ? record.profile_result.dynamic_results[0].batch
+                        : ''}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -452,8 +515,14 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="blue" >
-                      {record.profile_result ? (record.profile_result.dynamic_results[0].memory.utilization * 100).toFixed(2): ''} %
+                    <Tag color="blue">
+                      {record.profile_result
+                        ? (
+                            record.profile_result.dynamic_results[0].memory
+                              .utilization * 100
+                          ).toFixed(2)
+                        : ''}{' '}
+                      %
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -469,8 +538,14 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="cyan" >
-                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.preprocess_latency.avg * 1000).toFixed(2) : ''} ms
+                    <Tag color="cyan">
+                      {record.profile_result
+                        ? (
+                            record.profile_result.dynamic_results[0].latency
+                              .preprocess_latency.avg * 1000
+                          ).toFixed(2)
+                        : ''}{' '}
+                      ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -488,7 +563,12 @@ export default class Dashboard extends React.Component {
                     }
                   >
                     <Tag color="geekblue">
-                      {record.profile_result ? (record.profile_result.dynamic_results[0].throughput.inference_throughput).toFixed(2): ''} req/sec
+                      {record.profile_result
+                        ? record.profile_result.dynamic_results[0].throughput.inference_throughput.toFixed(
+                            2
+                          )
+                        : ''}{' '}
+                      req/sec
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -504,8 +584,14 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="gold" >
-                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p50 * 1000).toFixed(2): ''} ms
+                    <Tag color="gold">
+                      {record.profile_result
+                        ? (
+                            record.profile_result.dynamic_results[0].latency
+                              .inference_latency.p50 * 1000
+                          ).toFixed(2)
+                        : ''}{' '}
+                      ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -521,8 +607,14 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="green" >
-                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p95 * 1000).toFixed(2): ''} ms
+                    <Tag color="green">
+                      {record.profile_result
+                        ? (
+                            record.profile_result.dynamic_results[0].latency
+                              .inference_latency.p95 * 1000
+                          ).toFixed(2)
+                        : ''}{' '}
+                      ms
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item
@@ -538,14 +630,20 @@ export default class Dashboard extends React.Component {
                       </a>
                     }
                   >
-                    <Tag color="pink" >
-                      {record.profile_result ? (record.profile_result.dynamic_results[0].latency.inference_latency.p99 * 1000).toFixed(2): ''} ms
+                    <Tag color="pink">
+                      {record.profile_result
+                        ? (
+                            record.profile_result.dynamic_results[0].latency
+                              .inference_latency.p99 * 1000
+                          ).toFixed(2)
+                        : ''}{' '}
+                      ms
                     </Tag>
                   </Descriptions.Item>
                 </Descriptions>
               </div>
             ),
-            rowExpandable: (record) => true,
+            rowExpandable: () => true,
           }}
         />
       </Card>

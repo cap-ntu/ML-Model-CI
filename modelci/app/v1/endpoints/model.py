@@ -24,7 +24,7 @@ router = APIRouter()
 
 
 @router.get('/', response_model=List[ModelListOut])
-def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine_ = None, task: Task_ = None,
+def get_all_model(architecture: str = None, framework: Framework_ = None, engine: Engine_ = None, task: Task_ = None,
                   version: int = None):
     if framework is not None:
         framework = Framework[framework.value.upper()]
@@ -33,7 +33,7 @@ def get_all_model(name: str = None, framework: Framework_ = None, engine: Engine
     if task is not None:
         engine = Task[task.value.upper()]
 
-    models = ModelService.get_models(name=name, framework=framework, engine=engine, task=task, version=version)
+    models = ModelService.get_models(architecture=architecture, framework=framework, engine=engine, task=task, version=version)
     return list(map(ModelListOut.from_bo, models))
 
 

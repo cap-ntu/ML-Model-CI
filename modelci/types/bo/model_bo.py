@@ -18,7 +18,7 @@ class ModelBO(object):
     (i.e. `modelci.persistence.service.ModelService`).
 
     Args:
-        name (str): Name of the architecture.
+        architecture (str): Name of the architecture.
         framework (Framework): Model framework. E.g. TensorFlow, PyTorch.
         engine (Engine): Model engine. E.g. ONNX, TensorRT.
         dataset (str): Model training dataset.
@@ -50,7 +50,7 @@ class ModelBO(object):
 
     def __init__(
             self,
-            name: str,
+            architecture: str,
             framework: Framework,
             engine: Engine,
             version: ModelVersion,
@@ -69,7 +69,7 @@ class ModelBO(object):
     ):
         """Initializer."""
         self._id: Optional[str] = None
-        self.name = name
+        self.architecture = architecture
         self.framework = framework
         self.engine = engine
         self.version = version
@@ -95,7 +95,7 @@ class ModelBO(object):
         from ...hub.utils import generate_path
 
         filename = Path(self.weight.filename)
-        save_path = generate_path(self.name, self.task, self.framework, self.engine, filename.stem)
+        save_path = generate_path(self.architecture, self.task, self.framework, self.engine, filename.stem)
         # add extension back
         save_path = save_path.with_suffix(filename.suffix)
 
@@ -107,7 +107,7 @@ class ModelBO(object):
         output_dos = list(map(IOShape.to_io_shape_po, self.outputs))
 
         model_do = ModelDO(
-            architecture=self.name,
+            architecture=self.architecture,
             framework=self.framework.value,
             engine=self.engine.value,
             version=self.version.ver,
@@ -161,7 +161,7 @@ class ModelBO(object):
         outputs = list(map(IOShape.from_io_shape_po, model_do.outputs))
 
         model = ModelBO(
-            name=model_do.architecture,
+            architecture=model_do.architecture,
             framework=Framework(model_do.framework),
             engine=Engine(model_do.engine),
             version=ModelVersion(model_do.version),
