@@ -22,7 +22,7 @@ origins = []
 if config.BACKEND_CORS_ORIGINS:
     origins_raw = config.BACKEND_CORS_ORIGINS.split(",")
     for origin in origins_raw:
-        use_origin = origin.strip()
+        use_origin = origin.strip().replace('"', '')
         origins.append(use_origin)
     app.add_middleware(
         CORSMiddleware,
@@ -38,4 +38,4 @@ app.include_router(api_rounter_exp, prefix=config.API_EXP_STR)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, host='0.0.0.0', port=config.SERVER_PORT)
+    uvicorn.run(app, host=config.SERVER_HOST, port=config.SERVER_PORT)
