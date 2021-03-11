@@ -19,7 +19,7 @@ import typer
 import yaml
 from pydantic import ValidationError
 
-from modelci.app import SERVER_HOST, SERVER_PORT
+from modelci.config import app_settings
 from modelci.hub.init_data import export_model
 from modelci.hub.publish import _download_model_from_url
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric
@@ -121,7 +121,7 @@ def publish(
         else:
             files.append((key, (file_or_dir.name, open(file_or_dir, 'rb'), 'application/example')))
         with requests.post(
-                f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/',
+                f'{app_settings.api_v1_prefix}/model/',
                 params=payload, data=form_data, files=files,
         ) as r:
             typer.echo(r.json(), color=True)
@@ -148,7 +148,7 @@ def list_models(
     payload = remove_dict_null(
         {'architecture': architecture, 'framework': framework, 'engine': engine, 'version': version}
     )
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/', params=payload) as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=payload) as r:
         model_list = r.json()
         model_view([model_list], list_all=list_all)
 
@@ -191,6 +191,6 @@ def export(
 @app.command('detail')
 def detail(model_id: str = typer.Argument(..., help='Model ID')):
     """Show a single model."""
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
         data = r.json()
         model_detailed_view(MLModel.parse_obj(data))

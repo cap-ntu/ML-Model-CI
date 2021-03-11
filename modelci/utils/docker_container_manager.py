@@ -11,10 +11,9 @@ import time
 from pathlib import Path
 
 import docker
-from pymongo import MongoClient
+from modelci.experimental.mongo_client import MongoClient
 
-from modelci.config import MONGO_HOST, MONGO_PORT, NODE_EXPORTER_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB, \
-    CADVISOR_PORT
+from modelci.config import service_settings, db_settings
 from modelci.utils import Logger
 from modelci.utils.docker_api_utils import list_containers, get_image, check_container_status
 
@@ -34,10 +33,10 @@ class DockerContainerManager(object):
     def __init__(
             self,
             cluster_name='default-cluster',
-            mongo_ip=MONGO_HOST,
-            mongo_port=MONGO_PORT,
-            cadvisor_port=CADVISOR_PORT,
-            node_exporter_port=NODE_EXPORTER_PORT,
+            mongo_ip=service_settings.mongo_host,
+            mongo_port=service_settings.mongo_port,
+            cadvisor_port=service_settings.cadvisor_port,
+            node_exporter_port=service_settings.node_exporter_port,
             docker_network='modelci_network',
             extra_container_kwargs=None,
             enable_gpu=False,
@@ -187,9 +186,9 @@ class DockerContainerManager(object):
         self.docker_client.containers.run(
             'mongo', ports={'27017/tcp': self.mongo_port}, name=mongo_name,
             environment={
-                'MONGO_INITDB_USERNAME': MONGO_USERNAME,
-                'MONGO_INITDB_PASSWORD': MONGO_PASSWORD,
-                'MONGO_INITDB_DATABASE': MONGO_DB,
+                'MONGO_INITDB_USERNAME': db_settings.mongo_username,
+                'MONGO_INITDB_PASSWORD': db_settings.mongo_password.get_secret_value(),
+                'MONGO_INITDB_DATABASE': db_settings.mongo_db,
             },
             labels={**self.common_labels, MODELCI_DOCKER_PORT_LABELS['mongo']: str(self.mongo_port)},
             **self.extra_container_kwargs
@@ -198,9 +197,9 @@ class DockerContainerManager(object):
         time.sleep(1)
         try:
             # create MongoDB user
-            client = MongoClient(f'{MONGO_HOST}:{MONGO_PORT}')
-            kwargs = {'pwd': MONGO_PASSWORD, 'roles': [{'role': 'readWrite', 'db': MONGO_DB}]}
-            getattr(client, MONGO_DB).command("createUser", MONGO_USERNAME, **kwargs)
+            client = MongoClient(password=None)
+            kwargs = {'pwd': db_settings.mongo_password, 'roles': [{'role': 'readWrite', 'db': db_settings.mongo_db}]}
+            client[db_settings.mongo_db].command("createUser", db_settings.mongo_username, **kwargs)
         except Exception as e:
             self.logger.error(f'Exception during starting MongoDB: {e}')
             container = list_containers(self.docker_client, filters={'name': mongo_name})[0]
