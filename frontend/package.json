@@ -15,6 +15,7 @@
     "@rjsf/material-ui": "^2.4.1",
     "antd": "^4.12.2",
     "axios": "^0.19.2",
+    "env-cmd": "^10.1.0",
     "generate-schema": "^2.6.0",
     "graphviz-react": "^1.1.1",
     "moment": "^2.29.1",
@@ -38,7 +39,7 @@
     "stylelint": "^13.2.0"
   },
   "scripts": {
-    "start": "icejs start",
+    "start": "env-cmd -f .env icejs start",
     "build": "icejs build",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx ./",
