@@ -48,6 +48,7 @@ class Weight(BaseModel):
             return self.file.read_bytes()
 
 
+@as_form
 class BaseMLModel(BaseModel):
     architecture: str = Field(..., example='ResNet50')
     framework: Framework
@@ -111,21 +112,11 @@ class MLModel(BaseMLModel):
     parent_model_id: Optional[PydanticObjectId]
     weight: Weight
     profile_result: Optional[Any]
-    status: Status = Status.Unknown
-    model_status: List[ModelStatus] = Field(default_factory=list)
-    creator: str = Field(default_factory=getpass.getuser)
-    create_time: datetime = Field(default_factory=datetime.utcnow)
-
-
-class MLModelIn(BaseMLModel):
-    # noinspection PyUnresolvedReferences
-    """
-    Attributes:
-        parent_model_id: The parent model ID of current model if this model is derived from a pre-existing one.
-    """
-    weight: Weight
+    status: Optional[Status] = Status.Unknown
     model_input: Optional[list]  # TODO: merge into field `inputs`
     model_status: List[ModelStatus] = Field(default_factory=list)
+    creator: Optional[str] = Field(default_factory=getpass.getuser)
+    create_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
     @property
     def saved_path(self):
@@ -133,7 +124,7 @@ class MLModelIn(BaseMLModel):
         return super().saved_path.with_suffix(suffix)
 
 
-class MLModelInYaml(MLModelIn):
+class MLModelFromYaml(BaseMLModel):
     weight: Union[FilePath, DirectoryPath]
     architecture: Optional[str]
     framework: Optional[Framework]
@@ -173,9 +164,4 @@ class MLModelInYaml(MLModelIn):
     @property
     def saved_path(self):
         suffix = Path(self.weight).suffix
-        return super(MLModelIn, self).saved_path.with_suffix(suffix)
-
-
-@as_form
-class MLModelInForm(BaseMLModel):
-    model_input: Optional[list]
+        return super().saved_path.with_suffix(suffix)

@@ -20,7 +20,7 @@ from modelci.hub.manager import register_model
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import get_by_id
 from modelci.types.bo import Framework, Engine, Task
-from modelci.types.models import MLModelIn, MLModelInForm
+from modelci.types.models import MLModel, BaseMLModel
 from modelci.types.vo.model_vo import ModelListOut, Framework as Framework_, Engine as Engine_, \
     Task as Task_
 
@@ -54,7 +54,7 @@ def get_model(*, id: str):  # noqa
 
 @router.post('/', status_code=201)
 async def publish_model(
-        ml_model_in_form: MLModelInForm = Depends(MLModelInForm.as_form),
+        model: BaseMLModel = Depends(BaseMLModel.as_form),
         files: List[UploadFile] = File(
             [],
             description='This field can be set with empty value. In such settings, the publish is a dry run to'
@@ -72,7 +72,7 @@ async def publish_model(
     on the underlying devices in the clusters, and collects, aggregates, and processes running model performance.
 
     Args:
-        ml_model_in_form (MLModelInForm): Model meta information in the form of `multipart/formdata`.
+        model (MLModel): Model meta information.
         files (List[UploadFile]): A list of model weight files. The files are organized accordingly. Their file name
             contains relative path to their common parent directory.
             If the files is empty value, a dry-run to this API is conducted for parameter checks. No information
@@ -97,7 +97,7 @@ async def publish_model(
     """
     # save the posted files as local cache
     loop = asyncio.get_event_loop()
-    saved_path = ml_model_in_form.saved_path
+    saved_path = model.saved_path
     if len(files) == 0:
         # conduct dry run for parameter check only.
         return {'status': True}
@@ -124,8 +124,8 @@ async def publish_model(
         raise NotImplementedError('`publish_model` not implemented for multiple files upload.')
         # zip the files
 
-    ml_model_in = MLModelIn(**ml_model_in_form.dict(), weight=saved_path)
-    models = register_model(model_in=ml_model_in, convert=convert, profile=profile)
+    model = MLModel(**model.dict(), weight=saved_path)
+    models = register_model(model=model, convert=convert, profile=profile)
     return {
         'data': {'id': [str(model.id) for model in models], },
         'status': True

@@ -13,14 +13,14 @@ from bson import ObjectId
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, MLModelIn
+from modelci.types.models import MLModel
 
 _db = MongoClient()[MONGO_DB]
 _collection = _db['model_d_o']
 _fs = gridfs.GridFS(_db)
 
 
-def save(model_in: MLModelIn):
+def save(model_in: MLModel):
     """Register a model into ModelDB and GridFS. `model.id` should be set as `None`, otherwise, the function will
     raise a `ValueError`.
 

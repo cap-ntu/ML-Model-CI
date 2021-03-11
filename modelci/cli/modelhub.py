@@ -23,7 +23,7 @@ from modelci.app import SERVER_HOST, SERVER_PORT
 from modelci.hub.init_data import export_model
 from modelci.hub.publish import _download_model_from_url
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric
-from modelci.types.models import MLModelInYaml, MLModel
+from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null
@@ -89,12 +89,12 @@ def publish(
         with open(yaml_file) as f:
             model_config = yaml.safe_load(f)
         try:
-            model_in_yaml = MLModelInYaml.parse_obj(model_config)
+            model_yaml = MLModelFromYaml.parse_obj(model_config)
         except ValidationError as exc:
             typer.echo(exc, err=True, color=True)
             raise typer.Exit(422)
     elif not yaml_file and all(meta_info):
-        model_in_yaml = MLModelInYaml(
+        model_yaml = MLModelFromYaml(
             weight=file_or_dir, architecture=architecture, framework=framework, engine=engine, version=version,  # noqa
             dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs, convert=convert, profile=profile
         )
@@ -104,10 +104,10 @@ def publish(
         raise typer.Exit(422)
 
     # build request parameters
-    payload = {'convert': model_in_yaml.convert, 'profile': model_in_yaml.profile}
-    data = model_in_yaml.dict(use_enum_values=True, exclude_none=True, exclude={'convert', 'profile', 'weight'})
+    payload = {'convert': model_yaml.convert, 'profile': model_yaml.profile}
+    data = model_yaml.dict(use_enum_values=True, exclude_none=True, exclude={'convert', 'profile', 'weight'})
     form_data = {k: str(v) for k, v in data.items()}
-    file_or_dir = model_in_yaml.weight
+    file_or_dir = model_yaml.weight
 
     # read weight files
     files = list()
