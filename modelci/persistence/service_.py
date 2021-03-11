@@ -13,7 +13,7 @@ from bson import ObjectId
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models.mlmodel import MLModel, MLModelIn
+from modelci.types.models import MLModel, MLModelIn
 
 _db = MongoClient()[MONGO_DB]
 _collection = _db['model_d_o']

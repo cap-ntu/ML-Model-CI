@@ -40,7 +40,7 @@ __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yam
 
 from modelci.types.models.common import Engine, ModelStatus
 
-from modelci.types.models.mlmodel import MLModelIn, MLModelInYaml, MLModel
+from modelci.types.models import MLModelIn, MLModelInYaml, MLModel
 
 
 def register_model(
