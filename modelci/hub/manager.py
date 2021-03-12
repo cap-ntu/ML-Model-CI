@@ -40,11 +40,11 @@ __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yam
 
 from modelci.types.models.common import Engine, ModelStatus
 
-from modelci.types.models.mlmodel import MLModelIn, MLModelInYaml, MLModel
+from modelci.types.models import MLModelFromYaml, MLModel
 
 
 def register_model(
-        model_in: MLModelIn,
+        model: MLModel,
         convert: bool = True,
         profile: bool = True,
 ) -> List[MLModel]:
@@ -60,27 +60,27 @@ def register_model(
         This function has a super comprehensive logic, need to be simplified.
 
     Arguments:
-        model_in: Required inputs for register a model. All information is wrapped in such model.
+        model: Required inputs for register a model. All information is wrapped in such model.
         convert (bool): Flag for generation of model family. Default to True.
         profile (bool): Flag for profiling uploaded (including converted) models. Default to True.
     """
     models = list()
 
     model_dir_list = list()
-    model_in.model_status = [ModelStatus.PUBLISHED]
-    models.append(save(model_in))
+    model.model_status = [ModelStatus.PUBLISHED]
+    models.append(save(model))
 
     # generate model family
     if convert:
-        model_dir_list.extend(_generate_model_family(model_in))
+        model_dir_list.extend(_generate_model_family(model))
 
     # register
-    model_in_data = model_in.dict(exclude={'weight', 'id', 'model_status', 'engine'})
+    model_data = model.dict(exclude={'weight', 'id', 'model_status', 'engine'})
     for model_dir in model_dir_list:
         parse_result = parse_path_plain(model_dir)
         engine = parse_result['engine']
 
-        model_cvt = MLModelIn(**model_in_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
+        model_cvt = MLModel(**model_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
         models.append(save(model_cvt))
 
     # profile registered model
@@ -133,34 +133,34 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     # read yaml
     with open(file_path) as f:
         model_config = yaml.safe_load(f)
-    model_in_yaml = MLModelInYaml.parse_obj(model_config)
+    model_yaml = MLModelFromYaml.parse_obj(model_config)
     # copy model weight to cache directory
-    model_in_saved_path = model_in_yaml.saved_path
-    if model_in_saved_path != model_in_yaml.weight:
-        copy2(model_in_yaml.weight, model_in_saved_path)
+    model_in_saved_path = model_yaml.saved_path
+    if model_in_saved_path != model_yaml.weight:
+        copy2(model_yaml.weight, model_in_saved_path)
 
     # zip weight folder
-    if model_in_yaml.engine == Engine.TFS:
-        weight_dir = model_in_yaml.weight
+    if model_yaml.engine == Engine.TFS:
+        weight_dir = model_yaml.weight
         make_archive(weight_dir.with_suffix('.zip'), 'zip', weight_dir)
 
-    model_in_data = model_in_yaml.dict(exclude_none=True, exclude={'convert', 'profile'})
-    model_in = MLModelIn.parse_obj(model_in_data)
-    register_model(model_in, convert=model_in_yaml.convert, profile=model_in_yaml.profile)
+    model_data = model_yaml.dict(exclude_none=True, exclude={'convert', 'profile'})
+    model = MLModel.parse_obj(model_data)
+    register_model(model, convert=model_yaml.convert, profile=model_yaml.profile)
 
 
 def _generate_model_family(
-        model_in: MLModelIn,
+        model: MLModel,
         max_batch_size: int = -1
 ):
-    model = load(model_in.saved_path)
+    net = load(model.saved_path)
     build_saved_dir_from_engine = partial(
         generate_path_plain,
-        **model_in.dict(include={'architecture', 'framework', 'task', 'version'}),
+        **model.dict(include={'architecture', 'framework', 'task', 'version'}),
     )
-    inputs = model_in.inputs
-    outputs = model_in.outputs
-    model_input = model_in.model_input
+    inputs = model.inputs
+    outputs = model.outputs
+    model_input = model.model_input
 
     generated_dir_list = list()
 
@@ -169,13 +169,13 @@ def _generate_model_family(
     onnx_dir = build_saved_dir_from_engine(engine=Engine.ONNX)
     trt_dir = build_saved_dir_from_engine(engine=Engine.TRT)
 
-    if isinstance(model, torch.nn.Module):
+    if isinstance(net, torch.nn.Module):
         # to TorchScript
-        if converter.convert(model, 'pytorch', 'torchscript', save_path=torchscript_dir):
+        if converter.convert(net, 'pytorch', 'torchscript', save_path=torchscript_dir):
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape, opset version
-        if converter.convert(model, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs, model_input=model_input, optimize=False):
+        if converter.convert(net, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs, model_input=model_input, optimize=False):
             generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
@@ -183,13 +183,13 @@ def _generate_model_family(
         #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
         # )
 
-    elif isinstance(model, tf.keras.Model):
+    elif isinstance(net, tf.keras.Model):
         # to TFS
-        converter.convert(model, 'tensorflow', 'tfs', save_path=tfs_dir)
+        converter.convert(net, 'tensorflow', 'tfs', save_path=tfs_dir)
         generated_dir_list.append(tfs_dir.with_suffix('.zip'))
 
         # to TRT
-        converter.convert(model, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs, max_batch_size=32)
+        converter.convert(net, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs, max_batch_size=32)
         generated_dir_list.append(trt_dir.with_suffix('.zip'))
 
     return generated_dir_list

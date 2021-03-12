@@ -22,7 +22,7 @@ origins = []
 if config.BACKEND_CORS_ORIGINS:
     origins_raw = config.BACKEND_CORS_ORIGINS.split(",")
     for origin in origins_raw:
-        use_origin = origin.strip()
+        use_origin = origin.strip().replace('"', '')
         origins.append(use_origin)
     app.add_middleware(
         CORSMiddleware,

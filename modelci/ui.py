@@ -7,6 +7,8 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
+from modelci.types.models import MLModel
+
 console = Console()
 
 status_mapper = {
@@ -98,21 +100,23 @@ def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
     console.print(table)
 
 
-def model_detailed_view(model: dict):
+def model_detailed_view(model: MLModel):
+    # TODO: update the print fields
     dim_color = 'grey62'
 
     grid = Table.grid(padding=(0, 2))
     # Basic Info
-    grid.add_row('ID', 'Model Name', 'Framework', 'Version', 'Pretrained Dataset', 'Metric', 'Score', 'Task', style='b')
+    grid.add_row('ID', 'Architecture', 'Framework', 'Version', 'Pretrained Dataset', 'Metric', 'Score', 'Task',
+                 style='b')
     grid.add_row(
-        model['id'],
-        model['name'],
-        model['framework'],
-        str(model['version']),
-        model['dataset'],
-        list(model["metric"].keys())[0],
-        str(list(model["metric"].values())[0]),
-        model['task']
+        str(model.id),
+        model.architecture,
+        model.framework.name,
+        str(model.version),
+        model.dataset,
+        list(model.metric.keys())[0].name,  # TODO: display multiple metrics
+        str(list(model.metric.values())[0]),
+        model.task.name.replace('_', ' ')
     )
 
     converted_grid = Table.grid(padding=(0, 2))
@@ -120,45 +124,44 @@ def model_detailed_view(model: dict):
         converted_grid.add_column(style=dim_color, justify='right')
         converted_grid.add_column()
     # Converted model info
-    create_time = datetime.strptime(model['create_time'], '%Y-%m-%dT%H:%M:%S.%f')
-    time_delta = humanize.naturaltime(datetime.now() - create_time)
+    time_delta = humanize.naturaltime(datetime.now().astimezone() - model.create_time)
     converted_grid.add_row(Text('Converted Model Info', style='bold cyan3', justify='left'))
     converted_grid.add_row(
-        'Serving Engine', model['engine'],
-        'Status', status_mapper[model['status']],
-        'Creator', model['creator'],
+        'Serving Engine', model.engine.name,
+        'Status', status_mapper[model.status.name],
+        'Creator', model.creator,
         'Created', time_delta,
     )
 
     first = True
-    for input_ in model['inputs']:
+    for input_ in model.inputs:
         converted_grid.add_row(
             Text('Inputs', style=f'b {dim_color}') if first else '', '',
-            'Name', input_['name'],
-            'Shape', str(input_['shape']),
-            'Data Type', input_['dtype'].split('_')[-1],
-            'Format', input_['format'],
+            'Name', input_.name,
+            'Shape', str(input_.shape),
+            'Data Type', input_.dtype.name.split('_')[-1],
+            'Format', input_.format.name,
         )
         first = False
     first = True
-    for output_ in model['outputs']:
+    for output_ in model.outputs:
         converted_grid.add_row(
             Text('Outputs', style=f'b {dim_color}') if first else '', '',
-            'Name', output_['name'],
-            'Shape', str(output_['shape']),
-            'Data Type', output_['dtype'].split('_')[-1],
-            'Format', output_['format'],
+            'Name', output_.name,
+            'Shape', str(output_.shape),
+            'Data Type', output_.dtype.name.split('_')[-1],
+            'Format', output_.format.name,
         )
         first = False
     converted_grid.add_row()
 
     # Profiling results
     converted_grid.add_row(Text('Profiling Results', style='bold cyan3', justify='left'))
-    if not model['profile_result']:
+    if not model.profile_result:
         converted_grid.add_row('N.A.')
     else:
-        spr = model['profile_result']['static_result']
-        dprs = model['profile_result']['dynamic_results']
+        spr = model.profile_result['static_result']
+        dprs = model.profile_result['dynamic_results']
 
         # Static profiling result
         converted_grid.add_row(Text('Static Result', style='bold turquoise2', justify='left'))
@@ -203,4 +206,3 @@ def model_detailed_view(model: dict):
 
     console.print(grid)
     console.print(converted_grid)
-    
