@@ -18,7 +18,7 @@ from modelci.app import (start as app_start, stop as app_stop)
 from modelci.utils import Logger
 from modelci.utils.docker_container_manager import DockerContainerManager
 
-logger = Logger(__name__)
+logger = Logger(__name__, welcome=False)
 
 @click.group()
 def service():

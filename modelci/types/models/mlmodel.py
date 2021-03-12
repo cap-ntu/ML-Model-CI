@@ -9,13 +9,14 @@ import getpass
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Optional, Dict, List
+from typing import Union, Optional, Dict, List, Any
 
 from bson import ObjectId
 from gridfs import GridOut
 from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, root_validator
 
-from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId
+from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId, \
+    named_enum_json_encoder
 from .pattern import as_form
 from ...hub.utils import parse_path_plain, generate_path_plain
 
@@ -47,6 +48,7 @@ class Weight(BaseModel):
             return self.file.read_bytes()
 
 
+@as_form
 class BaseMLModel(BaseModel):
     architecture: str = Field(..., example='ResNet50')
     framework: Framework
@@ -72,21 +74,32 @@ class BaseMLModel(BaseModel):
         """
         if use_enum_values:
             self.Config.use_enum_values = True
+            # TODO: auto find field who contains `Enum`
+            IOShape.Config.use_enum_values = True
             data = super().dict(**kwargs)
-            # fix metric key as a Enum
-            metric: dict = data.get('metric', None)
-            if metric:
-                data['metric'] = {k.name: v for k, v in metric.items()}
             self.Config.use_enum_values = False
+            IOShape.Config.use_enum_values = False
         else:
             data = super().dict(**kwargs)
+
+        # fix metric key as a Enum
+        metric: dict = data.get('metric', None)
+        if metric:
+            data['metric'] = {k.name: v for k, v in metric.items()}
 
         return data
 
     class Config:
         allow_population_by_field_name = True
         json_encoders = {
-            ObjectId: str
+            ObjectId: str,
+            Framework: named_enum_json_encoder,
+            Engine: named_enum_json_encoder,
+            Task: named_enum_json_encoder,
+            Status: named_enum_json_encoder,
+            ModelStatus: named_enum_json_encoder,
+            # TODO: check whether we can auto detect sub-model's json encoder
+            **IOShape.__config__.json_encoders,
         }
 
     @property
@@ -98,22 +111,12 @@ class MLModel(BaseMLModel):
     id: Optional[PydanticObjectId] = Field(default=None, alias='_id')
     parent_model_id: Optional[PydanticObjectId]
     weight: Weight
-    # profile_result: Optional[ProfileResult]
-    status: Status = Status.Unknown
-    model_status: List[ModelStatus] = Field(default_factory=list)
-    creator: str = Field(default_factory=getpass.getuser)
-    create_time: datetime = Field(default_factory=datetime.now, const=True)
-
-
-class MLModelIn(BaseMLModel):
-    # noinspection PyUnresolvedReferences
-    """
-    Attributes:
-        parent_model_id: The parent model ID of current model if this model is derived from a pre-existing one.
-    """
-    weight: Weight
+    profile_result: Optional[Any]
+    status: Optional[Status] = Status.Unknown
     model_input: Optional[list]  # TODO: merge into field `inputs`
     model_status: List[ModelStatus] = Field(default_factory=list)
+    creator: Optional[str] = Field(default_factory=getpass.getuser)
+    create_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
     @property
     def saved_path(self):
@@ -121,7 +124,7 @@ class MLModelIn(BaseMLModel):
         return super().saved_path.with_suffix(suffix)
 
 
-class MLModelInYaml(MLModelIn):
+class MLModelFromYaml(BaseMLModel):
     weight: Union[FilePath, DirectoryPath]
     architecture: Optional[str]
     framework: Optional[Framework]
@@ -161,9 +164,4 @@ class MLModelInYaml(MLModelIn):
     @property
     def saved_path(self):
         suffix = Path(self.weight).suffix
-        return super(MLModelIn, self).saved_path.with_suffix(suffix)
-
-
-@as_form
-class MLModelInForm(BaseMLModel):
-    model_input: Optional[list]
+        return super().saved_path.with_suffix(suffix)

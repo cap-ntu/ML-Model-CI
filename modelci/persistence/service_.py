@@ -8,18 +8,19 @@ Date: 2/17/2021
 Persistence service using PyMongo.
 """
 import gridfs
+from bson import ObjectId
 
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models.mlmodel import MLModel, MLModelIn
+from modelci.types.models import MLModel
 
 _db = MongoClient()[MONGO_DB]
 _collection = _db['model_d_o']
 _fs = gridfs.GridFS(_db)
 
 
-def save(model_in: MLModelIn):
+def save(model_in: MLModel):
     """Register a model into ModelDB and GridFS. `model.id` should be set as `None`, otherwise, the function will
     raise a `ValueError`.
 
@@ -42,9 +43,9 @@ def save(model_in: MLModelIn):
             limit=1
     ):
         raise ServiceException(
-            f'Model business object with primary keys architecture={model_in.architecture}, '
+            f'Model with primary keys architecture={model_in.architecture}, '
             f'framework={model_in.framework}, engine={model_in.engine}, version={model_in.version},'
-            f'task={model_in.task}, and dataset={model_in.dataset}  has exists.'
+            f'task={model_in.task}, and dataset={model_in.dataset} has exists.'
         )
 
     # TODO: update weight ID in the MLModelIn
@@ -52,3 +53,13 @@ def save(model_in: MLModelIn):
     model = MLModel(**model_in.dict(exclude={'weight'}), weight=weight_id)
     model.id = _collection.insert_one(model.dict(exclude_none=True, by_alias=True, use_enum_values=True)).inserted_id
     return model
+
+
+def get_by_id(id: str) -> MLModel:
+    """Get a MLModel object by its ID.
+    """
+    model_data = _collection.find_one(filter={'_id': ObjectId(id)})
+    if model_data is not None:
+        return MLModel.parse_obj(model_data)
+    else:
+        raise ServiceException(f'Model with id={id} does not exist.')

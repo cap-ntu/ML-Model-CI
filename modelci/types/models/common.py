@@ -16,7 +16,7 @@ import torch
 from bson import ObjectId
 from pydantic import BaseModel
 
-from modelci.types.trtis_objects import DataType
+from modelci.types.type_conversion import type_to_data_type
 
 
 class NamedEnum(Enum):
@@ -107,6 +107,23 @@ class Metric(NamedEnum):
     IoU = 2
 
 
+class DataType(NamedEnum):
+    TYPE_INVALID = 0
+    TYPE_BOOL = 1
+    TYPE_UINT8 = 2
+    TYPE_UINT16 = 3
+    TYPE_UINT32 = 4
+    TYPE_UINT64 = 5
+    TYPE_INT8 = 6
+    TYPE_INT16 = 7
+    TYPE_INT32 = 8
+    TYPE_INT64 = 9
+    TYPE_FP16 = 10
+    TYPE_FP32 = 11
+    TYPE_FP64 = 12
+    TYPE_STRING = 13
+
+
 class ModelInputFormat(NamedEnum):
     FORMAT_NONE = 0
     FORMAT_NHWC = 1
@@ -140,6 +157,16 @@ class ModelStatus(NamedEnum):
     TRAINING = 6
 
 
+def named_enum_json_encoder(e: NamedEnum):
+    return e.name
+
+
+def type_to_data_type_(tensor_type):
+    # TODO: temp solution, `type_to_data_type` need to remove
+    trtis_dtype = type_to_data_type(tensor_type)
+    return DataType(trtis_dtype.value)
+
+
 class IOShape(BaseModel):
     """Class for recording input and output shape with their data type.
 
@@ -157,20 +184,21 @@ class IOShape(BaseModel):
     format: ModelInputFormat = ModelInputFormat.FORMAT_NONE
 
     def __init__(self, **data):
-        from modelci.types.type_conversion import type_to_data_type
 
         dtype = data.pop('dtype')
         if isinstance(dtype, str):
             try:
                 # if the type name is unified python type
-                dtype = type_to_data_type(eval(dtype))  # nosec
+                dtype = type_to_data_type_(eval(dtype))  # nosec
             except NameError:
                 # try if the dtype is `DataType`
                 dtype = DataType[dtype.upper()]
-        elif isinstance(dtype, (type, int)):
+        elif isinstance(dtype, type):
+            dtype = type_to_data_type_(dtype)
+        elif isinstance(dtype, int):
             dtype = DataType(dtype)
         elif isinstance(dtype, (torch.dtype, tf.dtypes.DType, np.dtype)):
-            dtype = type_to_data_type(dtype)
+            dtype = type_to_data_type_(dtype)
         elif isinstance(dtype, DataType):
             pass
         else:
@@ -223,11 +251,14 @@ class IOShape(BaseModel):
         return '{}, dtype={}, format={}'.format(self.shape, self.dtype, self.format.name)
 
     class Config:
-        use_enum_values = True
         schema_extra = {
             'example': {
                 'shape': [-1, 3, 224, 224],
                 'dtype': DataType.TYPE_FP32,
                 'name': 'input0',
             }
+        }
+        json_encoders = {
+            DataType: named_enum_json_encoder,
+            ModelInputFormat: named_enum_json_encoder,
         }

@@ -6,18 +6,22 @@ Email: yli056@e.ntu.edu.sg
 Date: 6/20/2020
 """
 import asyncio
+import json
 import shutil
 from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, File, UploadFile, Depends
+from fastapi.exceptions import RequestValidationError
+from pydantic.error_wrappers import ErrorWrapper
+from starlette.responses import JSONResponse
 
 from modelci.hub.manager import register_model
 from modelci.persistence.service import ModelService
+from modelci.persistence.service_ import get_by_id
 from modelci.types.bo import Framework, Engine, Task
-from modelci.types.models import MLModelIn
-from modelci.types.models.mlmodel import MLModelInForm
-from modelci.types.vo.model_vo import ModelDetailOut, ModelListOut, Framework as Framework_, Engine as Engine_, \
+from modelci.types.models import MLModel, BaseMLModel
+from modelci.types.vo.model_vo import ModelListOut, Framework as Framework_, Engine as Engine_, \
     Task as Task_
 
 router = APIRouter()
@@ -33,19 +37,24 @@ def get_all_model(architecture: str = None, framework: Framework_ = None, engine
     if task is not None:
         engine = Task[task.value.upper()]
 
-    models = ModelService.get_models(architecture=architecture, framework=framework, engine=engine, task=task, version=version)
+    models = ModelService.get_models(architecture=architecture, framework=framework, engine=engine, task=task,
+                                     version=version)
     return list(map(ModelListOut.from_bo, models))
 
 
-@router.get('/{id}', response_model=ModelDetailOut)
+@router.get('/{id}')
 def get_model(*, id: str):  # noqa
-    model = ModelService.get_model_by_id(id)
-    return ModelDetailOut.from_bo(model)
+    # Due to FastAPI use default json encoder before customer encoder, we have to rely on
+    # Pydantic BaseModel.json and convert it back
+    # Check https://github.com/tiangolo/fastapi/blob/master/fastapi/encoders.py#L118 to see if this
+    # issue is fixed.
+    content = json.loads(get_by_id(id).json(by_alias=False))
+    return JSONResponse(content=content)
 
 
 @router.post('/', status_code=201)
 async def publish_model(
-        ml_model_in_form: MLModelInForm = Depends(MLModelInForm.as_form),
+        model: BaseMLModel = Depends(BaseMLModel.as_form),
         files: List[UploadFile] = File(
             [],
             description='This field can be set with empty value. In such settings, the publish is a dry run to'
@@ -63,7 +72,7 @@ async def publish_model(
     on the underlying devices in the clusters, and collects, aggregates, and processes running model performance.
 
     Args:
-        ml_model_in_form (MLModelInForm): Model meta information in the form of `multipart/formdata`.
+        model (MLModel): Model meta information.
         files (List[UploadFile]): A list of model weight files. The files are organized accordingly. Their file name
             contains relative path to their common parent directory.
             If the files is empty value, a dry-run to this API is conducted for parameter checks. No information
@@ -88,7 +97,7 @@ async def publish_model(
     """
     # save the posted files as local cache
     loop = asyncio.get_event_loop()
-    saved_path = ml_model_in_form.saved_path
+    saved_path = model.saved_path
     if len(files) == 0:
         # conduct dry run for parameter check only.
         return {'status': True}
@@ -97,7 +106,11 @@ async def publish_model(
         suffix = Path(file.filename).suffix
         try:
             # create directory
-            assert len(suffix) != 0, f'Expect a suffix for file {file.filename}, got None.'
+            if len(suffix) == 0:
+                error = ErrorWrapper(
+                    ValueError(f'Expect a suffix for file {file.filename}, got None.'), loc='files[0]'
+                )
+                raise RequestValidationError([error])
             saved_path = saved_path.with_suffix(suffix)
             saved_path.parent.mkdir(exist_ok=True, parents=True)
 
@@ -111,8 +124,8 @@ async def publish_model(
         raise NotImplementedError('`publish_model` not implemented for multiple files upload.')
         # zip the files
 
-    ml_model_in = MLModelIn(**ml_model_in_form.dict(), weight=saved_path)
-    models = register_model(model_in=ml_model_in, convert=convert, profile=profile)
+    model = MLModel(**model.dict(), weight=saved_path)
+    models = register_model(model=model, convert=convert, profile=profile)
     return {
         'data': {'id': [str(model.id) for model in models], },
         'status': True
