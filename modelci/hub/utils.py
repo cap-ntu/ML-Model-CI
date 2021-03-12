@@ -4,9 +4,6 @@ from enum import unique, Enum
 from pathlib import Path
 from typing import Union
 
-import tensorflow as tf
-import torch
-
 from modelci.types.bo import Framework, Engine, ModelVersion, Task
 from modelci.types.trtis_objects import DataType, ModelInputFormat
 
@@ -90,6 +87,9 @@ def GiB(val):
 
 
 def type_to_trt_type(tensor_type: type):
+    import tensorflow as tf
+    import torch
+
     mapper = defaultdict(
         lambda: DataType.TYPE_INVALID, {
             bool: DataType.TYPE_BOOL,

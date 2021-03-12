@@ -2,14 +2,15 @@ from collections import defaultdict
 
 import numpy as np
 import onnxconverter_common
-import tensorflow as tf
-import torch
 from onnx import TensorProto
-
-from modelci.types.bo import DataType
 
 
 def type_to_data_type(tensor_type):
+    import tensorflow as tf
+    import torch
+
+    from modelci.types.bo import DataType
+
     mapper = defaultdict(
         lambda: DataType.TYPE_INVALID, {
             bool: DataType.TYPE_BOOL,
@@ -70,6 +71,8 @@ def type_to_data_type(tensor_type):
 
 
 def model_data_type_to_np(model_dtype):
+    from modelci.types.bo import DataType
+
     mapper = {
         DataType.TYPE_INVALID: None,
         DataType.TYPE_BOOL: np.bool,
@@ -99,6 +102,9 @@ def model_data_type_to_np(model_dtype):
 
 
 def model_data_type_to_torch(model_dtype):
+    from modelci.types.bo import DataType
+    import torch
+
     mapper = {
         DataType.TYPE_INVALID: None,
         DataType.TYPE_BOOL: torch.bool,
@@ -124,6 +130,8 @@ def model_data_type_to_torch(model_dtype):
 
 
 def model_data_type_to_onnx(model_dtype):
+    from modelci.types.bo import DataType
+
     mapper = {
         DataType.TYPE_INVALID: onnxconverter_common,
         DataType.TYPE_BOOL: onnxconverter_common.BooleanTensorType,

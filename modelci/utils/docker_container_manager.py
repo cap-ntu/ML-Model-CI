@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 import docker
-from modelci.experimental.mongo_client import MongoClient
+from pymongo import MongoClient
 
 from modelci.config import service_settings, db_settings
 from modelci.utils import Logger
@@ -197,8 +197,11 @@ class DockerContainerManager(object):
         time.sleep(1)
         try:
             # create MongoDB user
-            client = MongoClient(password=None)
-            kwargs = {'pwd': db_settings.mongo_password, 'roles': [{'role': 'readWrite', 'db': db_settings.mongo_db}]}
+            client = MongoClient(f'{db_settings.mongo_host}:{db_settings.mongo_port}')
+            kwargs = {
+                'pwd': db_settings.mongo_password.get_secret_value(),
+                'roles': [{'role': 'readWrite', 'db': db_settings.mongo_db}]
+            }
             client[db_settings.mongo_db].command("createUser", db_settings.mongo_username, **kwargs)
         except Exception as e:
             self.logger.error(f'Exception during starting MongoDB: {e}')

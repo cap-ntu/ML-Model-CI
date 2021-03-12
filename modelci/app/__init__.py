@@ -9,6 +9,7 @@ import os
 import signal
 import subprocess
 import sys
+from pathlib import Path
 
 from modelci.config import app_settings
 from modelci.utils import Logger
@@ -22,13 +23,9 @@ def start():
     # check if the process is running
     pid = check_process_running(app_settings.server_port)
     if not pid:
-        args = [sys.executable, '-m', 'uvicorn', 'modelci.app.main:app', '--port',
-                str(app_settings.server_port), '--host', '0.0.0.0']
-        if app_settings.server_host != 'localhost':
-            args += ['--host', app_settings.server_port]
-        backend_process = subprocess.Popen(args, preexec_fn=os.setsid)
-        pid = backend_process.pid
-        logger.info(f'Uvicorn server listening on {app_settings.server_url}')
+        args = [sys.executable, f'{Path(__file__).absolute().parent / "main.py"}', '&>', '/home/lym/tmp/test.log', '&']
+        backend_process = subprocess.Popen(args, preexec_fn=os.setsid, close_fds=True)
+        logger.info(f'Uvicorn server [PID {backend_process.pid}] listening on {app_settings.server_url}')
     else:
         logger.warning(f'Unable to started server. A process with pid={pid} is already listening on '
                        f'port {app_settings.server_port}. '

@@ -20,8 +20,6 @@ import yaml
 from pydantic import ValidationError
 
 from modelci.config import app_settings
-from modelci.hub.init_data import export_model
-from modelci.hub.publish import _download_model_from_url
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric
 from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
@@ -166,6 +164,8 @@ def download_model_from_url(
 ):
     """Download a model weight file from an online URL."""
 
+    from modelci.hub.publish import _download_model_from_url
+
     _download_model_from_url(url, path)
     logger.info(f'{path} model downloaded successfully.')
 
@@ -185,6 +185,8 @@ def export(
     Export model from PyTorch hub / TensorFlow hub and try convert the model into various format for different serving
     engines.
     """
+    from modelci.hub.init_data import export_model
+
     export_model(model_name=name, framework=framework, enable_trt=trt)
 
 
