@@ -9,7 +9,8 @@ import {
   Tag,
   Menu,
   Dropdown,
-  Modal
+  Modal,
+  Tooltip
 } from 'antd';
 import {
   EditOutlined,
@@ -63,75 +64,150 @@ const columns = [
     dataIndex: 'architecture',
     key: 'architecture',
     className: 'column',
+    ellipsis: {
+      showTitle: false,
+    },
+    render: architecture => (
+      <Tooltip placement="topLeft" title={architecture}>
+        {architecture}
+      </Tooltip>
+    )
   },
   {
     title: 'Framework',
     dataIndex: 'framework',
     key: 'framework',
     className: 'column',
+    ellipsis: {
+      showTitle: false,
+    },
+    render: framework => (
+      <Tooltip placement="topLeft" title={framework}>
+        {framework}
+      </Tooltip>
+    )
   },
   {
     title: 'Engine',
     dataIndex: 'engine',
     key: 'engine',
     className: 'column',
+    ellipsis: {
+      showTitle: false,
+    },
+    render: engine => (
+      <Tooltip placement="topLeft" title={engine}>
+        {engine}
+      </Tooltip>
+    )
   },
   {
     title: 'Pre-trained Dataset',
     dataIndex: 'dataset',
     key: 'dataset',
+    ellipsis: {
+      showTitle: false,
+    },
     className: 'column',
+    render: dataset => (
+      <Tooltip placement="topLeft" title={dataset}>
+        {dataset}
+      </Tooltip>
+    ),
   },
   {
     title: 'Metric',
     dataIndex: 'metric',
     key: 'metric',
     className: 'column',
-    render: (metric) => Object.keys(metric)[0],
+    ellipsis: {
+      showTitle: false,
+    },
+    render: metric => (
+      <Tooltip placement="topLeft" title={Object.keys(metric)[0]}>
+        {Object.keys(metric)[0]}
+      </Tooltip>
+    )
   },
   {
     title: 'Score',
     dataIndex: 'metric',
     key: 'score',
     className: 'column',
-    render: (metric) => metric[Object.keys(metric)[0]],
+    ellipsis: {
+      showTitle: false,
+    },
+    render: metric => (
+      <Tooltip placement="topLeft" title={metric[Object.keys(metric)[0]]}>
+        {metric[Object.keys(metric)[0]]}
+      </Tooltip>
+    )
   },
   {
     title: 'Task',
     dataIndex: 'task',
     key: 'task',
     className: 'column',
+    ellipsis: {
+      showTitle: false,
+    },
+    render: task => (
+      <Tooltip placement="topLeft" title={task}>
+        {task}
+      </Tooltip>
+    )
   },
   {
     title: 'Version',
     dataIndex: 'version',
     key: 'version',
     className: 'column',
+    ellipsis: {
+      showTitle: false,
+    },
+    render: version => (
+      <Tooltip placement="topLeft" title={version}>
+        {version}
+      </Tooltip>
+    )
   },
   {
     title: 'Status',
     dataIndex: 'model_status',
     key: 'model_status',
     className: 'column',
-    render: (modelStatus) => {
-      return modelStatus.map((status, index) => (
-        <Tag color={tagColor[status]} key={index}>
+    ellipsis: {
+      showTitle: false,
+    },
+    render: (status) => (
+      <Tooltip placement="topLeft" title={status}>
+        <Tag color={tagColor[status]}>
           {status}
         </Tag>
-      ));
-    },
+      </Tooltip>
+    )
   },
   {
     title: 'Model User',
     dataIndex: 'creator',
     key: 'creator',
     className: 'column',
+    ellipsis: {
+      showTitle: false,
+    },
+    render: creator => (
+      <Tooltip placement="topLeft" title={creator}>
+        {creator}
+      </Tooltip>
+    )
   },
   {
     title: 'Action',
     dataIndex: 'id',
     key: 'id',
     className: 'column',
+    fixed: 'right',
+    responsive: ["sm"],
     render: (text, record) => {
       const menu = (
         <Menu>
@@ -161,7 +237,7 @@ const columns = [
         </Dropdown.Button>
       );
     },
-  },
+  }
 ];
 
 const getRandomuserParams = (params) => {
@@ -183,13 +259,15 @@ export default class Dashboard extends React.Component {
         pageSize: 10,
       },
       loading: false,
-      showRegisterForm: false
+      showRegisterForm: false,
+      disableRegisterForm: false
     };
     this.loadAllModels();
     this.handleCancelRegister.bind(this);
     this.showRegisterForm.bind(this);
     this.submitRegisterForm.bind(this);
     this.setModelFileData.bind(this);
+    this.handleNetworkError.bind(this);
   }
 
   public componentDidMount() {
@@ -223,21 +301,22 @@ export default class Dashboard extends React.Component {
         },
         files: null
       });
-    });
+    }).catch((error) =>{
+      this.handleNetworkError();
+    }
+
+    );
   };
 
   public loadAllModels = () => {
     const targetUrl = config.modelURL;
     axios
-      .get(targetUrl)
+      .get(targetUrl, {timeout:1000, timeoutErrorMessage: "The is not reachable"})
       .then((response) => {
-        // handle success
-        // console.log(response.data);
         this.setState({ allModelInfo: response.data });
       })
-      .catch(() => {
-        // handle error
-        // console.log(error);
+      .catch((error) => {
+        this.setState({ allModelInfo: [] });
       })
       .then(() => {
         // always executed
@@ -273,6 +352,14 @@ export default class Dashboard extends React.Component {
     this.setState({ files: e.target.files[0] });
   }
 
+  public handleNetworkError() {
+    this.setState({disableRegisterForm: true, loading: false})
+    Modal.error({
+      title: 'ModelHub Connection Error',
+      content: <p>Please make sure your restful api <br /><a href={config.modelURL}>{config.modelURL}</a> <br />is avaliable</p>,
+    });
+  }
+
   public render() {
     return (
       <Card>
@@ -283,7 +370,7 @@ export default class Dashboard extends React.Component {
             flexDirection: 'row',
           }}
         >
-          <Button size="large" type="primary" onClick={this.showRegisterForm}>
+          <Button size="large" type="primary" onClick={this.showRegisterForm} disabled={this.state.disableRegisterForm}>
             Register Model
           </Button>
           <Modal

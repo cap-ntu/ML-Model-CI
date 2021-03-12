@@ -1,4 +1,4 @@
-const host = 'http://155.69.146.35:8000'
+const host = 'http://127.0.0.1:8000'
 export default {
   default: {
     modelURL: `${host}/api/v1/model`,

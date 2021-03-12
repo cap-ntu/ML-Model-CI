@@ -14,7 +14,7 @@ from modelci.hub.manager import register_model, get_remote_model_weight
 from modelci.hub.utils import generate_path_plain
 from modelci.persistence.service import ModelService
 from modelci.types.bo import ModelVersion, Engine, IOShape, ModelStatus
-from modelci.types.models import MLModelIn
+from modelci.types.models import MLModel
 from modelci.types.type_conversion import model_data_type_to_torch, type_to_data_type
 from modelci.utils.exceptions import ModelStructureError
 
@@ -143,7 +143,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         )
         saved_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model,saved_path.with_suffix('.pt') )
-        mlmodelin = MLModelIn(
+        mlmodelin = MLModel(
             dataset='',
             metric={key: 0 for key in model.metric.keys()},
             task=model.task,
