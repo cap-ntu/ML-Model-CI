@@ -49,7 +49,7 @@ def test_get_model_by_name():
     assert len(models) == 1
     # check name
     for model in models:
-        assert model.name == 'ResNet50'
+        assert model.architecture == 'ResNet50'
 
 
 def test_get_model_by_task():
