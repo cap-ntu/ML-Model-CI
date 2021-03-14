@@ -19,6 +19,7 @@ from modelci.hub.converter.to_pytorch import PyTorchConverter
 from modelci.hub.converter.to_tfs import TFSConverter
 from modelci.hub.converter.to_torchscript import TorchScriptConverter
 from modelci.hub.converter.to_trt import TRTConverter
+from modelci.hub.converter.to_tvm import TVMConverter
 
 framework_supported = {
     "onnx": ONNXConverter,
