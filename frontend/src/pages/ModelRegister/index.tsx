@@ -52,11 +52,12 @@ const CustomCheckbox = props => {
 const CustonHeader = props => {
   return(
     <PageHeader
+      onBack={() => window.history.back()}
       ghost={false}
       title={<Title>{props.title}</Title>}
       extra={
         <FormButtonGroup>
-          <Reset>Reset</Reset>
+          <Reset>Cancel</Reset>
           <Submit>Submit</Submit>
         </FormButtonGroup>
       }
@@ -79,6 +80,48 @@ const components = {
   FormLayout,
   ArrayTable
 };
+
+const initialValues = {
+  "architecture": "ResNet50",
+  "framework": "PyTorch",
+  "version": 1,
+  "engine": "PYTORCH",
+  "task": 0,
+  "dataset": "ImageNet",
+  "metric": [
+    {
+      "name": "acc"
+    },
+    {
+      "score": 0.76
+    }
+  ],
+  "compression": false,
+  "convert": true,
+  "profile": false,
+  "inputs": [
+    {
+      "name": "input0",
+      "shape": [
+        -1,
+        3,
+        224,
+        224
+      ],
+      "dtype": 11
+    }
+  ],
+  "outputs": [
+    {
+      "name": "output",
+      "shape": [
+        -1,
+        1000
+      ],
+      "dtype": 11
+    }
+  ]
+}
 
 export default class ModelRegister extends React.Component {
   constructor(props) {
@@ -111,6 +154,7 @@ export default class ModelRegister extends React.Component {
         <Col span={12} offset={6}>
           <Card>
             <SchemaForm
+              initialValues={initialValues}
               id="modelRegisterForm"
               components={components}
               schema={registerSchema}
@@ -118,7 +162,6 @@ export default class ModelRegister extends React.Component {
                 fontSize: 'medium',
               }}
               onSubmit={this.submitRegisterForm}
-              onChange={(values) => console.log(values)}
             >
             </SchemaForm>
           </Card>

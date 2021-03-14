@@ -36,8 +36,7 @@
               "x-component": "Input",
               "x-component-props": {
                 "placeholder": "ResNet50"
-              },
-              "default": "ResNet50"
+              }
             },
             "framework": {
               "required": true,
@@ -52,15 +51,13 @@
                   "label": "Tensorflow",
                   "value": "Tensorflow"
                 }
-              ],
-              "default": "PyTorch"
+              ]
             },
             "version": {
               "required": true,
               "title": "Version",
               "x-component": "NumberPicker",
-              "minimum": 1,
-              "default": 1
+              "minimum": 1
             },
             "engine": {
               "required": true,
@@ -95,8 +92,7 @@
                   "label": "Customzied",
                   "value": "CUSTOMIZED"
                 }
-              ],
-              "default": "PYTORCH"
+              ]
             }
           }
         },
@@ -154,13 +150,11 @@
                 "properties": {
                   "name": {
                     "title": "Name",
-                    "x-component": "Input",
-                    "default": "input0"
+                    "x-component": "Input"
                   },
                   "shape": {
                     "title": "Shape",
-                    "x-component": "Input",
-                    "default": [-1, 3, 224, 224]
+                    "x-component": "Input"
                   },
                   "dtype": {
                     "title": "dtype",
@@ -222,8 +216,7 @@
                         "label": "STRING",
                         "value": 13
                       }
-                    ],
-                    "default": 11
+                    ]
                   }
                 }
               }
@@ -250,13 +243,11 @@
                 "properties": {
                   "name": {
                     "title": "Name",
-                    "x-component": "Input",
-                    "default": "output"
+                    "x-component": "Input"
                   },
                   "shape": {
                     "title": "Shape",
-                    "x-component": "Input",
-                    "default": [-1, 1000]
+                    "x-component": "Input"
                   },
                   "dtype": {
                     "title": "dtype",
@@ -318,8 +309,7 @@
                         "label": "STRING",
                         "value": 13
                       }
-                    ],
-                    "default": 11
+                    ]
                   }
                 }
               }
@@ -368,14 +358,12 @@
                   "label": "Segmentation",
                   "value": 2
                 }
-              ],
-              "default": 0
+              ]
             },
             "dataset": {
               "required": true,
               "title": "Dataset",
-              "x-component": "Input",
-              "default": "ImageNet"
+              "x-component": "Input"
             },
             "metric": {
               "required": true,
@@ -413,13 +401,11 @@
           "x-component-props": {
             "title": "Compression",
             "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub/compressor"
-          },
-          "default": false
+          }
         },
         "convert": {
           "name": "conversion",
           "x-component": "CustomCheckbox",
-          "default": true,
           "x-component-props": {
             "title": "Conversion",
             "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub#convert"
@@ -428,7 +414,6 @@
         "profile": {
           "name": "profiling",
           "x-component": "CustomCheckbox",
-          "default": false,
           "x-component-props": {
             "title": "Profiling",
             "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub/client"
