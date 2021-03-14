@@ -20,5 +20,6 @@ from .to_tfs import TFSConverter
 from .to_onnx import ONNXConverter
 from .to_pytorch import PyTorchConverter
 from .to_torchscript import TorchScriptConverter
+from .to_tvm import TVMConverter
 
-__all__ = ["convert", "TRTConverter", "TFSConverter", "ONNXConverter", "PyTorchConverter", "TorchScriptConverter"]
+__all__ = ["convert", "TRTConverter", "TFSConverter", "ONNXConverter", "PyTorchConverter", "TorchScriptConverter", "TVMConverter"]

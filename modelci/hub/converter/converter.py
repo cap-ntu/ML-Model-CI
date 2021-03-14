@@ -25,7 +25,8 @@ framework_supported = {
     "pytorch": PyTorchConverter,
     "tfs": TFSConverter,
     "torchscript": TorchScriptConverter,
-    "trt": TRTConverter
+    "trt": TRTConverter,
+    "tvm": TVMConverter
 }
 
 
