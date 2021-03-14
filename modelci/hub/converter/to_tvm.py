@@ -26,7 +26,7 @@ from modelci.utils import Logger
 
 from tvm import relay
 from tvm.contrib.download import download_testdata
-from modelci.types.bo import IOShape
+# from modelci.types.bo import IOShape
 
 from pathlib import Path
 from PIL import Image
