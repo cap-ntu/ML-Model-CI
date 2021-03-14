@@ -3,6 +3,10 @@ from pathlib import Path
 
 from pydantic import BaseSettings, SecretStr, SecretBytes
 
+# API
+API_V1_STR = '/api/v1'
+API_EXP_STR = '/api/exp'
+
 
 class DBSettings(BaseSettings):
     mongo_host: str = 'localhost'
@@ -22,7 +26,7 @@ class ServiceSettings(BaseSettings):
     mongo_port: int = 27017
 
     # cAdvisor configuration
-    cadvisor_port: int = 8000
+    cadvisor_port: int = 8080
 
     # Node exporter configuration
     node_exporter_port: int = 9400
@@ -31,14 +35,9 @@ class ServiceSettings(BaseSettings):
         env_file = Path(__file__).absolute().parent / '.env'
 
 
-# API
-API_V1_STR = '/api/v1'
-API_EXP_STR = '/api/exp'
-
-
 class AppSettings(BaseSettings):
     project_name: str = 'ModelCI'
-    backend_cors_origins: str = None
+    backend_cors_origins: str = '*'
     server_host: str = 'localhost'
     server_port: int = 8000
     secret_key: SecretBytes = SecretBytes(os.urandom(32))

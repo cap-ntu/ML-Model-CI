@@ -1,4 +1,5 @@
-const host = 'http://155.69.146.35:8000'
+const host = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000'
+
 export default {
   default: {
     modelURL: `${host}/api/v1/model`,

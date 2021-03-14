@@ -39,7 +39,7 @@
     "stylelint": "^13.2.0"
   },
   "scripts": {
-    "start": "env-cmd -f .env icejs start",
+    "start": "env-cmd --silent icejs start",
     "build": "icejs build",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx ./",
