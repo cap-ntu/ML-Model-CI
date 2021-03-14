@@ -408,7 +408,8 @@
           "x-component": "CustomCheckbox",
           "x-component-props": {
             "title": "Conversion",
-            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub#convert"
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub#convert",
+            "default": true
           }
         },
         "profile": {

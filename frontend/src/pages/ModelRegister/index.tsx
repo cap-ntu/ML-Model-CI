@@ -38,7 +38,7 @@ const CustomDivider = props => {
 
 const CustomCheckbox = props => {
   return (
-    <Checkbox onChange={(e)=>{props.onChange(e.target.checked)}}>
+    <Checkbox onChange={(e)=>{props.onChange(e.target.checked)}} checked={props.default}>
       <Space size='small'>
       {props.title} 
       <Tooltip title={`What is ${props.title}?`}>
