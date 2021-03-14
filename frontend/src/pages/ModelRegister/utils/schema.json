@@ -22,7 +22,8 @@
         "grid": true,
         "wrapperCol": 16,
         "labelCol": 8,
-        "labelAlign": "left"
+        "labelAlign": "left",
+        "full": true
       },
       "properties": {
         "NO_NAME_FIELD_$0": {
@@ -71,7 +72,7 @@
                   "value": "TFS"
                 },
                 {
-                  "label": "TORCHSCRIPT",
+                  "label": "TorchScript",
                   "value": "TorchScript"
                 },
                 {
@@ -87,11 +88,11 @@
                   "value": "TVM"
                 },
                 {
-                  "label": "PYTORCH",
+                  "label": "PyTorch",
                   "value": "PYTORCH"
                 },
                 {
-                  "label": "CUSTOMIZED",
+                  "label": "Customzied",
                   "value": "CUSTOMIZED"
                 }
               ],
@@ -163,8 +164,66 @@
                   },
                   "dtype": {
                     "title": "dtype",
-                    "x-component": "Input",
-                    "default": "TYPE_FP32"
+                    "x-component": "select",
+                    "enum": [
+                      {
+                        "label": "INVALID",
+                        "value": 0
+                      },
+                      {
+                        "label": "BOOL",
+                        "value": 1
+                      },
+                      {
+                        "label": "UINT8",
+                        "value": 2
+                      },
+                      {
+                        "label": "UINT16",
+                        "value": 3
+                      },
+                      {
+                        "label": "UINT32",
+                        "value": 4
+                      },
+                      {
+                        "label": "UINT64",
+                        "value": 5
+                      },
+                      {
+                        "label": "INT8",
+                        "value": 6
+                      },
+                      {
+                        "label": "INT16",
+                        "value": 7
+                      },
+                      {
+                        "label": "INT32",
+                        "value": 8
+                      },
+                      {
+                        "label": "INT64",
+                        "value": 9
+                      },
+                      {
+                        "label": "FP16",
+                        "value": 10
+                      },
+                      {
+                        "label": "FP32",
+                        "value": 11
+                      },
+                      {
+                        "label": "FP64",
+                        "value": 12
+                      },
+                      {
+                        "label": "STRING",
+                        "value": 13
+                      }
+                    ],
+                    "default": 11
                   }
                 }
               }
@@ -201,8 +260,66 @@
                   },
                   "dtype": {
                     "title": "dtype",
-                    "x-component": "Input",
-                    "default": "TYPE_FP32"
+                    "x-component": "Select",
+                    "enum": [
+                      {
+                        "label": "INVALID",
+                        "value": 0
+                      },
+                      {
+                        "label": "BOOL",
+                        "value": 1
+                      },
+                      {
+                        "label": "UINT8",
+                        "value": 2
+                      },
+                      {
+                        "label": "UINT16",
+                        "value": 3
+                      },
+                      {
+                        "label": "UINT32",
+                        "value": 4
+                      },
+                      {
+                        "label": "UINT64",
+                        "value": 5
+                      },
+                      {
+                        "label": "INT8",
+                        "value": 6
+                      },
+                      {
+                        "label": "INT16",
+                        "value": 7
+                      },
+                      {
+                        "label": "INT32",
+                        "value": 8
+                      },
+                      {
+                        "label": "INT64",
+                        "value": 9
+                      },
+                      {
+                        "label": "FP16",
+                        "value": 10
+                      },
+                      {
+                        "label": "FP32",
+                        "value": 11
+                      },
+                      {
+                        "label": "FP64",
+                        "value": 12
+                      },
+                      {
+                        "label": "STRING",
+                        "value": 13
+                      }
+                    ],
+                    "default": 11
                   }
                 }
               }
@@ -226,7 +343,8 @@
         "grid": true,
         "wrapperCol": 16,
         "labelCol": 8,
-        "labelAlign": "left"
+        "labelAlign": "left",
+        "full": true
       },
       "properties": {
         "NO_NAME_FIELD_$0": {

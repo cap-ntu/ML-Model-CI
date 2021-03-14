@@ -43,6 +43,15 @@
     display: block;
 }
 
+.ant-form-item-label label, label.ant-checkbox-wrapper{
+  margin-bottom: 0.5em;
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+
 /* Version Tree*/
 .ant-col-offset-2 {
     margin-top: 20px;

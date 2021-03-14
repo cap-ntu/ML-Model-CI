@@ -8,26 +8,29 @@ function CustomInputGroup(props) {
   }
   return (
     <Input.Group compact>
-      <Select defaultValue="acc" onChange={
+      <Select 
+      defaultValue="acc" 
+      style={{ width: '50%' }} 
+      onChange={
         (value)=>{
           props.mutators.shift()
           props.mutators.unshift({"name": value})
         }
-        }>
+      }>
         <Option value="acc">acc</Option>
         <Option value="mAp">mAp</Option>
         <Option value="IoU">IoU</Option>
       </Select>
-      <InputNumber 
-      defaultValue={76}
+      <InputNumber
+      style={{ width: '50%' }} 
+      defaultValue={0.76}
       min={0}
-      max={100}
-      formatter={value => `${value}%`}
-      parser={value => value.replace('%', '')}
+      max={1}
+      step={0.01}
       onChange={
         (value)=>{
           props.mutators.pop()
-          props.mutators.push({"score": value/100})
+          props.mutators.push({"score": value})
         }
       } />
     </Input.Group>

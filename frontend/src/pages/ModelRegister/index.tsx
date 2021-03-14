@@ -25,12 +25,14 @@ import axios from 'axios';
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import CustomUpload from './components/CustomUpload'
 import CustomInputGroup from './components/CustomInputGroup'
-
+const { Title } = Typography;
 const registerSchema = require('./utils/schema.json');
 
 const CustomDivider = props => {
   return (
-    <Divider orientation="left" style={{ marginTop: 10}} > {props.title}</Divider>
+    <Divider orientation="left" style={{ marginTop: 10}} >
+      <Title level={3}>{props.title}</Title>
+    </Divider>
   )
 }
 
@@ -51,11 +53,11 @@ const CustonHeader = props => {
   return(
     <PageHeader
       ghost={false}
-      title={props.title}
+      title={<Title>{props.title}</Title>}
       extra={
         <FormButtonGroup>
-          <Submit>Submit</Submit>
           <Reset>Reset</Reset>
+          <Submit>Submit</Submit>
         </FormButtonGroup>
       }
     />
