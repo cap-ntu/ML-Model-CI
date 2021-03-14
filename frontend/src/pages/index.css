@@ -22,6 +22,11 @@
   white-space: 'nowrap';
 }
 
+
+/* ModelRegister */
+.array-item-operator{
+  padding-left: 0.5em;
+}
 .array-item-operator > button:nth-child(2), .array-item-operator > button:nth-child(3) {
   display: none;
 }
@@ -49,6 +54,18 @@
   font-weight: 600;
   font-size: 16px;
   line-height: 1.5;
+}
+
+.ant-divider-horizontal.ant-divider-with-text-left::before{
+  display: none;
+}
+
+h3.ant-typography{
+  margin-top: 0.5em;
+}
+
+.ant-divider-inner-text, .ant-page-header{
+  padding-left: 0;
 }
 
 
