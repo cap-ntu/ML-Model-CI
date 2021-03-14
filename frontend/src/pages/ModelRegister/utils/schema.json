@@ -1,0 +1,426 @@
+{
+  "type": "object",
+  "properties": {
+    "NO_NAME_FIELD_$0": {
+      "name": "NO_NAME_FIELD_$0",
+      "x-component": "CustonHeader",
+      "x-component-props": {
+        "title": "Model Registeration"
+      }
+    },
+    "NO_NAME_FIELD_$1": {
+      "name": "NO_NAME_FIELD_$1",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Basic Model Information"
+      }
+    },
+    "NO_NAME_FIELD_$2": {
+      "name": "NO_NAME_FIELD_$2",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "grid": true,
+        "wrapperCol": 16,
+        "labelCol": 8,
+        "labelAlign": "left",
+        "full": true
+      },
+      "properties": {
+        "NO_NAME_FIELD_$0": {
+          "name": "NO_NAME_FIELD_$0",
+          "x-component": "mega-layout",
+          "properties": {
+            "architecture": {
+              "required": true,
+              "title": "Architecture",
+              "x-component": "Input",
+              "x-component-props": {
+                "placeholder": "ResNet50"
+              }
+            },
+            "framework": {
+              "required": true,
+              "title": "Framework",
+              "x-component": "select",
+              "enum": [
+                {
+                  "label": "PyTorch",
+                  "value": "PyTorch"
+                },
+                {
+                  "label": "Tensorflow",
+                  "value": "Tensorflow"
+                }
+              ]
+            },
+            "version": {
+              "required": true,
+              "title": "Version",
+              "x-component": "NumberPicker",
+              "minimum": 1
+            },
+            "engine": {
+              "required": true,
+              "title": "Engine",
+              "x-component": "select",
+              "enum": [
+                {
+                  "label": "TFS",
+                  "value": "TFS"
+                },
+                {
+                  "label": "TorchScript",
+                  "value": "TorchScript"
+                },
+                {
+                  "label": "ONNX",
+                  "value": "ONNX"
+                },
+                {
+                  "label": "TRT",
+                  "value": "TRT"
+                },
+                {
+                  "label": "TVM",
+                  "value": "TVM"
+                },
+                {
+                  "label": "PyTorch",
+                  "value": "PYTORCH"
+                },
+                {
+                  "label": "Customzied",
+                  "value": "CUSTOMIZED"
+                }
+              ]
+            }
+          }
+        },
+        "NO_NAME_FIELD_$1": {
+          "name": "NO_NAME_FIELD_$1",
+          "x-component": "mega-layout",
+          "x-component-props": {
+            "labelAlign": "top",
+            "wrapperCol": 24
+          },
+          "properties": {
+            "files": {
+              "required": true,
+              "title": "Model Weight File",
+              "x-component": "CustomUpload",
+              "x-component-props": {
+                "name": "files"
+              }
+            }
+          }
+        }
+      }
+    },
+    "NO_NAME_FIELD_$3": {
+      "name": "NO_NAME_FIELD_$3",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Model Inputs and Outputs Defination"
+      }
+    },
+    "NO_NAME_FIELD_$4": {
+      "name": "NO_NAME_FIELD_$4",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "grid": true
+      },
+      "properties": {
+        "NO_NAME_FIELD_$0": {
+          "name": "NO_NAME_FIELD_$0",
+          "x-component": "mega-layout",
+          "x-component-props": {
+            "labelAlign": "top",
+            "full": true
+          },
+          "properties": {
+            "inputs": {
+              "required": true,
+              "x-component": "arraytable",
+              "x-component-props": {
+                "operationsWidth": 30
+              },
+              "title": "Input",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "x-component": "Input"
+                  },
+                  "shape": {
+                    "title": "Shape",
+                    "x-component": "Input"
+                  },
+                  "dtype": {
+                    "title": "dtype",
+                    "x-component": "select",
+                    "enum": [
+                      {
+                        "label": "INVALID",
+                        "value": 0
+                      },
+                      {
+                        "label": "BOOL",
+                        "value": 1
+                      },
+                      {
+                        "label": "UINT8",
+                        "value": 2
+                      },
+                      {
+                        "label": "UINT16",
+                        "value": 3
+                      },
+                      {
+                        "label": "UINT32",
+                        "value": 4
+                      },
+                      {
+                        "label": "UINT64",
+                        "value": 5
+                      },
+                      {
+                        "label": "INT8",
+                        "value": 6
+                      },
+                      {
+                        "label": "INT16",
+                        "value": 7
+                      },
+                      {
+                        "label": "INT32",
+                        "value": 8
+                      },
+                      {
+                        "label": "INT64",
+                        "value": 9
+                      },
+                      {
+                        "label": "FP16",
+                        "value": 10
+                      },
+                      {
+                        "label": "FP32",
+                        "value": 11
+                      },
+                      {
+                        "label": "FP64",
+                        "value": 12
+                      },
+                      {
+                        "label": "STRING",
+                        "value": 13
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "NO_NAME_FIELD_$1": {
+          "name": "NO_NAME_FIELD_$1",
+          "x-component": "mega-layout",
+          "x-component-props": {
+            "labelAlign": "top",
+            "full": true
+          },
+          "properties": {
+            "outputs": {
+              "required": true,
+              "x-component": "arraytable",
+              "x-component-props": {
+                "operationsWidth": 30
+              },
+              "title": "Output",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "x-component": "Input"
+                  },
+                  "shape": {
+                    "title": "Shape",
+                    "x-component": "Input"
+                  },
+                  "dtype": {
+                    "title": "dtype",
+                    "x-component": "Select",
+                    "enum": [
+                      {
+                        "label": "INVALID",
+                        "value": 0
+                      },
+                      {
+                        "label": "BOOL",
+                        "value": 1
+                      },
+                      {
+                        "label": "UINT8",
+                        "value": 2
+                      },
+                      {
+                        "label": "UINT16",
+                        "value": 3
+                      },
+                      {
+                        "label": "UINT32",
+                        "value": 4
+                      },
+                      {
+                        "label": "UINT64",
+                        "value": 5
+                      },
+                      {
+                        "label": "INT8",
+                        "value": 6
+                      },
+                      {
+                        "label": "INT16",
+                        "value": 7
+                      },
+                      {
+                        "label": "INT32",
+                        "value": 8
+                      },
+                      {
+                        "label": "INT64",
+                        "value": 9
+                      },
+                      {
+                        "label": "FP16",
+                        "value": 10
+                      },
+                      {
+                        "label": "FP32",
+                        "value": 11
+                      },
+                      {
+                        "label": "FP64",
+                        "value": 12
+                      },
+                      {
+                        "label": "STRING",
+                        "value": 13
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "NO_NAME_FIELD_$5": {
+      "name": "NO_NAME_FIELD_$5",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Model Performance"
+      }
+    },
+    "NO_NAME_FIELD_$6": {
+      "type": "object",
+      "name": "NO_NAME_FIELD_$6",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "grid": true,
+        "wrapperCol": 16,
+        "labelCol": 8,
+        "labelAlign": "left",
+        "full": true
+      },
+      "properties": {
+        "NO_NAME_FIELD_$0": {
+          "name": "NO_NAME_FIELD_$0",
+          "x-component": "mega-layout",
+          "properties": {
+            "task": {
+              "required": true,
+              "title": "Task",
+              "x-component": "select",
+              "enum": [
+                {
+                  "label": "Image Classification",
+                  "value": 0
+                },
+                {
+                  "label": "Object Detection",
+                  "value": 1
+                },
+                {
+                  "label": "Segmentation",
+                  "value": 2
+                }
+              ]
+            },
+            "dataset": {
+              "required": true,
+              "title": "Dataset",
+              "x-component": "Input"
+            },
+            "metric": {
+              "required": true,
+              "title": "Metric",
+              "name": "metric",
+              "x-component": "CustomInputGroup",
+              "x-component-props": {
+                "key": "acc",
+                "value": "0.76"
+              }
+            }
+          }
+        },
+        "NO_NAME_FIELD_$1": {
+          "name": "NO_NAME_FIELD_$1",
+          "x-component": "mega-layout"
+        }
+      }
+    },
+    "NO_NAME_FIELD_$7": {
+      "name": "NO_NAME_FIELD_$7",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Upload Options"
+      }
+    },
+    "NO_NAME_FIELD_$8": {
+      "type": "object",
+      "name": "NO_NAME_FIELD_$8",
+      "x-component": "mega-layout",
+      "properties": {
+        "compression": {
+          "name": "compression",
+          "x-component": "CustomCheckbox",
+          "x-component-props": {
+            "title": "Compression",
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub/compressor"
+          }
+        },
+        "convert": {
+          "name": "conversion",
+          "x-component": "CustomCheckbox",
+          "x-component-props": {
+            "title": "Conversion",
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub#convert",
+            "default": true
+          }
+        },
+        "profile": {
+          "name": "profiling",
+          "x-component": "CustomCheckbox",
+          "x-component-props": {
+            "title": "Profiling",
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub/client"
+          }
+        }
+      }
+    }
+  }
+}
