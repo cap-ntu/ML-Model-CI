@@ -20,6 +20,7 @@ from modelci.utils.docker_container_manager import DockerContainerManager
 
 logger = Logger(__name__, welcome=False)
 
+
 @click.group()
 def service():
     pass
@@ -38,7 +39,10 @@ def start_leader_server(gpu=False):
     container_conn = DockerContainerManager(enable_gpu=gpu)
     if not container_conn.start():
         container_conn.connect()
+    # FIXME: app not started because pytorch imported when this function is called.
+    #     PyTorch and subprocess have conflicts.
     app_start()
+
 
 @service.command("stop")
 def stop_leader_server():
@@ -48,6 +52,7 @@ def stop_leader_server():
     container_conn = DockerContainerManager()
     container_conn.stop()
     app_stop()
+
 
 @service.command("clean")
 def remove_services():
@@ -73,6 +78,7 @@ def connect_leader_server(ip_address="localhost"):
 
     raise NotImplementedError
 
+
 @service.command("disconnect")
 def disconnect_leader_server():
     """disconnect the follower worker from the leader server
@@ -81,5 +87,3 @@ def disconnect_leader_server():
         NotImplementedError: [description]
     """
     raise NotImplementedError
-
-

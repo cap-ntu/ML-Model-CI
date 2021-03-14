@@ -23,7 +23,8 @@ def start():
     # check if the process is running
     pid = check_process_running(app_settings.server_port)
     if not pid:
-        args = [sys.executable, f'{Path(__file__).absolute().parent / "main.py"}', '&>', '/home/lym/tmp/test.log', '&']
+        args = [sys.executable, f'{Path(__file__).absolute().parent / "main.py"}', '&>',
+                f'{Path.home()}/tmp/test.log', '&']
         backend_process = subprocess.Popen(args, preexec_fn=os.setsid, close_fds=True)
         logger.info(f'Uvicorn server [PID {backend_process.pid}] listening on {app_settings.server_url}')
     else:
