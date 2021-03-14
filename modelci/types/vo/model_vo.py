@@ -185,7 +185,7 @@ class ProfileResultVO(BaseModel):
 
 class ModelListOut(BaseModel):
     id: str
-    name: str
+    architecture: str
     framework: Framework
     engine: Engine
     version: Union[int, str]
@@ -205,7 +205,7 @@ class ModelListOut(BaseModel):
     def from_bo(model_bo: ModelBO):
         return ModelListOut(
             id=model_bo.id,
-            name=model_bo.name,
+            architecture=model_bo.architecture,
             framework=Framework(model_bo.framework.name),
             engine=Engine(model_bo.engine.name),
             version=str(model_bo.version),
@@ -225,7 +225,7 @@ class ModelListOut(BaseModel):
 
 class ModelDetailOut(BaseModel):
     id: str
-    name: str
+    architecture: str
     framework: Framework
     engine: Engine
     version: Union[int, str]
@@ -245,7 +245,7 @@ class ModelDetailOut(BaseModel):
     def from_bo(model_bo: ModelBO):
         return ModelDetailOut(
             id=model_bo.id,
-            name=model_bo.name,
+            architecture=model_bo.architecture,
             framework=Framework(model_bo.framework.name),
             engine=Engine(model_bo.engine.name),
             version=str(model_bo.version),

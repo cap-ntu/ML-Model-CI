@@ -9,11 +9,12 @@ Date: 1/29/2021
 import torch
 from fastapi import APIRouter
 
-
 from modelci.experimental.model.model_structure import Structure, Operation
 from modelci.hub.manager import register_model, get_remote_model_weight
+from modelci.hub.utils import generate_path_plain
 from modelci.persistence.service import ModelService
 from modelci.types.bo import ModelVersion, Engine, IOShape, ModelStatus
+from modelci.types.models import MLModel
 from modelci.types.type_conversion import model_data_type_to_torch, type_to_data_type
 from modelci.utils.exceptions import ModelStructureError
 
@@ -124,17 +125,25 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
         # TODO reslove duplicate model version problem in a more efficient way
         version = ModelVersion(model.version.ver + 1)
         previous_models = ModelService.get_models(
-                name=model.name,
-                task=model.task,
-                framework=model.framework,
-                engine=Engine.NONE
+            architecture=model.architecture,
+            task=model.task,
+            framework=model.framework,
+            engine=Engine.NONE
         )
         if len(previous_models):
             last_version = max(previous_models, key=lambda k: k.version.ver).version.ver
             version = ModelVersion(last_version + 1)
 
-        register_model(
-            net,
+        saved_path = generate_path_plain(
+            architecture=model.architecture,
+            task=model.task,
+            framework=model.framework,
+            engine=Engine.NONE,
+            version=version
+        )
+        saved_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(model,saved_path.with_suffix('.pt') )
+        mlmodelin = MLModel(
             dataset='',
             metric={key: 0 for key in model.metric.keys()},
             task=model.task,
@@ -146,15 +155,19 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             model_status=[ModelStatus.DRAFT],
             parent_model_id=model.id,
             version=version,
+            weight=saved_path
+        )
+        register_model(
+            mlmodelin,
             convert=False, profile=False
         )
 
         model_bo = ModelService.get_models(
-            name=model.name,
+            architecture=model.architecture,
             task=model.task,
             framework=model.framework,
             engine=Engine.NONE,
             version=version
         )[0]
 
-        return {'id' : model_bo.id}
+        return {'id': model_bo.id}
