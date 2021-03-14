@@ -1,0 +1,322 @@
+{
+  "type": "object",
+  "properties": {
+    "NO_NAME_FIELD_$0": {
+      "name": "NO_NAME_FIELD_$0",
+      "x-component": "CustonHeader",
+      "x-component-props": {
+        "title": "Model Registeration"
+      }
+    },
+    "NO_NAME_FIELD_$1": {
+      "name": "NO_NAME_FIELD_$1",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Basic Model Information"
+      }
+    },
+    "NO_NAME_FIELD_$2": {
+      "name": "NO_NAME_FIELD_$2",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "grid": true,
+        "wrapperCol": 16,
+        "labelCol": 8,
+        "labelAlign": "left"
+      },
+      "properties": {
+        "NO_NAME_FIELD_$0": {
+          "name": "NO_NAME_FIELD_$0",
+          "x-component": "mega-layout",
+          "properties": {
+            "architecture": {
+              "required": true,
+              "title": "Architecture",
+              "x-component": "Input",
+              "x-component-props": {
+                "placeholder": "ResNet50"
+              },
+              "default": "ResNet50"
+            },
+            "framework": {
+              "required": true,
+              "title": "Framework",
+              "x-component": "select",
+              "enum": [
+                {
+                  "label": "PyTorch",
+                  "value": "PyTorch"
+                },
+                {
+                  "label": "Tensorflow",
+                  "value": "Tensorflow"
+                }
+              ],
+              "default": "PyTorch"
+            },
+            "version": {
+              "required": true,
+              "title": "Version",
+              "x-component": "NumberPicker",
+              "minimum": 1,
+              "default": 1
+            },
+            "engine": {
+              "required": true,
+              "title": "Engine",
+              "x-component": "select",
+              "enum": [
+                {
+                  "label": "TFS",
+                  "value": "TFS"
+                },
+                {
+                  "label": "TORCHSCRIPT",
+                  "value": "TorchScript"
+                },
+                {
+                  "label": "ONNX",
+                  "value": "ONNX"
+                },
+                {
+                  "label": "TRT",
+                  "value": "TRT"
+                },
+                {
+                  "label": "TVM",
+                  "value": "TVM"
+                },
+                {
+                  "label": "PYTORCH",
+                  "value": "PYTORCH"
+                },
+                {
+                  "label": "CUSTOMIZED",
+                  "value": "CUSTOMIZED"
+                }
+              ],
+              "default": "PYTORCH"
+            }
+          }
+        },
+        "NO_NAME_FIELD_$1": {
+          "name": "NO_NAME_FIELD_$1",
+          "x-component": "mega-layout",
+          "x-component-props": {
+            "labelAlign": "top",
+            "wrapperCol": 24
+          },
+          "properties": {
+            "files": {
+              "required": true,
+              "title": "Model Weight File",
+              "x-component": "CustomUpload",
+              "x-component-props": {
+                "name": "files"
+              }
+            }
+          }
+        }
+      }
+    },
+    "NO_NAME_FIELD_$3": {
+      "name": "NO_NAME_FIELD_$3",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Model Inputs and Outputs Defination"
+      }
+    },
+    "NO_NAME_FIELD_$4": {
+      "name": "NO_NAME_FIELD_$4",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "grid": true
+      },
+      "properties": {
+        "NO_NAME_FIELD_$0": {
+          "name": "NO_NAME_FIELD_$0",
+          "x-component": "mega-layout",
+          "x-component-props": {
+            "labelAlign": "top",
+            "full": true
+          },
+          "properties": {
+            "inputs": {
+              "required": true,
+              "x-component": "arraytable",
+              "x-component-props": {
+                "operationsWidth": 30
+              },
+              "title": "Input",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "x-component": "Input",
+                    "default": "input0"
+                  },
+                  "shape": {
+                    "title": "Shape",
+                    "x-component": "Input",
+                    "default": [-1, 3, 224, 224]
+                  },
+                  "dtype": {
+                    "title": "dtype",
+                    "x-component": "Input",
+                    "default": "TYPE_FP32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "NO_NAME_FIELD_$1": {
+          "name": "NO_NAME_FIELD_$1",
+          "x-component": "mega-layout",
+          "x-component-props": {
+            "labelAlign": "top",
+            "full": true
+          },
+          "properties": {
+            "outputs": {
+              "required": true,
+              "x-component": "arraytable",
+              "x-component-props": {
+                "operationsWidth": 30
+              },
+              "title": "Output",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "x-component": "Input",
+                    "default": "output"
+                  },
+                  "shape": {
+                    "title": "Shape",
+                    "x-component": "Input",
+                    "default": [-1, 1000]
+                  },
+                  "dtype": {
+                    "title": "dtype",
+                    "x-component": "Input",
+                    "default": "TYPE_FP32"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "NO_NAME_FIELD_$5": {
+      "name": "NO_NAME_FIELD_$5",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Model Performance"
+      }
+    },
+    "NO_NAME_FIELD_$6": {
+      "type": "object",
+      "name": "NO_NAME_FIELD_$6",
+      "x-component": "mega-layout",
+      "x-component-props": {
+        "grid": true,
+        "wrapperCol": 16,
+        "labelCol": 8,
+        "labelAlign": "left"
+      },
+      "properties": {
+        "NO_NAME_FIELD_$0": {
+          "name": "NO_NAME_FIELD_$0",
+          "x-component": "mega-layout",
+          "properties": {
+            "task": {
+              "required": true,
+              "title": "Task",
+              "x-component": "select",
+              "enum": [
+                {
+                  "label": "Image Classification",
+                  "value": 0
+                },
+                {
+                  "label": "Object Detection",
+                  "value": 1
+                },
+                {
+                  "label": "Segmentation",
+                  "value": 2
+                }
+              ],
+              "default": 0
+            },
+            "dataset": {
+              "required": true,
+              "title": "Dataset",
+              "x-component": "Input",
+              "default": "ImageNet"
+            },
+            "metric": {
+              "required": true,
+              "title": "Metric",
+              "name": "metric",
+              "x-component": "CustomInputGroup",
+              "x-component-props": {
+                "key": "acc",
+                "value": "0.76"
+              }
+            }
+          }
+        },
+        "NO_NAME_FIELD_$1": {
+          "name": "NO_NAME_FIELD_$1",
+          "x-component": "mega-layout"
+        }
+      }
+    },
+    "NO_NAME_FIELD_$7": {
+      "name": "NO_NAME_FIELD_$7",
+      "x-component": "CustomDivider",
+      "x-component-props": {
+        "title": "Upload Options"
+      }
+    },
+    "NO_NAME_FIELD_$8": {
+      "type": "object",
+      "name": "NO_NAME_FIELD_$8",
+      "x-component": "mega-layout",
+      "properties": {
+        "compression": {
+          "name": "compression",
+          "x-component": "CustomCheckbox",
+          "x-component-props": {
+            "title": "Compression",
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub/compressor"
+          },
+          "default": false
+        },
+        "convert": {
+          "name": "conversion",
+          "x-component": "CustomCheckbox",
+          "default": true,
+          "x-component-props": {
+            "title": "Conversion",
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub#convert"
+          }
+        },
+        "profile": {
+          "name": "profiling",
+          "x-component": "CustomCheckbox",
+          "default": false,
+          "x-component-props": {
+            "title": "Profiling",
+            "link": "https://github.com/cap-ntu/ML-Model-CI/tree/master/modelci/hub/client"
+          }
+        }
+      }
+    }
+  }
+}

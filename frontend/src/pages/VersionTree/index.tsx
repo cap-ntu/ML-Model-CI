@@ -6,7 +6,6 @@ import { IGitData } from './utils/type';
 import moment from 'moment';
 import { Row, Col, Avatar, Tag, Space, Table } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
-import './index.css'
 const gitGraphOption = templateExtend(TemplateName.Metro, {
   commit: {
     message: {
@@ -145,7 +144,7 @@ export default class VersionTree extends React.Component<{}, any> {
             }}
           </Gitgraph>
         </Col>
-        <Col span={12}>
+        <Col span={12} id="versiontable">
           <Table 
           columns={this.columns} 
           dataSource={this.state.modelData} 

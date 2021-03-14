@@ -10,7 +10,6 @@ import Form from '@rjsf/material-ui';
 import {SchemaForm, FormButtonGroup, FormEffectHooks, Submit} from '@formily/antd'
 import { merge } from 'rxjs'
 import { Input, Select, Upload, Switch } from '@formily/antd-components'
-import './index.css'
 import { ModelStructure, FinetuneConfig, DEFAULT_FINETUNE_CONFIG, DEFAULT_CONFIG_SCHEMA } from './utils/type'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
