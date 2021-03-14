@@ -41,8 +41,10 @@ if __name__ == '__main__':
     frontend_url = f"{frontend_env.get('HOST', 'localhost')}:{frontend_env.get('PORT', 3333)}"
 
     # Put frontend url into backend CORS origins
-    cors_origins = backend_env.get('BACKEND_CORS_ORIGINS', '')
-    backend_env['BACKEND_CORS_ORIGINS'] = ','.join([cors_origins, frontend_url])
+    raw_cors_origins = backend_env.get('BACKEND_CORS_ORIGINS', '')
+    cors_origins = set(filter(lambda origin: origin, raw_cors_origins.split(',')))
+    cors_origins.add(frontend_url)
+    backend_env['BACKEND_CORS_ORIGINS'] = ','.join(cors_origins)
 
     # Put backend url into frontend env
     frontend_env['REACT_APP_BACKEND_URL'] = backend_url

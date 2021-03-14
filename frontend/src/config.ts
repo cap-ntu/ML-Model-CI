@@ -1,3 +1,4 @@
+// FIXME: unable to get environment variables from process.env
 const host = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000'
 
 export default {
