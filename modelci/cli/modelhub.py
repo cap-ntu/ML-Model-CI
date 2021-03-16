@@ -194,3 +194,40 @@ def detail(model_id: str = typer.Argument(..., help='Model ID')):
     with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
         data = r.json()
         model_detailed_view(MLModel.parse_obj(data))
+
+
+@app.command('update')
+def update(
+        model_id: str = typer.Argument(..., help='Model ID'),
+        file_or_dir: Optional[Path] = typer.Argument(None, help='Model weight files', exists=True),
+        architecture: Optional[str] = typer.Option(None, '-n', '--name', help='Architecture'),
+        framework: Optional[Framework] = typer.Option(None, '-fw', '--framework', help='Framework'),
+        engine: Optional[Engine] = typer.Option(None, '-e', '--engine', help='Engine'),
+        version: Optional[int] = typer.Option(None, '-v', '--version', min=1, help='Version number'),
+        task: Optional[Task] = typer.Option(None, '-t', '--task', help='Task'),
+        dataset: Optional[str] = typer.Option(None, '-d', '--dataset', help='Dataset name'),
+        metric: Dict[Metric, float] = typer.Option(
+            '{}',
+            help='Metrics in the form of mapping JSON string. The map type is '
+                 '`Dict[types.models.mlmodel.Metric, float]`. An example is \'{"acc": 0.76}.\'',
+        ),
+        inputs: List[IOShape] = typer.Option(
+            [],
+            '-i', '--input',
+            help='List of shape definitions for input tensors. An example of one shape definition is '
+                 '\'{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}\'',
+        ),
+        outputs: List[IOShape] = typer.Option(
+            [],
+            '-o', '--output',
+            help='List of shape definitions for output tensors. An example of one shape definition is '
+                 '\'{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}\'',
+        )
+):
+    model = MLModel(
+        weight=file_or_dir, architecture=architecture, framework=framework, engine=engine, version=version,  # noqa
+        dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs
+    )
+    with requests.patch(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}', data={"id": model_id, **model.dict()}) as r:
+        data = r.json()
+        model_detailed_view(MLModel.parse_obj(data))

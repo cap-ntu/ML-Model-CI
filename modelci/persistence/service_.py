@@ -7,13 +7,17 @@ Date: 2/17/2021
 
 Persistence service using PyMongo.
 """
+import json
+from typing import List
+
 import gridfs
 from bson import ObjectId
+from fastapi.encoders import jsonable_encoder
 
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel
+from modelci.types.models import MLModel, Framework, Engine, Task
 
 _db = MongoClient()[MONGO_DB]
 _collection = _db['model_d_o']
@@ -63,3 +67,34 @@ def get_by_id(id: str) -> MLModel:
         return MLModel.parse_obj(model_data)
     else:
         raise ServiceException(f'Model with id={id} does not exist.')
+
+
+def get_models(**kwargs) -> List[MLModel]:
+    """
+
+    Args:
+        **kwargs:  architecture, framework, engine, task and version
+
+    Returns: list of models
+
+    """
+    valid_keys = {'architecture', 'framework', 'engine', 'task', 'version'}
+    valid_kwargs = {key: value for key, value in kwargs.items() if value is not None and key in valid_keys}
+    models = _collection.find(valid_kwargs)
+    return list(map(MLModel.parse_obj, models))
+
+
+def update_model(id_: str, model: MLModel, force_insert=False) -> MLModel:
+    prev_model = get_by_id(id_)
+    if prev_model is not None:
+        updated_data = {key: value for key, value in jsonable_encoder(model, exclude={'id'}).items() if
+                        getattr(model, key) != getattr(prev_model, key)}
+        _collection.update_one({'_id': ObjectId(id_)}, {"$set": updated_data})
+        return get_by_id(id_)
+    else:
+        # if `force_insert` is set
+        if force_insert:
+            return save(model)
+        else:
+            raise ValueError('Model ID {} does not exist. You may change the ID or set `force_insert=True` '
+                             'when call.'.format(id))

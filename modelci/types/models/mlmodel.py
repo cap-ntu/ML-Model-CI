@@ -85,7 +85,7 @@ class BaseMLModel(BaseModel):
         # fix metric key as a Enum
         metric: dict = data.get('metric', None)
         if metric:
-            data['metric'] = {k.name: v for k, v in metric.items()}
+            data['metric'] = {Metric(k).name: v for k, v in metric.items() }
 
         return data
 
@@ -114,7 +114,7 @@ class MLModel(BaseMLModel):
     profile_result: Optional[Any]
     status: Optional[Status] = Status.Unknown
     model_input: Optional[list]  # TODO: merge into field `inputs`
-    model_status: List[ModelStatus] = Field(default_factory=list)
+    model_status: Optional[List[ModelStatus]] = Field(default_factory=list)
     creator: Optional[str] = Field(default_factory=getpass.getuser)
     create_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
