@@ -50,19 +50,19 @@ class Weight(BaseModel):
 
 @as_form
 class BaseMLModel(BaseModel):
-    architecture: str = Field(..., example='ResNet50')
-    framework: Framework
-    engine: Engine
-    version: PositiveInt = Field(..., example=1)
-    dataset: str = Field(..., example='ImageNet')
-    metric: Dict[Metric, float] = Field(..., example='{"acc": 0.76}')
-    task: Task
-    inputs: List[IOShape] = Field(
-        ...,
+    architecture: Optional[str] = Field(None, example='ResNet50')
+    framework: Optional[Framework]
+    engine: Optional[Engine]
+    version: Optional[PositiveInt] = Field(None, example=1)
+    dataset: Optional[str] = Field(None, example='ImageNet')
+    metric: Optional[Dict[Metric, float]] = Field(None, example='{"acc": 0.76}')
+    task: Optional[Task]
+    inputs: Optional[List[IOShape]] = Field(
+        [],
         example='[{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}]'
     )
-    outputs: List[IOShape] = Field(
-        ...,
+    outputs: Optional[List[IOShape]] = Field(
+        [],
         example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
     )
 

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, File, UploadFile, Depends
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, HTTPException
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.responses import JSONResponse
 
@@ -41,8 +41,14 @@ def get_model(*, id: str):  # noqa
 
 
 @router.patch('/{id}', response_model=MLModel)
-def update(id: str, model: MLModel):
-    return update_model(id, model)
+def update(id: str, model: BaseMLModel):
+    prev_model = get_by_id(id)
+    if not prev_model:
+        raise HTTPException(
+            status_code=404,
+            detail=f'Model ID {id} does not exist. You may change the ID',
+        )
+    return update_model(id, model, prev_model)
 
 
 @router.post('/', status_code=201)
