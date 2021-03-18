@@ -19,9 +19,7 @@ import typer
 import yaml
 from pydantic import ValidationError
 
-from modelci.app import SERVER_HOST, SERVER_PORT
-from modelci.hub.init_data import export_model
-from modelci.hub.publish import _download_model_from_url
+from modelci.config import app_settings
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric
 from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
@@ -121,7 +119,7 @@ def publish(
         else:
             files.append((key, (file_or_dir.name, open(file_or_dir, 'rb'), 'application/example')))
         with requests.post(
-                f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/',
+                f'{app_settings.api_v1_prefix}/model/',
                 params=payload, data=form_data, files=files,
         ) as r:
             typer.echo(r.json(), color=True)
@@ -148,7 +146,7 @@ def list_models(
     payload = remove_dict_null(
         {'architecture': architecture, 'framework': framework, 'engine': engine, 'version': version}
     )
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/', params=payload) as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=payload) as r:
         model_list = r.json()
         model_view([model_list], list_all=list_all)
 
@@ -165,6 +163,8 @@ def download_model_from_url(
         path: Path = typer.Argument(..., file_okay=True, help='The saved path and file name.')
 ):
     """Download a model weight file from an online URL."""
+
+    from modelci.hub.publish import _download_model_from_url
 
     _download_model_from_url(url, path)
     logger.info(f'{path} model downloaded successfully.')
@@ -185,12 +185,14 @@ def export(
     Export model from PyTorch hub / TensorFlow hub and try convert the model into various format for different serving
     engines.
     """
+    from modelci.hub.init_data import export_model
+
     export_model(model_name=name, framework=framework, enable_trt=trt)
 
 
 @app.command('detail')
 def detail(model_id: str = typer.Argument(..., help='Model ID')):
     """Show a single model."""
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
         data = r.json()
         model_detailed_view(MLModel.parse_obj(data))
