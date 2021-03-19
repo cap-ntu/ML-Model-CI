@@ -9,13 +9,13 @@ from typing import List
 
 from bson import ObjectId
 
-from modelci.config import MONGO_DB
+from modelci.config import db_settings
 from modelci.experimental.model.model_train import TrainingJob, TrainingJobIn, TrainingJobUpdate
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
 from modelci.persistence.model_dao import ModelDAO
 
-_db = MongoClient()[MONGO_DB]
+_db = MongoClient()[db_settings.mongo_db]
 _collection = _db['training_job']
 
 

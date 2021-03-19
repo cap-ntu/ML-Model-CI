@@ -10,9 +10,6 @@ import warnings
 from enum import Enum, unique
 from typing import List
 
-import numpy as np
-import tensorflow as tf
-import torch
 from bson import ObjectId
 from pydantic import BaseModel
 
@@ -197,14 +194,14 @@ class IOShape(BaseModel):
             dtype = type_to_data_type_(dtype)
         elif isinstance(dtype, int):
             dtype = DataType(dtype)
-        elif isinstance(dtype, (torch.dtype, tf.dtypes.DType, np.dtype)):
-            dtype = type_to_data_type_(dtype)
         elif isinstance(dtype, DataType):
             pass
         else:
-            raise ValueError(
-                f'data type should be an instance of `type`, type name or `DataType`, but got {type(dtype)}'
-            )
+            dtype = type_to_data_type_(dtype)
+            if dtype is DataType.TYPE_INVALID:
+                raise ValueError(
+                    f'data type should be an instance of `type`, type name or `DataType`, but got {type(dtype)}'
+                )
 
         # warning if the dtype is DataType.TYPE_INVALID
         if dtype == DataType.TYPE_INVALID:

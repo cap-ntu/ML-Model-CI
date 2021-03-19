@@ -13,12 +13,12 @@ import gridfs
 from bson import ObjectId
 from fastapi.encoders import jsonable_encoder
 
-from modelci.config import MONGO_DB
+from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
 from modelci.types.models import MLModel, BaseMLModel
 
-_db = MongoClient()[MONGO_DB]
+_db = MongoClient()[db_settings.mongo_db]
 _collection = _db['model_d_o']
 _fs = gridfs.GridFS(_db)
 

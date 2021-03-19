@@ -4,11 +4,11 @@ from pathlib import Path
 import requests
 from typer.testing import CliRunner
 
-from modelci.app import SERVER_HOST, SERVER_PORT
+from modelci.config import app_settings
 from modelci.cli.modelhub import app
 
 runner = CliRunner()
-Path("~/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
+Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
 
 
 def test_get():
@@ -35,7 +35,7 @@ def test_ls():
 
 
 def test_detail():
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/') as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
     model_id = model_list[0]["_id"]
     result = runner.invoke(app, ['detail', model_id])
@@ -43,7 +43,7 @@ def test_detail():
 
 
 def test_update():
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/') as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
     model_id = model_list[0]["_id"]
     result = runner.invoke(app, ['update', model_id, '--framework', 'TensorFlow'])
@@ -51,7 +51,7 @@ def test_update():
 
 
 def test_delete():
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/') as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
     model_id = model_list[0]["_id"]
     result = runner.invoke(app, ['delete', model_id])
