@@ -161,13 +161,13 @@ def download():
 
 @app.command('get')
 def download_model_from_url(
-        url: str = typer.Argument(..., help='The link to a model'),
+url: str = typer.Argument(..., help='The link to a model'),
         path: Path = typer.Argument(..., file_okay=True, help='The saved path and file name.')
 ):
     """Download a model weight file from an online URL."""
 
     _download_model_from_url(url, path)
-    logger.info(f'{path} model downloaded successfully.')
+    typer.echo(f'{path} model downloaded successfully.')
 
 
 @app.command('export')
@@ -228,6 +228,13 @@ def update(
         dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs
     )
 
-    with requests.patch(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}', data=model.json(exclude_defaults=True)) as r:
+    with requests.patch(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}',
+                        data=model.json(exclude_defaults=True)) as r:
         data = r.json()
         model_detailed_view(MLModel.parse_obj(data))
+
+
+@app.command('delete')
+def delete(model_id: str = typer.Argument(..., help='Model ID')):
+    with requests.delete(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/{model_id}') as r:
+        typer.echo(r.json())

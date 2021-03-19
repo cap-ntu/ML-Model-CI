@@ -7,7 +7,6 @@ Date: 2/17/2021
 
 Persistence service using PyMongo.
 """
-import json
 from typing import List
 
 import gridfs
@@ -17,7 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from modelci.config import MONGO_DB
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, Framework, Engine, Task, BaseMLModel
+from modelci.types.models import MLModel, BaseMLModel
 
 _db = MongoClient()[MONGO_DB]
 _collection = _db['model_d_o']
@@ -69,6 +68,11 @@ def get_by_id(id: str) -> MLModel:
         raise ServiceException(f'Model with id={id} does not exist.')
 
 
+def exists_by_id(id: str) -> MLModel:
+    model = _collection.find_one(filter={'_id': ObjectId(id)})
+    return model is not None
+
+
 def get_models(**kwargs) -> List[MLModel]:
     """
 
@@ -91,3 +95,10 @@ def update_model(id_: str, model: BaseMLModel, prev_model) -> MLModel:
     }
     _collection.update_one({'_id': ObjectId(id_)}, {"$set": updated_data})
     return get_by_id(id_)
+
+
+def delete_model(id_: str):
+    model = _collection.find_one(filter={'_id': ObjectId(id_)})
+    if _fs.exists(ObjectId(model['weight'])):
+        _fs.delete(ObjectId(model['weight']))
+    return _collection.delete_one({'_id': ObjectId(id_)})

@@ -17,14 +17,14 @@ from pydantic.error_wrappers import ErrorWrapper
 from starlette.responses import JSONResponse
 
 from modelci.hub.manager import register_model
-from modelci.persistence.service_ import get_by_id, get_models, update_model
+from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
 from modelci.types.models import MLModel, BaseMLModel, Framework, Engine, Task
 
 router = APIRouter()
 
 
 @router.get('/', response_model=List[MLModel])
-def get_all_model(architecture: str = None, framework: Framework = None, engine: Engine = None, task: Task = None,
+def get_all_models(architecture: str = None, framework: Framework = None, engine: Engine = None, task: Task = None,
                   version: int = None):
     models = get_models(architecture=architecture, framework=framework, engine=engine, task=task, version=version)
     return models
@@ -49,6 +49,17 @@ def update(id: str, model: BaseMLModel):
             detail=f'Model ID {id} does not exist. You may change the ID',
         )
     return update_model(id, model, prev_model)
+
+
+@router.delete('/{id}')
+def delete(id: str):
+    if not exists_by_id(id):
+        raise HTTPException(
+            status_code=404,
+            detail=f'Model ID {id} does not exist. You may change the ID',
+        )
+    delete_model(id)
+    return {"deleted": id}
 
 
 @router.post('/', status_code=201)

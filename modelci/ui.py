@@ -8,6 +8,7 @@ from rich.table import Table
 from rich.text import Text
 
 from modelci.types.models import MLModel
+from modelci.types.models.common import Status, Framework, Engine, Task
 
 console = Console()
 
@@ -26,21 +27,21 @@ def single_model_view(model: Optional[dict], top=False):
         return ''
 
     if top:
-        model_name = f'[bold]{model["name"]}[/bold]'
+        model_name = f'[bold]{model["architecture"]}[/bold]'
     else:
-        model_name = model['name']
+        model_name = model['architecture']
 
     return (
-        model['id'],
+        model['_id'],
         model_name,
-        model['framework'],
-        model['engine'],
+        Framework(model['framework']).name,
+        Engine(model['engine']).name,
         str(model['version']),
         model['dataset'],
         list(model["metric"].keys())[0],
         f'{list(model["metric"].values())[0]:.2f}',
-        model['task'],
-        status_mapper[model['status']],
+        Task(model['task']).name,
+        status_mapper[Status(model['status']).name],
     )
 
 
@@ -128,7 +129,7 @@ def model_detailed_view(model: MLModel):
     converted_grid.add_row(Text('Converted Model Info', style='bold cyan3', justify='left'))
     converted_grid.add_row(
         'Serving Engine', model.engine.name,
-        'Status', status_mapper[model.status.name],
+        'Status', status_mapper[Status(model.status).name],
         'Creator', model.creator,
         'Created', time_delta,
     )
