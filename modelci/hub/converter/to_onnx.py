@@ -40,7 +40,7 @@ class ONNXConverter(object):
     """Convert model to ONNX format."""
 
     DEFAULT_OPSET = 10
-    supported_framework = ["pytorch", "keras", "sklearn", "xgboost", "lightgbm"]
+    supported_framework = ["pytorch", "keras", "sklearn", "xgboost", "lightgbm","tensorflow"]
 
     class _Wrapper(object):
         @staticmethod
@@ -187,6 +187,24 @@ class ONNXConverter(object):
             logger.error(e)
             return False
 
+    @staticmethod
+    def from_tensorflow(
+            saved_model_path: Path,
+            opset: int = DEFAULT_OPSET,
+    ):
+        tmpdir = tempfile.mkdtemp()
+        save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
+        onnx_save = str(save_path)+'/tf_savedmodel.onnx'
+        try:
+            convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output', onnx_save,
+                          '--opset', str(opset)]
+            subprocess.run(convertcmd)
+            logger.info('ONNX format converted successfully')
+            return onnx.load(onnx_save)
+        except Exception as e:
+            logger.error('Unable to convert to ONNX format, reason:')
+            logger.error(e)
+            return False
     @staticmethod
     @_Wrapper.save
     def from_sklearn(
