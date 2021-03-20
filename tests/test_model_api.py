@@ -25,7 +25,7 @@ _download_model_from_url(
 
 def test_get_all_models():
     response = client.get("/api/v1/model")
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == []
 
 
@@ -59,5 +59,4 @@ def test_delete_model():
         model_list = r.json()
     model_id = model_list[0]["_id"]
     response = requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}')
-    assert response.status_code == HTTPStatus.OK
-    assert f'"deleted":"{model_id}"' in response.text
+    assert response.status_code == HTTPStatus.NO_CONTENT

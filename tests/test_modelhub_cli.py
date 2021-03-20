@@ -56,4 +56,4 @@ def test_delete():
     model_id = model_list[0]["_id"]
     result = runner.invoke(app, ['delete', model_id])
     assert result.exit_code == 0
-    assert f'\'deleted\': \'{model_id}\'' in result.output
+    assert f"Model {model_id} deleted\n" == result.output

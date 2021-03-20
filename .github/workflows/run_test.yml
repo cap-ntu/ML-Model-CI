@@ -48,5 +48,5 @@ jobs:
     
     - name: Test with pytest
       run: |
-        uvicorn modelci.app.main:app > /dev/null &
+        python modelci/app/main.py
         python -m pytest tests/

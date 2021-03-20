@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
+from http import HTTPStatus
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -20,7 +21,7 @@ import yaml
 from pydantic import ValidationError
 
 from modelci.config import app_settings
-from modelci.types.models import Framework, Engine, IOShape, Task, Metric, BaseMLModel
+from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdate
 from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
@@ -159,7 +160,7 @@ def download():
 
 @app.command('get')
 def download_model_from_url(
-url: str = typer.Argument(..., help='The link to a model'),
+        url: str = typer.Argument(..., help='The link to a model'),
         path: Path = typer.Argument(..., file_okay=True, help='The saved path and file name.')
 ):
     """Download a model weight file from an online URL."""
@@ -225,7 +226,7 @@ def update(
                  '\'{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}\'',
         )
 ):
-    model = BaseMLModel(
+    model = ModelUpdate(
         architecture=architecture, framework=framework, engine=engine, version=version,  # noqa
         dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs
     )
@@ -239,4 +240,5 @@ def update(
 @app.command('delete')
 def delete(model_id: str = typer.Argument(..., help='Model ID')):
     with requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
-        typer.echo(r.json())
+        if r.status_code == HTTPStatus.NO_CONTENT:
+            typer.echo(f"Model {model_id} deleted")

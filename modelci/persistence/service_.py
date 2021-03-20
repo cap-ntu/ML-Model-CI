@@ -16,7 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, BaseMLModel
+from modelci.types.models import MLModel, ModelUpdate
 
 _db = MongoClient()[db_settings.mongo_db]
 _collection = _db['model_d_o']
@@ -88,7 +88,7 @@ def get_models(**kwargs) -> List[MLModel]:
     return list(map(MLModel.parse_obj, models))
 
 
-def update_model(id_: str, model: BaseMLModel, prev_model) -> MLModel:
+def update_model(id_: str, model: ModelUpdate, prev_model) -> MLModel:
     updated_data = {
         key: value for key, value in jsonable_encoder(model, exclude_unset=True).items()
         if getattr(model, key) != getattr(prev_model, key)
