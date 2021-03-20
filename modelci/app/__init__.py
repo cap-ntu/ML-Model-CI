@@ -26,7 +26,6 @@ def start():
     # check if the process is running
     pid = check_process_running(app_settings.server_port)
     if not pid:
-        mp.set_start_method('spawn')
         backend_process = mp.Process(target=_app_start_detach, args=(default_log_file,))
         backend_process.start()
 
