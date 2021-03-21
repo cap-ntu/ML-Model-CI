@@ -4,7 +4,7 @@ import unittest
 
 import onnxruntime
 
-import common
+from modelci.utils import trt_builder
 import tensorflow as tf
 import numpy as np
 from modelci.hub.converter import convert
@@ -51,27 +51,18 @@ class TestTensorflowConverter(unittest.TestCase):
 
     def test_tensorflow_to_trt(self):
         engine = convert(self.mobilenet_save_path, 'tensorflow', 'trt', shape=self.shape)
-        inputs, outputs, bindings, stream = common.allocate_buffers(engine)
+        inputs, outputs, bindings, stream = trt_builder.allocate_buffers(engine)
 
         with engine.create_execution_context() as context:
             imput_img = self.x.reshape(150528)
             np.copyto(inputs[0].host, imput_img)
             '''The common.do_inference function will return a list of outputs - we only have one in this case.'''
-            output = common.do_inference(context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
+            output = trt_bilder.do_inference(context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
             pred = self.imagenet_labels[np.argsort(output)[0,::-1][:5]+1]
             # print("Test Case: " + str(case_num))
             # print("Prediction: " + str(pred))
         np.testing.assert_string_equal(str(pred), str(self.decoded))
 
-
-    @classmethod
-    def tearDownClass(cls):
-        '''
-        if os.path.exists(str(cls.mobilenet_save_path)):
-            shutil.rmtree(cls.mobilenet_save_path)
-        if os.path.exists(str(cls.trt_model_path) + '.zip'):
-            os.remove(str(cls.trt_model_path) + '.zip')
-        '''
 
     if __name__ == '__main__':
         unittest.main()
