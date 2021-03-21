@@ -93,7 +93,7 @@ class TRTConverter(object):
 
         FIXME: bug exist: TRT 6.x.x does not support opset 10 used in ResNet50(ONNX).
         """
-        import tensorrt as trt
+        #import tensorrt as trt
 
         if save_path.with_suffix('.plan').exists():
             if not override:  # file exist yet override flag is not set
