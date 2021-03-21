@@ -20,6 +20,7 @@ jobs:
     env:
       MONGO_HOST: localhost
       MONGO_PORT: 27017
+      PYTHONPATH: .
     steps:
     - name: Checkout
       uses: actions/checkout@v2
