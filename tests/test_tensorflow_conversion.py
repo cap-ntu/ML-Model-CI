@@ -56,11 +56,9 @@ class TestTensorflowConverter(unittest.TestCase):
         with engine.create_execution_context() as context:
             imput_img = self.x.reshape(150528)
             np.copyto(inputs[0].host, imput_img)
-            '''The common.do_inference function will return a list of outputs - we only have one in this case.'''
             output = trt_builder.do_inference(context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
             pred = self.imagenet_labels[np.argsort(output)[0,::-1][:5]+1]
-            # print("Test Case: " + str(case_num))
-            # print("Prediction: " + str(pred))
+   
         np.testing.assert_string_equal(str(pred), str(self.decoded))
 
 
