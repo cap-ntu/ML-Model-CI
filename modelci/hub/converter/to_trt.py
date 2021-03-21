@@ -52,15 +52,8 @@ class TRTConverter(object):
         """
         This is the function to create the TensorRT engine
         Args:
-        savedmodel_path : Path to savedmodel_file.
-
-        shape : Shape of the input of the tensorflow model.
-        """
-        """
-        This is the function to create the TensorRT engine
-        Args:
-           onnx_path : Path to onnx_file. 
-           shape : Shape of the input of the ONNX file. 
+           savedmodel_path : Path to savedmodel_file.
+           shape : Shape of the input of the savedmodel file.
        """
         tmpdir = tempfile.mkdtemp()
 
