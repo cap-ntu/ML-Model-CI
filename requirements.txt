@@ -41,5 +41,4 @@ Jinja2==2.11.2
 pycuda==2020.1
 tensorrtserver==1.11.0
 tf2onnx==1.8.3
-gcc
 tensorrt>=7.0
