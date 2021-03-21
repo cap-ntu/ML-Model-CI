@@ -42,4 +42,3 @@ python3-devel
 pycuda==2020.1
 tensorrtserver==1.11.0
 tf2onnx==1.8.3
-tensorrt
