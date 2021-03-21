@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Union, List
 import subprocess
 import tempfile
-import tensorflow as tf
 import os
 from betterproto import Casing
 from google.protobuf import json_format
