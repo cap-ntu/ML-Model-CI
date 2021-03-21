@@ -176,10 +176,10 @@ class ModelUpdate(BaseModel):
     metric: Optional[Dict[Metric, float]] = Field(None, example='{"acc": 0.76}')
     task: Optional[Task]
     inputs: Optional[List[IOShape]] = Field(
-        [],
+        default_factory=list,
         example='[{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}]'
     )
     outputs: Optional[List[IOShape]] = Field(
-        [],
+        default_factory=list,
         example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
     )
