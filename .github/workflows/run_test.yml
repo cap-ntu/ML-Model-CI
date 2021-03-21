@@ -35,12 +35,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
-        export PATH=/usr/local/cuda/bin:$PATH
-        export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-        export CUDA_ROOT=/usr/local/cuda
-        sudo apt-get install python3-dev
-        sudo apt-get install libevent-dev
-        sudo apt-get groupinstall 'development tools'
+        sudo apt-get install gcc
         pip install flake8 pytest
         pip install requests==2.23.0
         pip install -r requirements.txt
