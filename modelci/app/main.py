@@ -9,6 +9,7 @@ import os
 import sys
 from typing import Optional
 
+import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
@@ -52,8 +53,6 @@ def _app_start_detach(output_file: Optional[str] = None):
     if os.fork() != 0:  # do a double fork,
         return
 
-    import uvicorn
-
     if output_file:
         # redirect stdout, stderr to a file
         output_file = open(output_file, 'a')
@@ -65,6 +64,4 @@ def _app_start_detach(output_file: Optional[str] = None):
 
 
 if __name__ == '__main__':
-    import uvicorn
-
     uvicorn.run(app, host=settings.server_host, port=settings.server_port)
