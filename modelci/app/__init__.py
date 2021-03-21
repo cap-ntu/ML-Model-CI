@@ -5,10 +5,9 @@ Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 6/19/2020
 """
+import multiprocessing as mp
 import os
 import signal
-import subprocess
-import sys
 from pathlib import Path
 
 from modelci.config import app_settings
@@ -16,17 +15,21 @@ from modelci.utils import Logger
 from modelci.utils.misc import check_process_running
 
 logger = Logger('modelci backend', welcome=False)
+default_log_file = Path.home() / 'tmp/modelci.log'
+default_log_file.parent.mkdir(exist_ok=True)
 
 
 def start():
     """Run a ModelCI backend server with Uvicorn."""
+    from modelci.app.main import _app_start_detach
+
     # check if the process is running
     pid = check_process_running(app_settings.server_port)
     if not pid:
-        args = [sys.executable, f'{Path(__file__).absolute().parent / "main.py"}', '&>',
-                f'{Path.home()}/tmp/test.log', '&']
-        backend_process = subprocess.Popen(args, preexec_fn=os.setsid, close_fds=True)
-        logger.info(f'Uvicorn server [PID {backend_process.pid}] listening on {app_settings.server_url}')
+        backend_process = mp.Process(target=_app_start_detach, args=(default_log_file,))
+        backend_process.start()
+
+        logger.info(f'Uvicorn server listening on {app_settings.server_url}, check full log at {default_log_file}')
     else:
         logger.warning(f'Unable to started server. A process with pid={pid} is already listening on '
                        f'port {app_settings.server_port}. '

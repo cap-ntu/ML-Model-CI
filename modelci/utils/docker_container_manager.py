@@ -270,15 +270,20 @@ class DockerContainerManager(object):
         rand_num = random.randint(0, 100000)
 
         dcgm_name = f'dcgm-exporter-{rand_num}'
+
+        if self.enable_gpu:
+            extra_container_kwargs = {'runtime': 'nvidia', **self.extra_container_kwargs}
+        else:
+            extra_container_kwargs = self.extra_container_kwargs
         # start dcgm-exporter
         self.docker_client.containers.run(
-            'bgbiao/dcgm-exporter', runtime='nvidia', name=dcgm_name,
+            'bgbiao/dcgm-exporter', name=dcgm_name,
             labels={
                 **self.common_labels,
                 MODELCI_DOCKER_PORT_LABELS['dcgm_node_exporter']: '-1',
                 MODELCI_GPU_LABEL: str(self.enable_gpu),
             },
-            **self.extra_container_kwargs
+            **extra_container_kwargs
         )
 
         check_container_status(self.docker_client, dcgm_name)
