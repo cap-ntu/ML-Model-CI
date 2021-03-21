@@ -7,7 +7,6 @@ import onnxruntime
 import common
 import tensorflow as tf
 import numpy as np
-from pathlib import Path
 from modelci.hub.converter import convert
 import onnx
 import os
