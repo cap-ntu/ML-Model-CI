@@ -39,7 +39,24 @@ jobs:
         pip install flake8 pytest
         pip install requests==2.23.0
         pip install -r requirements.txt
-      
+
+    # refer to https://github.com/dmlc/gluon-nlp/blob/master/.github/workflows/unittests.yml
+    - name: Install tvm
+      run: |
+        apt-get install -y gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev
+        git clone https://github.com/apache/incubator-tvm tvm --recursive
+        cd tvm
+        mkdir -p build
+        cp cmake/config.cmake build
+        echo set\(USE_LLVM ON\) >> build/config.cmake
+        echo set\(USE_GRAPH_RUNTIME ON\) >> build/config.cmake
+        echo set\(USE_BLAS openblas\) >> build/config.cmake
+        cd build
+        cmake .. -G Ninja
+        ninja
+        cd ../python
+        python -m pip install -U -e .
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -49,5 +66,5 @@ jobs:
     
     - name: Test with pytest
       run: |
-        python modelci/app/main.py
+        python modelci/app/__init__.py
         python -m pytest tests/

@@ -45,3 +45,7 @@ def stop():
         logger.info(f'The Uvicorn server with pid={pid} stopped.')
     else:
         logger.warning(f'No process is listening on port {app_settings.server_port}')
+
+
+if __name__ == '__main__':
+    start()

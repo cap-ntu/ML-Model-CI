@@ -9,13 +9,10 @@ from http import HTTPStatus
 from pathlib import Path
 
 import requests
-from fastapi.testclient import TestClient
 
 from modelci.config import app_settings
-from modelci.app.main import app
 from modelci.hub.publish import _download_model_from_url
 
-client = TestClient(app)
 Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
 _download_model_from_url(
     'https://download.pytorch.org/models/resnet50-19c8e357.pth',
@@ -24,7 +21,7 @@ _download_model_from_url(
 
 
 def test_get_all_models():
-    response = client.get("/api/v1/model")
+    response = requests.get(f'{app_settings.api_v1_prefix}/model')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == []
 
@@ -42,6 +39,15 @@ def test_publish_model():
                              files=files)
     assert response.status_code == HTTPStatus.CREATED
     assert '"status":true' in response.text
+
+
+def test_get_model_by_id():
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    model_id = model_list[0]["_id"]
+    response = requests.get(f'{app_settings.api_v1_prefix}/model/{model_id}')
+    assert response.status_code == HTTPStatus.OK
+    assert model_id in response.text
 
 
 def test_update_model():

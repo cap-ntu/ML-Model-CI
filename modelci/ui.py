@@ -31,6 +31,7 @@ def single_model_view(model: Optional[dict], top=False):
     else:
         model_name = model['architecture']
 
+    # TODO reorganize and format and the parameters
     return (
         model['_id'],
         model_name,
