@@ -43,7 +43,8 @@ jobs:
     # refer to https://github.com/dmlc/gluon-nlp/blob/master/.github/workflows/unittests.yml
     - name: Install tvm
       run: |
-        sudo apt-get install -y gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev
+        sudo apt-get update
+        sudo apt-get install -y gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev libopenblas-dev ninja-build
         git clone https://github.com/apache/incubator-tvm tvm --recursive
         cd tvm
         mkdir -p build
