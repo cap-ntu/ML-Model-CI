@@ -16,7 +16,10 @@
 import shutil
 from pathlib import Path
 from typing import Union, List
-
+import subprocess
+import tempfile
+import tensorflow as tf
+import os
 from betterproto import Casing
 from google.protobuf import json_format
 
@@ -31,12 +34,49 @@ from modelci.types.trtis_objects import (
     ModelInstanceGroupKind,
 )
 from modelci.utils import Logger
+import tensorrt as trt
+
 
 logger = Logger('converter', welcome=False)
 
 
 class TRTConverter(object):
-    supported_framework = ["onnx", "tfs"]
+    supported_framework = ["onnx", "tfs","tensorflow"]
+
+
+    @staticmethod
+    def from_tensorflow(
+            savedmodel_path: Path,
+            shape: List,
+            opset: int = 10,
+    ):
+        """
+        This is the function to create the TensorRT engine
+        Args:
+        savedmodel_path : Path to savedmodel_file.
+
+        shape : Shape of the input of the tensorflow model.
+        """
+        """
+        This is the function to create the TensorRT engine
+        Args:
+           onnx_path : Path to onnx_file. 
+           shape : Shape of the input of the ONNX file. 
+       """
+        tmpdir = tempfile.mkdtemp()
+
+        onnx_save = str(os.path.join(tmpdir, "temp_from_tf/")) + '/tempmodel.onnx'
+        convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', savedmodel_path, '--output', onnx_save,
+                      '--opset', str(opset)]
+        subprocess.run(convertcmd)
+        TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
+        with trt.Builder(TRT_LOGGER) as builder, builder.create_network(1) as network, trt.OnnxParser(network,TRT_LOGGER) as parser:
+            builder.max_workspace_size = (256 << 20)
+            with open(onnx_save, 'rb') as model:
+                parser.parse(model.read())
+            network.get_input(0).shape = shape
+            engine = builder.build_cuda_engine(network)
+            return engine
 
     @staticmethod
     def from_onnx(
@@ -53,7 +93,7 @@ class TRTConverter(object):
 
         FIXME: bug exist: TRT 6.x.x does not support opset 10 used in ResNet50(ONNX).
         """
-        import tensorrt as trt
+        #import tensorrt as trt
 
         if save_path.with_suffix('.plan').exists():
             if not override:  # file exist yet override flag is not set

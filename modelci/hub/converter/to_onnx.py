@@ -18,10 +18,14 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Callable
 
 import onnx
+import subprocess
 import onnxmltools as onnxmltools
+import os
 import torch
 import torch.jit
 import torch.onnx
+import tempfile
+import tensorflow as tf
 from modelci.utils import Logger
 
 from modelci.types.type_conversion import model_data_type_to_torch, model_data_type_to_onnx
@@ -36,7 +40,7 @@ class ONNXConverter(object):
     """Convert model to ONNX format."""
 
     DEFAULT_OPSET = 10
-    supported_framework = ["pytorch", "keras", "sklearn", "xgboost", "lightgbm"]
+    supported_framework = ["pytorch", "keras", "sklearn", "xgboost", "lightgbm","tensorflow"]
 
     class _Wrapper(object):
         @staticmethod
@@ -167,8 +171,40 @@ class ONNXConverter(object):
             model: keras.models.Model,
             opset: int = DEFAULT_OPSET,
     ):
-        return onnxmltools.convert_keras(model, target_opset=opset)
+        tmpdir = tempfile.mkdtemp()
+        save_path = os.path.join(tmpdir, "temp_from_keras/")
 
+        tf.saved_model.save(model, save_path)
+        onnx_save = str(save_path)+'/last_tf2onnx_model.onnx'
+        try:
+            convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', save_path, '--output', onnx_save,
+                          '--opset', str(opset)]
+            subprocess.run(convertcmd)
+            logger.info('ONNX format converted successfully')
+            return onnx.load(onnx_save)
+        except Exception as e:
+            logger.error('Unable to convert to ONNX format, reason:')
+            logger.error(e)
+            return False
+
+    @staticmethod
+    def from_tensorflow(
+            saved_model_path: Path,
+            opset: int = DEFAULT_OPSET,
+    ):
+        tmpdir = tempfile.mkdtemp()
+        save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
+        onnx_save = str(save_path)+'/tf_savedmodel.onnx'
+        try:
+            convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output', onnx_save,
+                          '--opset', str(opset)]
+            subprocess.run(convertcmd)
+            logger.info('ONNX format converted successfully')
+            return onnx.load(onnx_save)
+        except Exception as e:
+            logger.error('Unable to convert to ONNX format, reason:')
+            logger.error(e)
+            return False
     @staticmethod
     @_Wrapper.save
     def from_sklearn(
