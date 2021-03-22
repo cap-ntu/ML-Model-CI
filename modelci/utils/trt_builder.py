@@ -53,7 +53,8 @@ def do_inference(context, bindings, inputs, outputs, stream, batch_size=1):
     # Run inference.
     context.execute_async(batch_size=batch_size, bindings=bindings, stream_handle=stream.handle)
     # Transfer predictions back from the GPU.
-    [cuda.memcpy_dtoh_async(out.host, out.device, stream) for out in outputs]
+    for out in outputs:
+        cuda.memcpy_dtoh_async(out.host, out.device, stream)
     # Synchronize the stream
     stream.synchronize()
     # Return only the host outputs.
