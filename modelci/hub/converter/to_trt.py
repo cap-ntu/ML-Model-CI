@@ -33,7 +33,6 @@ from modelci.types.trtis_objects import (
     ModelInstanceGroupKind,
 )
 from modelci.utils import Logger
-import tensorrt as trt
 
 
 logger = Logger('converter', welcome=False)
@@ -55,6 +54,8 @@ class TRTConverter(object):
            savedmodel_path : Path to savedmodel_file.
            shape : Shape of the input of the savedmodel file.
        """
+        import tensorrt as trt
+
         tmpdir = tempfile.mkdtemp()
 
         onnx_save = str(os.path.join(tmpdir, "temp_from_tf/")) + '/tempmodel.onnx'
@@ -85,7 +86,7 @@ class TRTConverter(object):
 
         FIXME: bug exist: TRT 6.x.x does not support opset 10 used in ResNet50(ONNX).
         """
-
+        import tensorrt as trt
         if save_path.with_suffix('.plan').exists():
             if not override:  # file exist yet override flag is not set
                 logger.info('Use cached model')

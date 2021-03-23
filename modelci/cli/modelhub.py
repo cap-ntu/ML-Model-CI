@@ -209,7 +209,6 @@ def convert(
 ):
     import modelci.hub.converter.converter as cvt
     import time
-    from pathlib import Path
     if way == 'keras2onnx':
         import onnx
         import tensorflow as tf
@@ -231,5 +230,5 @@ def convert(
         localtime = time.strftime("%d%H%M%S", time.localtime())
         save = Path(save + f'/model_{str(localtime)}')
         loaded = tf.saved_model.load(model)
-        cvt.convert(model=loaded, src_framework='tensorflow', dst_framework='tfs', save_path=Path(save))
+        cvt.convert(model=loaded, src_framework='tensorflow', dst_framework='tfs', save_path=save)
 
