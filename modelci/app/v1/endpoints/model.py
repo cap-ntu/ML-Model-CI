@@ -24,14 +24,14 @@ from modelci.types.models import MLModel, BaseMLModel, ModelUpdate, Framework, E
 router = APIRouter()
 
 
-@router.get('/', response_model=List[MLModel])
+@router.get('/', response_model=List[MLModel], response_model_by_alias=False)
 def get_all_models(architecture: str = None, framework: Framework = None, engine: Engine = None, task: Task = None,
                   version: int = None):
     models = get_models(architecture=architecture, framework=framework, engine=engine, task=task, version=version)
     return models
 
 
-@router.get('/{id}')
+@router.get('/{id}', response_model=MLModel, response_model_by_alias=False)
 def get_model(*, id: str):  # noqa
     # Due to FastAPI use default json encoder before customer encoder, we have to rely on
     # Pydantic BaseModel.json and convert it back

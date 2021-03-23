@@ -33,7 +33,7 @@ def single_model_view(model: Optional[dict], top=False):
 
     # TODO reorganize and format and the parameters
     return (
-        model['_id'],
+        model['id'],
         model_name,
         Framework(model['framework']).name,
         Engine(model['engine']).name,
