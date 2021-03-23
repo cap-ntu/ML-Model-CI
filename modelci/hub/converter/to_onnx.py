@@ -32,7 +32,7 @@ from modelci.types.type_conversion import model_data_type_to_torch, model_data_t
 from onnx import optimizer
 from tensorflow import keras
 from modelci.types.bo import IOShape
-
+import tf2onnx
 logger = Logger('converter', welcome=False)
 
 
@@ -171,6 +171,7 @@ class ONNXConverter(object):
             model: keras.models.Model,
             opset: int = DEFAULT_OPSET,
     ):
+        version = tf2onnx.version
         tmpdir = tempfile.mkdtemp()
         save_path = os.path.join(tmpdir, "temp_from_keras/")
 
@@ -180,7 +181,7 @@ class ONNXConverter(object):
             convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', save_path, '--output', onnx_save,
                           '--opset', str(opset)]
             subprocess.run(convertcmd)
-            logger.info('ONNX format converted successfully')
+            logger.info('ONNX format converted successfully'+'tf2onnx_version : '+str(version))
             return onnx.load(onnx_save)
         except Exception as e:
             logger.error('Unable to convert to ONNX format, reason:')
