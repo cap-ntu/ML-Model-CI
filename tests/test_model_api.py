@@ -44,7 +44,7 @@ def test_publish_model():
 def test_get_model_by_id():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
-    model_id = model_list[0]["_id"]
+    model_id = model_list[0]["id"]
     response = requests.get(f'{app_settings.api_v1_prefix}/model/{model_id}')
     assert response.status_code == HTTPStatus.OK
     assert model_id in response.text
@@ -53,7 +53,7 @@ def test_get_model_by_id():
 def test_update_model():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
-    model_id = model_list[0]["_id"]
+    model_id = model_list[0]["id"]
     response = requests.patch(f'{app_settings.api_v1_prefix}/model/{model_id}',
                               json={'framework': 'TensorFlow'})
     assert response.status_code == HTTPStatus.OK
@@ -63,6 +63,6 @@ def test_update_model():
 def test_delete_model():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
-    model_id = model_list[0]["_id"]
+    model_id = model_list[0]["id"]
     response = requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}')
     assert response.status_code == HTTPStatus.NO_CONTENT

@@ -37,7 +37,7 @@ def test_ls():
 def test_detail():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
-    model_id = model_list[0]["_id"]
+    model_id = model_list[0]["id"]
     result = runner.invoke(app, ['detail', model_id])
     assert result.exit_code == 0
 
@@ -45,7 +45,7 @@ def test_detail():
 def test_update():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
-    model_id = model_list[0]["_id"]
+    model_id = model_list[0]["id"]
     result = runner.invoke(app, ['update', model_id, '--framework', 'TensorFlow'])
     assert result.exit_code == 0
 
@@ -53,7 +53,7 @@ def test_update():
 def test_delete():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
-    model_id = model_list[0]["_id"]
+    model_id = model_list[0]["id"]
     result = runner.invoke(app, ['delete', model_id])
     assert result.exit_code == 0
     assert f"Model {model_id} deleted\n" == result.output
