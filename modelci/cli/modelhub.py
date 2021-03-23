@@ -196,3 +196,40 @@ def detail(model_id: str = typer.Argument(..., help='Model ID')):
     with requests.get(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
         data = r.json()
         model_detailed_view(MLModel.parse_obj(data))
+
+
+@app.command('convert')
+def convert(
+        way: str = typer.Argument(..., help= 'the type of converting, for example \'keras2onnx\''
+                                             'means convert keras to onnx, available ways: keras2onnx, '
+                                             'tf2onnx, keras2tfs'),
+        model: str = typer.Argument(..., help='path of the model to be converted'
+                                    'such as \'/home/model\''),
+        save: str = typer.Argument(..., help='save path of the converted model'),
+):
+    import modelci.hub.converter.converter as cvt
+    import time
+    from pathlib import Path
+    if way == 'keras2onnx':
+        import onnx
+        import tensorflow as tf
+        loaded = tf.saved_model.load(model)
+        localtime = time.strftime("%d%H%M%S", time.localtime())
+        save = Path(save+f'/model_{str(localtime)}.onnx')
+        onnx_model = cvt.convert(model=loaded, src_framework='keras', dst_framework='onnx')
+        onnx.checker.check_model(onnx_model)
+        onnx.save(onnx_model, save)
+    if way == 'tf2onnx':
+        import onnx
+        localtime = time.strftime("%d%H%M%S", time.localtime())
+        save = Path(save + f'/model_{str(localtime)}.onnx')
+        onnx_model = cvt.convert(model=model, src_framework='tensorflow', dst_framework='onnx')
+        onnx.checker.check_model(onnx_model)
+        onnx.save(onnx_model, save)
+    if way == 'keras2tfs':
+        import tensorflow as tf
+        localtime = time.strftime("%d%H%M%S", time.localtime())
+        save = Path(save + f'/model_{str(localtime)}')
+        loaded = tf.saved_model.load(model)
+        cvt.convert(model=loaded, src_framework='tensorflow', dst_framework='tfs', save_path=Path(save))
+

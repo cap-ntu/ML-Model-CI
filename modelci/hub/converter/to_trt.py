@@ -40,7 +40,7 @@ logger = Logger('converter', welcome=False)
 
 
 class TRTConverter(object):
-    supported_framework = ["onnx", "tfs","tensorflow"]
+    supported_framework = ["onnx", "tfs", "tensorflow"]
 
 
     @staticmethod
@@ -62,7 +62,7 @@ class TRTConverter(object):
                       '--opset', str(opset)]
         subprocess.run(convertcmd)
         TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
-        with trt.Builder(TRT_LOGGER) as builder, builder.create_network(1) as network, trt.OnnxParser(network,TRT_LOGGER) as parser:
+        with trt.Builder(TRT_LOGGER) as builder, builder.create_network(1) as network, trt.OnnxParser(network, TRT_LOGGER) as parser:
             builder.max_workspace_size = (256 << 20)
             with open(onnx_save, 'rb') as model:
                 parser.parse(model.read())
@@ -85,7 +85,6 @@ class TRTConverter(object):
 
         FIXME: bug exist: TRT 6.x.x does not support opset 10 used in ResNet50(ONNX).
         """
-        #import tensorrt as trt
 
         if save_path.with_suffix('.plan').exists():
             if not override:  # file exist yet override flag is not set

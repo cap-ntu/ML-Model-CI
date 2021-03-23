@@ -40,7 +40,7 @@ class ONNXConverter(object):
     """Convert model to ONNX format."""
 
     DEFAULT_OPSET = 10
-    supported_framework = ["pytorch", "keras", "sklearn", "xgboost", "lightgbm","tensorflow"]
+    supported_framework = ["pytorch", "keras", "sklearn", "xgboost", "lightgbm", "tensorflow"]
 
     class _Wrapper(object):
         @staticmethod
@@ -205,6 +205,7 @@ class ONNXConverter(object):
             logger.error('Unable to convert to ONNX format, reason:')
             logger.error(e)
             return False
+
     @staticmethod
     @_Wrapper.save
     def from_sklearn(

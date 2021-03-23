@@ -1,16 +1,15 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import unittest
-
 import onnxruntime
-
-from modelci.utils import trt_builder
 import tensorflow as tf
 import numpy as np
 from modelci.hub.converter import convert
 import onnx
 import os
 import tempfile
+
+
 class TestTensorflowConverter(unittest.TestCase):
 
     @classmethod
@@ -46,21 +45,5 @@ class TestTensorflowConverter(unittest.TestCase):
         onnxres = self.imagenet_labels[np.argsort(res)[0, ::-1][:5] + 1]
         pred = onnxres[-1][-5:]
         np.testing.assert_string_equal(str(pred[::-1]), str(self.decoded))
-
-
-
-    def test_tensorflow_to_trt(self):
-        engine = convert(self.mobilenet_save_path, 'tensorflow', 'trt', shape=self.shape)
-        inputs, outputs, bindings, stream = trt_builder.allocate_buffers(engine)
-
-        with engine.create_execution_context() as context:
-            imput_img = self.x.reshape(150528)
-            np.copyto(inputs[0].host, imput_img)
-            output = trt_builder.do_inference(context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
-            pred = self.imagenet_labels[np.argsort(output)[0,::-1][:5]+1]
-   
-        np.testing.assert_string_equal(str(pred), str(self.decoded))
-
-
     if __name__ == '__main__':
         unittest.main()
