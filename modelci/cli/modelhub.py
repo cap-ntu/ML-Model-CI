@@ -21,6 +21,7 @@ import yaml
 from pydantic import ValidationError
 
 from modelci.config import app_settings
+from modelci.persistence.service_ import get_models
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdate
 from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
@@ -147,9 +148,8 @@ def list_models(
     payload = remove_dict_null(
         {'architecture': architecture, 'framework': framework, 'engine': engine, 'version': version}
     )
-    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=payload) as r:
-        model_list = r.json()
-        model_view([model_list], list_all=list_all)
+    model_list = get_models(**payload)
+    model_view(model_list, list_all=list_all)
 
 
 @app.command()

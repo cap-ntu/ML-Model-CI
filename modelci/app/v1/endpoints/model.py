@@ -31,7 +31,7 @@ def get_all_models(architecture: str = None, framework: Framework = None, engine
     return models
 
 
-@router.get('/{id}', response_model=MLModel, response_model_by_alias=False)
+@router.get('/{id}')
 def get_model(*, id: str):  # noqa
     # Due to FastAPI use default json encoder before customer encoder, we have to rely on
     # Pydantic BaseModel.json and convert it back
