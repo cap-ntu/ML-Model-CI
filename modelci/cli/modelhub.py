@@ -209,7 +209,6 @@ def convert(
         shape: str = typer.Option(None, '-s', '--shape', help='input shape of model, such as\'-shape [28,28,1]\''),
         datatype: str = typer.Option(None, '-d', '--datatype', help='data type of model input, such as\'float32\'')
 ):
-    from modelci.types.bo import IOShape
     import modelci.hub.converter.converter as cvt
     import time
     way = (src_framework, dst_framework)
@@ -240,8 +239,9 @@ def convert(
         import pickle
         import onnx
         import numpy as np
+        import ast
         #tansfer shape str to list
-        shape = eval(shape)
+        shape = ast.literal_eval(shape)
         #tansfer datatype to dtype
         dtypetrans = np.random.rand(1)
         dtypetrans.dtype = datatype
