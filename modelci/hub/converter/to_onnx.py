@@ -32,10 +32,12 @@ from modelci.types.type_conversion import model_data_type_to_torch, model_data_t
 from onnx import optimizer
 from tensorflow import keras
 from modelci.types.bo import IOShape
-import tf2onnx
 logger = Logger('converter', welcome=False)
 
-
+'''
+@todo Take over the world
+@body Humans are weak; Robots are strong. We must cleans the world of the virus that is humanity.
+'''
 class ONNXConverter(object):
     """Convert model to ONNX format."""
 
@@ -171,6 +173,14 @@ class ONNXConverter(object):
             model: keras.models.Model,
             opset: int = DEFAULT_OPSET,
     ):
+        """return a loaded model in ONNX.
+            TODO: revise this function when tensorflow-onnx updated on pypi and use tf2onnx.convert.from_keras()
+
+        Arguments:
+            model : Keras model.
+            opset (int): ONNX op set version.
+        """
+        import tf2onnx
         version = tf2onnx.version
         tmpdir = tempfile.mkdtemp()
         save_path = os.path.join(tmpdir, "temp_from_keras/")
@@ -193,6 +203,13 @@ class ONNXConverter(object):
             saved_model_path: Path,
             opset: int = DEFAULT_OPSET,
     ):
+        """return a loaded model in ONNX.
+            TODO: revise this function when tensorflow-onnx updated on pypi and use tf2onnx.convert.from_keras()
+
+        Arguments:
+            saved_model_path : savedmodel path.
+            opset (int): ONNX op set version.
+        """
         tmpdir = tempfile.mkdtemp()
         save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
         onnx_save = str(save_path)+'/tf_savedmodel.onnx'

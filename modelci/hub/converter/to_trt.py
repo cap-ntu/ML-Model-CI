@@ -49,10 +49,12 @@ class TRTConverter(object):
             opset: int = 10,
     ):
         """
+        TODO:revise this function when tensorflow-onnx updated on pypi and use tf2onnx.convert.from_keras()
         This is the function to create the TensorRT engine
         Args:
            savedmodel_path : Path to savedmodel_file.
            shape : Shape of the input of the savedmodel file.
+           opset : onnx opset
        """
         import tensorrt as trt
 
