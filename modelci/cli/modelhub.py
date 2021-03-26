@@ -18,7 +18,8 @@ import requests
 import typer
 import yaml
 from pydantic import ValidationError
-
+from modelci.hub.utils import generate_path
+from modelci.types.bo import Framework as saveFramework, Engine as saveEngine, Task as saveTask
 from modelci.config import app_settings
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric
 from modelci.types.models import MLModelFromYaml, MLModel
@@ -200,39 +201,47 @@ def detail(model_id: str = typer.Argument(..., help='Model ID')):
 
 @app.command('convert')
 def convert(
-        src_framework: str = typer.Argument(..., help='the prototype model framework to be converted'),
-        dst_framework: str = typer.Argument(..., help='the destination model framework after converting'),
+        src: str = typer.Argument(..., help='the prototype model framework to be converted'),
+        dst: str = typer.Argument(..., help='the destination model framework after converting'),
         model_path: str = typer.Argument(..., help='path of the model to be converted'
                                                    'such as \'/home/model\' for keras savedmodel or'
                                                    '\'/home/model/xxx.suffix\' for a file'),
-        save_path: str = typer.Argument(..., help='save path of the converted model'),
+        model_name: str = typer.Option(..., '-n', '--name', help='model name'),
+        version: Optional[int] = typer.Option(..., '-v', '--version', min=1, help='Version number'),
         shape: str = typer.Option(None, '-s', '--shape', help='input shape of model, such as\'-shape [28,28,1]\''),
         datatype: str = typer.Option(None, '-d', '--datatype', help='data type of model input, such as\'float32\'')
 ):
     import modelci.hub.converter.converter as cvt
-    import time
-    way = (src_framework, dst_framework)
-
+    way = (src, dst)
     if way == ('keras', 'onnx'):
         import onnx
         import tensorflow as tf
         loaded = tf.saved_model.load(model_path)
-        localtime = time.strftime("%d%H%M%S", time.localtime())
-        save_path = Path(save_path+f'/keras_model_{str(localtime)}.onnx')
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.TENSORFLOW,
+                                  task=saveTask.IMAGE_CLASSIFICATION,
+                                  engine=saveEngine.NONE,
+                                  version=version)
         onnx_model = cvt.convert(model=loaded, src_framework='keras', dst_framework='onnx')
         onnx.checker.check_model(onnx_model)
         onnx.save(onnx_model, save_path)
     if way == ('tensorflow', 'onnx'):
         import onnx
-        localtime = time.strftime("%d%H%M%S", time.localtime())
-        save_path = Path(save_path + f'/tf_model_{str(localtime)}.onnx')
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.TENSORFLOW,
+                                  task=saveTask.IMAGE_CLASSIFICATION,
+                                  engine=saveEngine.ONNX,
+                                  version=version)
         onnx_model = cvt.convert(model=model_path, src_framework='tensorflow', dst_framework='onnx')
         onnx.checker.check_model(onnx_model)
         onnx.save(onnx_model, save_path)
     if way == ('keras', 'tensorflow_serving'):
         import tensorflow as tf
-        localtime = time.strftime("%d%H%M%S", time.localtime())
-        save_path = Path(save_path + f'/keras_model_{str(localtime)}')
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.TENSORFLOW,
+                                  task=saveTask.IMAGE_CLASSIFICATION,
+                                  engine=saveEngine.TFS,
+                                  version=version)
         loaded = tf.saved_model.load(model_path)
         cvt.convert(model=loaded, src_framework='tensorflow', dst_framework='tfs', save_path=save_path)
     if way == ('xgboost', 'onnx'):
@@ -249,8 +258,11 @@ def convert(
         loaded = pickle.load(open(model_path, "rb"))
         onnx_model = cvt.convert(model=loaded, src_framework='xgboost', dst_framework='onnx', inputs=inputs)
         onnx.checker.check_model(onnx_model)
-        localtime = time.strftime("%d%H%M%S", time.localtime())
-        save_path = Path(save_path + f'/xgboost_model_{str(localtime)}'+'.onnx')
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=saveTask.IMAGE_CLASSIFICATION,
+                                  engine=saveEngine.ONNX,
+                                  version=version)
         onnx.save(onnx_model, save_path)
     if way == ('xgboost', 'torch'):
         import onnx
@@ -266,6 +278,9 @@ def convert(
         inputs = [IOShape(shape=shape, dtype=dtypetrans.dtype, name='input_0')]
         loaded = pickle.load(open(model_path, "rb"))
         torch_model = cvt.convert(model=loaded, src_framework='xgboost', dst_framework='onnx', inputs=inputs)
-        localtime = time.strftime("%d%H%M%S", time.localtime())
-        save_path = Path(save_path + f'/xgboost_model_{str(localtime)}'+'.pt')
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=saveTask.IMAGE_CLASSIFICATION,
+                                  engine=saveEngine.PYTORCH,
+                                  version=version)
         torch.save(torch_model, save_path)
