@@ -50,5 +50,6 @@ class TestONNXConverter(unittest.TestCase):
         torch_model_predict = torch_model(self.sample_input)[0].data.numpy()
         np.testing.assert_allclose(self.onnx_model_predict, torch_model_predict, rtol=1e-05, atol=1e-05)
 
+
 if __name__ == '__main__':
     unittest.main()
