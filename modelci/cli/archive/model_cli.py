@@ -15,9 +15,7 @@
 
 # TODO(ZHZ): remove the file after moving all functions to model_manager.py
 import click
-import requests
 
-from modelci.config import app_settings
 from modelci.persistence.service_ import get_models
 from modelci.ui import model_view
 from modelci.utils.misc import remove_dict_null
