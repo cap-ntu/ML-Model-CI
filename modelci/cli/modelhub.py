@@ -257,8 +257,9 @@ def convert(
         import numpy as np
         import pickle
         import torch
+        import ast
         # tansfer shape str to list
-        shape = eval(shape)
+        shape = ast.literal_eval(shape)
         # tansfer datatype to dtype
         dtypetrans = np.random.rand(1)
         dtypetrans.dtype = datatype
