@@ -167,7 +167,7 @@ class MLModelFromYaml(BaseMLModel):
         return super().saved_path.with_suffix(suffix)
 
 
-class ModelUpdate(BaseModel):
+class ModelUpdateSchema(BaseModel):
     architecture: Optional[str] = Field(None, example='ResNet50')
     framework: Optional[Framework]
     engine: Optional[Engine]

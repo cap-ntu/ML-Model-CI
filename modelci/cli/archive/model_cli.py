@@ -15,8 +15,10 @@
 
 # TODO(ZHZ): remove the file after moving all functions to model_manager.py
 import click
+import requests
 
-from modelci.persistence.service_ import get_models
+from modelci.config import app_settings
+from modelci.types.models import MLModel
 from modelci.ui import model_view
 from modelci.utils.misc import remove_dict_null
 
@@ -38,8 +40,9 @@ from modelci.utils.misc import remove_dict_null
 @click.option('-q', '--quiet', type=click.BOOL, is_flag=True, help='Only show numeric IDs.')
 def models(name, framework, engine, version, list_all, quiet):
     payload = remove_dict_null({'name': name, 'framework': framework, 'engine': engine, 'version': version})
-    model_list = get_models(**payload)
-    model_view(model_list, list_all=list_all, quiet=quiet)
+    with requests.get(f'{app_settings.api_v1_prefix}/model', params=payload) as r:
+        model_list = r.json()
+        model_view([MLModel.parse_obj(model) for model in model_list], list_all=list_all, quiet=quiet)
 
 
 

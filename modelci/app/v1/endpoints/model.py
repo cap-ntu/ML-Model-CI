@@ -19,7 +19,7 @@ from starlette.responses import JSONResponse
 
 from modelci.hub.manager import register_model
 from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
-from modelci.types.models import MLModel, BaseMLModel, ModelUpdate, Framework, Engine, Task
+from modelci.types.models import MLModel, BaseMLModel, ModelUpdateSchema, Framework, Engine, Task
 
 router = APIRouter()
 
@@ -42,14 +42,13 @@ def get_model(*, id: str):  # noqa
 
 
 @router.patch('/{id}', response_model=MLModel)
-def update(id: str, model: ModelUpdate):
-    prev_model = get_by_id(id)
-    if not prev_model:
+def update(id: str, schema: ModelUpdateSchema):
+    if not exists_by_id(id):
         raise HTTPException(
             status_code=404,
             detail=f'Model ID {id} does not exist. You may change the ID',
         )
-    return update_model(id, model, prev_model)
+    return update_model(id, schema)
 
 
 @router.delete('/{id}', status_code=http.HTTPStatus.NO_CONTENT)
