@@ -208,8 +208,12 @@ def convert(
                                                    '\'/home/model/xxx.suffix\' for a file'),
         model_name: str = typer.Option(..., '-n', '--name', help='model name'),
         version: Optional[int] = typer.Option(..., '-v', '--version', min=1, help='Version number'),
-        shape: str = typer.Option(None, '-s', '--shape', help='input shape of model, such as\'-shape [28,28,1]\''),
-        datatype: str = typer.Option(None, '-d', '--datatype', help='data type of model input, such as\'float32\'')
+        inputs: List[IOShape] = typer.Option(
+             [],
+             '-i', '--input',
+             help='List of shape definitions for input tensors. An example of one shape definition is ' 
+                  '\'{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}\'',
+         ),
 ):
     import modelci.hub.converter.converter as cvt
     way = (src, dst)
@@ -245,17 +249,10 @@ def convert(
         loaded = tf.saved_model.load(model_path)
         cvt.convert(model=loaded, src_framework='tensorflow', dst_framework='tfs', save_path=save_path)
     if way == ('xgboost', 'onnx'):
-        import pickle
+        import torch
         import onnx
-        import numpy as np
-        import ast
-        #tansfer shape str to list
-        shape = ast.literal_eval(shape)
-        #tansfer datatype to dtype
-        dtypetrans = np.random.rand(1)
-        dtypetrans.dtype = datatype
-        inputs = [IOShape(shape=shape, dtype=dtypetrans.dtype, name='input_0')]
-        loaded = pickle.load(open(model_path, "rb"))
+        print("yes")
+        loaded = torch.load(model_path)
         onnx_model = cvt.convert(model=loaded, src_framework='xgboost', dst_framework='onnx', inputs=inputs)
         onnx.checker.check_model(onnx_model)
         save_path = generate_path(model_name=model_name,
@@ -266,17 +263,8 @@ def convert(
         onnx.save(onnx_model, save_path)
     if way == ('xgboost', 'torch'):
         import onnx
-        import numpy as np
-        import pickle
         import torch
-        import ast
-        # tansfer shape str to list
-        shape = ast.literal_eval(shape)
-        # tansfer datatype to dtype
-        dtypetrans = np.random.rand(1)
-        dtypetrans.dtype = datatype
-        inputs = [IOShape(shape=shape, dtype=dtypetrans.dtype, name='input_0')]
-        loaded = pickle.load(open(model_path, "rb"))
+        loaded = torch.load(model_path)
         torch_model = cvt.convert(model=loaded, src_framework='xgboost', dst_framework='onnx', inputs=inputs)
         save_path = generate_path(model_name=model_name,
                                   framework=saveFramework.PYTORCH,

@@ -179,21 +179,21 @@ class ONNXConverter(object):
         """
         import tf2onnx
         version = tf2onnx.version
-        tmpdir = tempfile.mkdtemp()
-        save_path = os.path.join(tmpdir, "temp_from_keras/")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            save_path = os.path.join(tmpdir, "temp_from_keras/")
 
-        tf.saved_model.save(model, save_path)
-        onnx_save = str(save_path)+'/last_tf2onnx_model.onnx'
-        try:
-            convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', save_path, '--output', onnx_save,
-                          '--opset', str(opset)]
-            subprocess.run(convertcmd)
-            logger.info('ONNX format converted successfully'+'tf2onnx_version : '+str(version))
-            return onnx.load(onnx_save)
-        except Exception as e:
-            logger.error('Unable to convert to ONNX format, reason:')
-            logger.error(e)
-            return False
+            tf.saved_model.save(model, save_path)
+            onnx_save = str(save_path)+'/last_tf2onnx_model.onnx'
+            try:
+                convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', save_path, '--output', onnx_save,
+                            '--opset', str(opset)]
+                subprocess.run(convertcmd)
+                logger.info('ONNX format converted successfully'+'tf2onnx_version : '+str(version))
+                return onnx.load(onnx_save)
+            except Exception as e:
+                logger.error('Unable to convert to ONNX format, reason:')
+                logger.error(e)
+                return False
 
     @staticmethod
     def from_tensorflow(
@@ -207,19 +207,19 @@ class ONNXConverter(object):
             saved_model_path : savedmodel path.
             opset (int): ONNX op set version.
         """
-        tmpdir = tempfile.mkdtemp()
-        save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
-        onnx_save = str(save_path)+'/tf_savedmodel.onnx'
-        try:
-            convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output', onnx_save,
-                          '--opset', str(opset)]
-            subprocess.run(convertcmd)
-            logger.info('ONNX format converted successfully')
-            return onnx.load(onnx_save)
-        except Exception as e:
-            logger.error('Unable to convert to ONNX format, reason:')
-            logger.error(e)
-            return False
+        with tempfile.TemporaryDirectory() as tmpdir:
+            save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
+            onnx_save = str(save_path)+'/tf_savedmodel.onnx'
+            try:
+                convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output', onnx_save,
+                              '--opset', str(opset)]
+                subprocess.run(convertcmd)
+                logger.info('ONNX format converted successfully')
+                return onnx.load(onnx_save)
+            except Exception as e:
+                logger.error('Unable to convert to ONNX format, reason:')
+                logger.error(e)
+                return False
 
     @staticmethod
     @_Wrapper.save
