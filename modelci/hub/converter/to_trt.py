@@ -16,9 +16,6 @@
 import shutil
 from pathlib import Path
 from typing import Union, List
-import subprocess
-import tempfile
-import os
 from betterproto import Casing
 from google.protobuf import json_format
 
