@@ -6,40 +6,29 @@ Email: yli056@e.ntu.edu.sg
 Date: 6/20/2020
 """
 import asyncio
+import http
 import json
 import shutil
 from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, File, UploadFile, Depends
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, HTTPException
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.responses import JSONResponse
 
 from modelci.hub.manager import register_model
-from modelci.persistence.service import ModelService
-from modelci.persistence.service_ import get_by_id
-from modelci.types.bo import Framework, Engine, Task
-from modelci.types.models import MLModel, BaseMLModel
-from modelci.types.vo.model_vo import ModelListOut, Framework as Framework_, Engine as Engine_, \
-    Task as Task_
+from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
+from modelci.types.models import MLModel, BaseMLModel, ModelUpdateSchema, Framework, Engine, Task
 
 router = APIRouter()
 
 
-@router.get('/', response_model=List[ModelListOut])
-def get_all_model(architecture: str = None, framework: Framework_ = None, engine: Engine_ = None, task: Task_ = None,
+@router.get('/', response_model=List[MLModel], response_model_by_alias=False)
+def get_all_models(architecture: str = None, framework: Framework = None, engine: Engine = None, task: Task = None,
                   version: int = None):
-    if framework is not None:
-        framework = Framework[framework.value.upper()]
-    if engine is not None:
-        engine = Engine[engine.value.upper()]
-    if task is not None:
-        engine = Task[task.value.upper()]
-
-    models = ModelService.get_models(architecture=architecture, framework=framework, engine=engine, task=task,
-                                     version=version)
-    return list(map(ModelListOut.from_bo, models))
+    models = get_models(architecture=architecture, framework=framework, engine=engine, task=task, version=version)
+    return models
 
 
 @router.get('/{id}')
@@ -50,6 +39,26 @@ def get_model(*, id: str):  # noqa
     # issue is fixed.
     content = json.loads(get_by_id(id).json(by_alias=False))
     return JSONResponse(content=content)
+
+
+@router.patch('/{id}', response_model=MLModel)
+def update(id: str, schema: ModelUpdateSchema):
+    if not exists_by_id(id):
+        raise HTTPException(
+            status_code=404,
+            detail=f'Model ID {id} does not exist. You may change the ID',
+        )
+    return update_model(id, schema)
+
+
+@router.delete('/{id}', status_code=http.HTTPStatus.NO_CONTENT)
+def delete(id: str):
+    if not exists_by_id(id):
+        raise HTTPException(
+            status_code=404,
+            detail=f'Model ID {id} does not exist. You may change the ID',
+        )
+    delete_model(id)
 
 
 @router.post('/', status_code=201)

@@ -5,29 +5,64 @@ Author: USER
 Email: yli056@e.ntu.edu.sg
 Date: 10/14/2020
 """
+from http import HTTPStatus
+from pathlib import Path
+
+import requests
+
+from modelci.config import app_settings
+from modelci.hub.publish import _download_model_from_url
+
+Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
+_download_model_from_url(
+    'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
+)
 
 
-def test_upload_model():
-    # Register a model
-    # TODO: use `curl` to register a model
-    # > curl -X POST "http://155.69.146.35:8000/api/v1/model/?convert=true&profile=false" \
-    #   -H  "accept: application/json" -H  "Content-Type: multipart/form-data" \
-    #  -F "architecture=ResNet50" -F "model_input=" -F "dataset=ImageNet" -F "version=1" -F "framework=PyTorch" \
-    #   -F "engine=PYTORCH" -F "task=Image_Classification"  -F "metric={\"acc\": 0.76}" \
-    #   -F "inputs=[{\"name\": \"input\", \"shape\": [-1, 3, 224, 224], \"dtype\": \"TYPE_FP32\", \"format\": \"FORMAT_NCHW\"}]" \
-    #   -F "outputs=[{\"name\": \"output\", \"shape\": [-1, 1000], \"dtype\": \"TYPE_FP32\"}]"
-    # \
-    #   "files=@${HOME}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth"
+def test_get_all_models():
+    response = requests.get(f'{app_settings.api_v1_prefix}/model')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == []
 
-    # Expected result
-    # {
-    #   "data": {
-    #     "id": [
-    #       "603a9de960823dadedc60763",
-    #       "603a9dea60823dadedc608ee",
-    #       "603a9deb60823dadedc60a79"
-    #     ]
-    #   },
-    #   "status":true
-    # }
-    pass
+
+def test_publish_model():
+    payload = {'convert': True, 'profile': False}
+    form_data = {'architecture': 'ResNet50', 'framework': '1', 'engine': '7', 'version': '1', 'dataset': 'ImageNet',
+                 'metric': "{'acc': 0.76}", 'task': '0',
+                 'inputs': "[{'shape': [-1, 3, 224, 224], 'dtype': 11, 'name': 'input', 'format': 0}]",
+                 'outputs': "[{'shape': [-1, 1000], 'dtype': 11, 'name': 'output', 'format': 0}]"}
+    files = []
+    weights_file = f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
+    files.append(("files", (weights_file, open(Path(weights_file), 'rb'), 'application/example')))
+    response = requests.post(f'{app_settings.api_v1_prefix}/model/', params=payload, data=form_data,
+                             files=files)
+    assert response.status_code == HTTPStatus.CREATED
+    assert '"status":true' in response.text
+
+
+def test_get_model_by_id():
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    response = requests.get(f'{app_settings.api_v1_prefix}/model/{model_id}')
+    assert response.status_code == HTTPStatus.OK
+    assert model_id in response.text
+
+
+def test_update_model():
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    response = requests.patch(f'{app_settings.api_v1_prefix}/model/{model_id}',
+                              json={'framework': 'TensorFlow'})
+    assert response.status_code == HTTPStatus.OK
+    assert '"framework":0' in response.text
+
+
+def test_delete_model():
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    response = requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}')
+    assert response.status_code == HTTPStatus.NO_CONTENT

@@ -20,10 +20,9 @@ jobs:
     env:
       MONGO_HOST: localhost
       MONGO_PORT: 27017
+      PYTHONPATH: .
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -32,19 +31,43 @@ jobs:
     - name: Configure MongoDB
       run: mongo modelci --eval 'db.createUser({user:"modelci",pwd:"modelci@2020",roles:["readWrite"]});'
 
+    # refer to https://github.com/dmlc/gluon-nlp/blob/master/.github/workflows/unittests.yml
+    - name: Install tvm
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev libopenblas-dev ninja-build
+        git clone https://github.com/apache/incubator-tvm tvm --recursive
+        cd tvm
+        mkdir -p build
+        cp cmake/config.cmake build
+        echo set\(USE_LLVM ON\) >> build/config.cmake
+        echo set\(USE_GRAPH_RUNTIME ON\) >> build/config.cmake
+        echo set\(USE_BLAS openblas\) >> build/config.cmake
+        cd build
+        cmake .. -G Ninja
+        ninja
+        cd ../python
+        python -m pip install -U -e .
+        cd ..
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
         pip install flake8 pytest
         pip install requests==2.23.0
         pip install -r requirements.txt
-      
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
+
     - name: Test with pytest
-      run: python -m pytest tests/
+      run: |
+        python modelci/app/__init__.py
+        python -m pytest tests/

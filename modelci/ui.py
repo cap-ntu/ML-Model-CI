@@ -8,6 +8,7 @@ from rich.table import Table
 from rich.text import Text
 
 from modelci.types.models import MLModel
+from modelci.types.models.common import Status
 
 console = Console()
 
@@ -21,33 +22,34 @@ status_mapper = {
 BOX_NO_BORDER = box.Box('\n'.join([' ' * 4] * 8))
 
 
-def single_model_view(model: Optional[dict], top=False):
+def single_model_view(model: Optional[MLModel], top=False):
     if model is None:
         return ''
 
     if top:
-        model_name = f'[bold]{model["name"]}[/bold]'
+        model_name = f'[bold]{model.architecture}[/bold]'
     else:
-        model_name = model['name']
+        model_name = model.architecture
 
+    # TODO reorganize and format and the parameters
     return (
-        model['id'],
+        str(model.id),
         model_name,
-        model['framework'],
-        model['engine'],
-        str(model['version']),
-        model['dataset'],
-        list(model["metric"].keys())[0],
-        f'{list(model["metric"].values())[0]:.2f}',
-        model['task'],
-        status_mapper[model['status']],
+        model.framework.name,
+        model.engine.name,
+        str(model.version),
+        model.dataset,
+        list(model.metric.keys())[0].name,
+        f'{list(model.metric.values())[0]:.2f}',
+        model.task.name,
+        status_mapper[model.status.name],
     )
 
 
-def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
+def model_view(model_group: List[MLModel], quiet=False, list_all=False):
     if quiet:
         # print only ID of models
-        model_ids = [model['id'] for model_group in model_groups for model in model_group]
+        model_ids = [str(model.id) for model in model_group]
         console.print(*model_ids, sep='\n')
         return
 
@@ -66,13 +68,10 @@ def model_view(model_groups: List[List[dict]], quiet=False, list_all=False):
 
     # flatten list
     model_args = list()
-    for model_group in model_groups:
+    for index, model in enumerate(model_group):
         # build arguments for pass into `single_model_view`
-        model_group_args = list(map(lambda x: (x, False), model_group))
-        if len(model_group_args) > 0:
-            model_group_args[0] = model_group_args[0][0], True
-
-        model_args.extend(model_group_args)
+        model_group_args = (model, False if index == 0 else True)
+        model_args.append(model_group_args)
         # add group separator
         model_args.append((None, False))
 
@@ -128,7 +127,7 @@ def model_detailed_view(model: MLModel):
     converted_grid.add_row(Text('Converted Model Info', style='bold cyan3', justify='left'))
     converted_grid.add_row(
         'Serving Engine', model.engine.name,
-        'Status', status_mapper[model.status.name],
+        'Status', status_mapper[Status(model.status).name],
         'Creator', model.creator,
         'Created', time_delta,
     )

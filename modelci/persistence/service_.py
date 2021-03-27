@@ -7,13 +7,16 @@ Date: 2/17/2021
 
 Persistence service using PyMongo.
 """
+from typing import List
+
 import gridfs
 from bson import ObjectId
+from fastapi.encoders import jsonable_encoder
 
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel
+from modelci.types.models import MLModel, ModelUpdateSchema
 
 _db = MongoClient()[db_settings.mongo_db]
 _collection = _db['model_d_o']
@@ -63,3 +66,40 @@ def get_by_id(id: str) -> MLModel:
         return MLModel.parse_obj(model_data)
     else:
         raise ServiceException(f'Model with id={id} does not exist.')
+
+
+def exists_by_id(id: str) -> MLModel:
+    model = _collection.find_one(filter={'_id': ObjectId(id)})
+    return model is not None
+
+
+def get_models(**kwargs) -> List[MLModel]:
+    """
+
+    Args:
+        **kwargs:  architecture, framework, engine, task and version
+
+    Returns: list of models
+
+    """
+    valid_keys = {'architecture', 'framework', 'engine', 'task', 'version'}
+    valid_kwargs = {key: value for key, value in kwargs.items() if value is not None and key in valid_keys}
+    models = _collection.find(valid_kwargs)
+    return list(map(MLModel.parse_obj, models))
+
+
+def update_model(id: str, schema: ModelUpdateSchema) -> MLModel:
+    prev_model = get_by_id(id)
+    updated_data = {
+        key: value for key, value in jsonable_encoder(schema, exclude_unset=True).items()
+        if getattr(schema, key) != getattr(prev_model, key)
+    }
+    _collection.update_one({'_id': ObjectId(id)}, {"$set": updated_data})
+    return get_by_id(id)
+
+
+def delete_model(id_: str):
+    model = _collection.find_one(filter={'_id': ObjectId(id_)})
+    if _fs.exists(ObjectId(model['weight'])):
+        _fs.delete(ObjectId(model['weight']))
+    return _collection.delete_one({'_id': ObjectId(id_)})

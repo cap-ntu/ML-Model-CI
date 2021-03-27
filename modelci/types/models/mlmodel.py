@@ -85,7 +85,7 @@ class BaseMLModel(BaseModel):
         # fix metric key as a Enum
         metric: dict = data.get('metric', None)
         if metric:
-            data['metric'] = {k.name: v for k, v in metric.items()}
+            data['metric'] = {Metric(k).name: v for k, v in metric.items() }
 
         return data
 
@@ -114,7 +114,7 @@ class MLModel(BaseMLModel):
     profile_result: Optional[Any]
     status: Optional[Status] = Status.Unknown
     model_input: Optional[list]  # TODO: merge into field `inputs`
-    model_status: List[ModelStatus] = Field(default_factory=list)
+    model_status: Optional[List[ModelStatus]] = Field(default_factory=list)
     creator: Optional[str] = Field(default_factory=getpass.getuser)
     create_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
@@ -165,3 +165,21 @@ class MLModelFromYaml(BaseMLModel):
     def saved_path(self):
         suffix = Path(self.weight).suffix
         return super().saved_path.with_suffix(suffix)
+
+
+class ModelUpdateSchema(BaseModel):
+    architecture: Optional[str] = Field(None, example='ResNet50')
+    framework: Optional[Framework]
+    engine: Optional[Engine]
+    version: Optional[PositiveInt] = Field(None, example=1)
+    dataset: Optional[str] = Field(None, example='ImageNet')
+    metric: Optional[Dict[Metric, float]] = Field(None, example='{"acc": 0.76}')
+    task: Optional[Task]
+    inputs: Optional[List[IOShape]] = Field(
+        default_factory=list,
+        example='[{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}]'
+    )
+    outputs: Optional[List[IOShape]] = Field(
+        default_factory=list,
+        example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
+    )
