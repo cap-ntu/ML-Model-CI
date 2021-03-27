@@ -14,9 +14,6 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-from pathlib import Path
-from typing import Iterable, List, Optional, Callable
-
 import tvm
 import numpy 
 import torch
@@ -25,8 +22,6 @@ from torchvision import transforms
 from modelci.utils import Logger
 
 from tvm import relay
-from tvm.contrib.download import download_testdata
-# from modelci.types.bo import IOShape
 
 from pathlib import Path
 from PIL import Image
@@ -94,7 +89,8 @@ class TVMConverter(object):
             print('TVM format converted successfully')
             return True
 
-        except:
-            #TODO catch different types of error
-            print("This model is not supported as TVM format")
+         except Exception as e:
+            # TODO catch different types of error
+            logger.error('Unable to convert to TVM format, reason:')
+            logger.error(e)
             return False
