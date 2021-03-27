@@ -21,7 +21,6 @@ import yaml
 from pydantic import ValidationError
 
 from modelci.config import app_settings
-from modelci.persistence.service_ import get_models
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdateSchema
 from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
