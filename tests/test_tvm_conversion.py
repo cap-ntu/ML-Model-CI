@@ -105,8 +105,10 @@ class TestTVMConverter(unittest.TestCase):
 
         except Exception as e:
             # TODO catch different types of error
-            logger.error('Unable to convert to TVM format, reason:')
-            logger.error(e)
+            # logger.error('Unable to convert to TVM format, reason:')
+            # logger.error(e)
+            print("Unable to convert to TVM format, reason: ")
+            print(e)
             return False
 
 if __name__ == '__main__':
