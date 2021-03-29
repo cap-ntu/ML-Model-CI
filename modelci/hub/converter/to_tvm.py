@@ -19,13 +19,16 @@ import numpy
 import torch
 import torch.jit
 from torchvision import transforms
-from modelci.utils import Logger
 
 from tvm import relay
 
 from pathlib import Path
 from PIL import Image
 
+import sys
+sys.path.append('../')
+
+from modelci.utils import Logger
 logger = Logger('converter', welcome=False)
 
 
@@ -89,7 +92,7 @@ class TVMConverter(object):
             print('TVM format converted successfully')
             return True
 
-         except Exception as e:
+        except Exception as e:
             # TODO catch different types of error
             logger.error('Unable to convert to TVM format, reason:')
             logger.error(e)
