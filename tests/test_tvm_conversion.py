@@ -26,6 +26,8 @@ from PIL import Image
 import sys
 sys.path.append('../')
 
+# from modelci.utils import Logger
+# logger = Logger('converter', welcome=False)
 # from modelci.types.bo import IOShape
 
 class TestTVMConverter(unittest.TestCase):
@@ -97,12 +99,14 @@ class TestTVMConverter(unittest.TestCase):
             with tvm.transform.PassContext(opt_level=self.opt_level):
                 lib = relay.build(model, target=target, target_host=target_host, params=params)
 
+            # logger.info('TVM format converted successfully')
             print('TVM format converted successfully')
             return True
 
-        except:
-            #TODO catch different types of error
-            print("This model is not supported as TVM format")
+        except Exception as e:
+            # TODO catch different types of error
+            logger.error('Unable to convert to TVM format, reason:')
+            logger.error(e)
             return False
 
 if __name__ == '__main__':
