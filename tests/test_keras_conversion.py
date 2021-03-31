@@ -45,9 +45,9 @@ class TestKerasConverter(unittest.TestCase):
 
     def test_keras_to_tfs(self):
         convert(self.keras_model, 'tensorflow', 'tfs', save_path=self.tfs_model_path)
-        tfs_model = tf.keras.models.load_model(self.tfs_model_path)
+        tfs_model = tf.keras.models.load_model(str(self.tfs_model_path))
         tfs_model_predict = tfs_model.predict(self.sample_input)
-        np.testing.assert_allclose(tfs_model_predict, self.keras_model_predict)
+        np.testing.assert_allclose(tfs_model_predict, self.keras_model_predict, atol=1e-6)
 
 
     @classmethod
