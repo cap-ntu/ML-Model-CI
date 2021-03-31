@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
+from http import HTTPStatus
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -21,7 +22,7 @@ from pydantic import ValidationError
 from modelci.hub.utils import generate_path
 from modelci.types.bo import Framework as saveFramework, Engine as saveEngine, Task as saveTask, IOShape as convertIO
 from modelci.config import app_settings
-from modelci.types.models import Framework, Engine, IOShape, Task, Metric
+from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdateSchema
 from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
@@ -148,9 +149,9 @@ def list_models(
     payload = remove_dict_null(
         {'architecture': architecture, 'framework': framework, 'engine': engine, 'version': version}
     )
-    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=payload) as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model', params=payload) as r:
         model_list = r.json()
-        model_view([model_list], list_all=list_all)
+        model_view([MLModel.parse_obj(model) for model in model_list], list_all=list_all)
 
 
 @app.command()
@@ -169,7 +170,7 @@ def download_model_from_url(
     from modelci.hub.publish import _download_model_from_url
 
     _download_model_from_url(url, path)
-    logger.info(f'{path} model downloaded successfully.')
+    typer.echo(f'{path} model downloaded successfully.')
 
 
 @app.command('export')
@@ -348,3 +349,46 @@ def convert(
                                   engine=saveEngine.ONNX,
                                   version=version)
         cvt.convert(model=loaded, src_framework='pytorch', dst_framework='torchscript', save_path=save_path)
+@app.command('update')
+def update(
+        model_id: str = typer.Argument(..., help='Model ID'),
+        architecture: Optional[str] = typer.Option(None, '-n', '--name', help='Architecture'),
+        framework: Optional[Framework] = typer.Option(None, '-fw', '--framework', help='Framework'),
+        engine: Optional[Engine] = typer.Option(None, '-e', '--engine', help='Engine'),
+        version: Optional[int] = typer.Option(None, '-v', '--version', min=1, help='Version number'),
+        task: Optional[Task] = typer.Option(None, '-t', '--task', help='Task'),
+        dataset: Optional[str] = typer.Option(None, '-d', '--dataset', help='Dataset name'),
+        metric: Optional[Dict[Metric, float]] = typer.Option(
+            None,
+            help='Metrics in the form of mapping JSON string. The map type is '
+                 '`Dict[types.models.mlmodel.Metric, float]`. An example is \'{"acc": 0.76}.\'',
+        ),
+        inputs: Optional[List[IOShape]] = typer.Option(
+            [],
+            '-i', '--input',
+            help='List of shape definitions for input tensors. An example of one shape definition is '
+                 '\'{"name": "input", "shape": [-1, 3, 224, 224], "dtype": "TYPE_FP32", "format": "FORMAT_NCHW"}\'',
+        ),
+        outputs: Optional[List[IOShape]] = typer.Option(
+            [],
+            '-o', '--output',
+            help='List of shape definitions for output tensors. An example of one shape definition is '
+                 '\'{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}\'',
+        )
+):
+    model = ModelUpdateSchema(
+        architecture=architecture, framework=framework, engine=engine, version=version,  # noqa
+        dataset=dataset, metric=metric, task=task, inputs=inputs, outputs=outputs
+    )
+
+    with requests.patch(f'{app_settings.api_v1_prefix}/model/{model_id}',
+                        data=model.json(exclude_defaults=True)) as r:
+        data = r.json()
+        model_detailed_view(MLModel.parse_obj(data))
+
+
+@app.command('delete')
+def delete(model_id: str = typer.Argument(..., help='Model ID')):
+    with requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
+        if r.status_code == HTTPStatus.NO_CONTENT:
+            typer.echo(f"Model {model_id} deleted")
