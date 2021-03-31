@@ -7,9 +7,6 @@ This class contains utility classes used in model service for building model bus
 from enum import Enum, unique
 from typing import List, Union, Optional, BinaryIO
 
-import numpy as np
-import tensorflow as tf
-import torch
 from mongoengine import GridFSProxy
 
 from modelci.types.do import IOShapeDO
@@ -43,8 +40,8 @@ class Engine(Enum):
     ONNX = 3
     TRT = 4
     TVM = 5
-    PYTORCH = 6
-    CUSTOMIZED = 7
+    CUSTOMIZED = 6
+    PYTORCH = 7
 
 
 @unique
@@ -139,6 +136,10 @@ class IOShape(object):
     ):
         """Initializer of input/output shape."""
         from modelci.types.type_conversion import type_to_data_type
+
+        import numpy as np
+        import tensorflow as tf
+        import torch
 
         # input / output name
         self.name = name

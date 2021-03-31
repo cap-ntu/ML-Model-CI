@@ -17,9 +17,9 @@
 import click
 import requests
 
-from modelci.app import SERVER_HOST, SERVER_PORT
-from modelci.hub.init_data import export_model
-from modelci.ui import model_view, model_detailed_view
+from modelci.config import app_settings
+from modelci.types.models import MLModel
+from modelci.ui import model_view
 from modelci.utils.misc import remove_dict_null
 
 
@@ -40,9 +40,9 @@ from modelci.utils.misc import remove_dict_null
 @click.option('-q', '--quiet', type=click.BOOL, is_flag=True, help='Only show numeric IDs.')
 def models(name, framework, engine, version, list_all, quiet):
     payload = remove_dict_null({'name': name, 'framework': framework, 'engine': engine, 'version': version})
-    with requests.get(f'http://{SERVER_HOST}:{SERVER_PORT}/api/v1/model/', params=payload) as r:
+    with requests.get(f'{app_settings.api_v1_prefix}/model', params=payload) as r:
         model_list = r.json()
-        model_view([model_list], list_all=list_all, quiet=quiet)
+        model_view([MLModel.parse_obj(model) for model in model_list], list_all=list_all, quiet=quiet)
 
 
 

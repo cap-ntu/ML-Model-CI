@@ -172,7 +172,7 @@ We also open to collaboration based on this elementary system and research idea.
 ## License
 
 ```
-   Copyright 2020 Nanyang Technological University, Singapore
+   Copyright 2021 Nanyang Technological University, Singapore
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

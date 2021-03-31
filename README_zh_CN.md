@@ -198,7 +198,7 @@ serve(save_path=model_info[0].saved_path, device='cuda:0', name='torchscript-ser
 
 ## 版权许可
 ```
-   Copyright 2020 Nanyang Technological University, Singapore
+   Copyright 2021 Nanyang Technological University, Singapore
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

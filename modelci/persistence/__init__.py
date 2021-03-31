@@ -1,13 +1,13 @@
-from modelci import config
+from modelci.config import db_settings
 from .mongo_db import MongoDB
 
 conn_settings = {
-    'db': str(config.MONGO_DB),
-    'host': str(config.MONGO_HOST),
-    'port': int(config.MONGO_PORT),
-    'username': str(config.MONGO_USERNAME),
-    'password': str(config.MONGO_PASSWORD),
-    'authentication_source': str(config.MONGO_AUTH_SOURCE)
+    'db': str(db_settings.mongo_db),
+    'host': str(db_settings.mongo_host),
+    'port': int(db_settings.mongo_port),
+    'username': str(db_settings.mongo_username),
+    'password': db_settings.mongo_password.get_secret_value(),
+    'authentication_source': str(db_settings.mongo_auth_source)
 }
 
 mongo = MongoDB(**conn_settings)

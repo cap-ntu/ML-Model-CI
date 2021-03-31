@@ -15,8 +15,8 @@
 import click
 import typer
 
+from modelci.cli import modelhub
 from modelci.cli._fixup import _get_click_type_wrapper, _generate_enum_convertor_wrapper
-from modelci.cli.modelhub import modelhub, app as modelhub_app
 from modelci.cli.service import service
 
 # Fixup for typer argument and options annotations
@@ -34,10 +34,9 @@ def callback():
     """
 
 
-app.add_typer(modelhub_app, name='modelhub_typer')
+app.add_typer(modelhub.app, name='modelhub')
 typer_click_object: click.Group = typer.main.get_command(app)  # noqa
 typer_click_object.add_command(service)
-typer_click_object.add_command(modelhub)
 
 if __name__ == '__main__':
     typer_click_object()

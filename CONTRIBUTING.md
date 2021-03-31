@@ -21,6 +21,16 @@ pip install hummingbird-ml==0.2.1 torchviz==0.0.1
 export PYTHONPATH="${PWD}"
 ```
 
+### Use Customized Settings
+
+To use customized settings such as backend host name, MongoDB password, change the corresponding settings defines at
+`env-backend.env` (for backend), `env-frontend.env` (for frontend) and `env-mongodb.env` (for MongoDB).
+
+After that, you should re-generate the environment files (`.env`) for the backend and the frontend.
+```shell script
+python scripts/generate_env.py
+```
+
 ### Start Services
 
 ```shell script

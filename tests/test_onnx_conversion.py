@@ -19,8 +19,8 @@ import unittest
 import numpy as np
 import onnxruntime as rt
 import torch
+import lightgbm as lgb
 from sklearn.datasets import load_breast_cancer
-from sklearn.ensemble import RandomForestClassifier
 
 from modelci.hub.converter import convert
 from modelci.types.bo import IOShape
@@ -30,25 +30,25 @@ class TestONNXConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
         X_bc, y_bc = load_breast_cancer(return_X_y=True)
         nrows = 15000
         X_bc: np.ndarray = X_bc[0:nrows]
         y_bc: np.ndarray = y_bc[0:nrows]
-        sklearn_model = RandomForestClassifier(n_estimators=10, max_depth=10)
-        sklearn_model.fit(X_bc, y_bc)
+        model = lgb.LGBMRegressor(n_estimators=3, min_child_samples=1)
+        model.fit(X_bc, y_bc)
         inputs_bc = [IOShape(shape=[-1, X_bc.shape[1]], dtype=float, name='input_0')]
-        cls.onnx_model = convert(sklearn_model, 'sklearn', 'onnx', inputs=inputs_bc, optimize=False)
+        cls.onnx_model = convert(model, 'lightgbm', 'onnx', inputs=inputs_bc, optimize=False)
         sess = rt.InferenceSession(cls.onnx_model.SerializeToString())
         cls.sample_input = torch.rand(2, X_bc.shape[1], dtype=torch.float32)
         cls.onnx_model_predict = sess.run(None, {'input_0': cls.sample_input.numpy()})[0].flatten()
 
     # noinspection DuplicatedCode
     def test_onnx_to_pytorch(self):
-        torch_model = convert(self.onnx_model,'onnx','pytorch')
+        torch_model = convert(self.onnx_model, 'onnx', 'pytorch')
         torch_model.eval()
-        torch_model_predict = torch_model(self.sample_input)[0].data.numpy()
+        torch_model_predict = torch_model(self.sample_input).data.numpy().flatten()
         np.testing.assert_allclose(self.onnx_model_predict, torch_model_predict, rtol=1e-05, atol=1e-05)
+
 
 if __name__ == '__main__':
     unittest.main()
