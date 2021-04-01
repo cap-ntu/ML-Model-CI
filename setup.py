@@ -7,6 +7,7 @@ Date: 9/19/2020
 
 """
 import os
+import platform
 import sys
 import tarfile
 import warnings
@@ -18,11 +19,27 @@ import requests
 from setuptools import find_packages
 
 ################################################################################
-# Check Platform and  Download Required non-pip Packages
+# Check Python Version
+################################################################################
+
+if sys.version_info < (3,):
+    sys.exit('Python 2 has reached end-of-life and is no longer supported by PyTorch.')
+
+python_min_version = (3, 7, 0)
+python_min_version_str = '.'.join((str(num) for num in python_min_version))
+python_max_version = (3, 9, 0)
+python_max_version_str = '.'.join((str(num) for num in python_max_version))
+if sys.version_info < python_min_version or sys.version_info >= python_max_version:
+    sys.exit(
+        f'You are using Python {platform.python_version()}. Python >={python_min_version_str},<{python_max_version_str}'
+        f' is required.'
+    )
+
+################################################################################
+# Check Platform
 ################################################################################
 
 TRITON_CLIENT_VERSION = '1.8.0'
-
 # Get Ubuntu version
 system_name, system_version, _ = distro.linux_distribution()
 if sys.platform == 'linux' and system_name == 'ubuntu':
@@ -116,10 +133,11 @@ if "CUDA_HOME" in os.environ:
 
 TORCH_INSTALL_URL = f'https://download.pytorch.org/whl/{torch_cuda_version}/torch-1.5.0' \
                     f'{"%2B"+torch_cuda_version if torch_cuda_version!="cu102" else ""}' \
-                    f'-cp{PYTHON_VER}-cp{PYTHON_VER}m-linux_x86_64.whl '
+                    f'-cp{PYTHON_VER}-cp{PYTHON_VER+"m" if PYTHON_VER!="38" else PYTHON_VER}-linux_x86_64.whl '
 TORCHVISION_INSTALL_URL = f'https://download.pytorch.org/whl/{torch_cuda_version}/torchvision-0.6.0' \
                           f'{"%2B"+torch_cuda_version if torch_cuda_version!="cu102" else ""}' \
-                          f'-cp{PYTHON_VER}-cp{PYTHON_VER}m-linux_x86_64.whl'
+                          f'-cp{PYTHON_VER}-cp{PYTHON_VER+"m" if PYTHON_VER!="38" else PYTHON_VER}-linux_x86_64.whl'
+
 TENSORFLOW_REQ = PRECOMPILED_TENSORFLOW_PAIRS[tensorflow_cuda_version]["tensorflow"]
 TFS_REQ = PRECOMPILED_TENSORFLOW_PAIRS[tensorflow_cuda_version]["tensorflow-serving-api"]
 
