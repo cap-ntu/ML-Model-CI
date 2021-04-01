@@ -5,55 +5,32 @@ Author: Li Yuanming
 Email: yli056@e.ntu.edu.sg
 Date: 9/19/2020
 
-# TODO: use pre-install to pip install requests first, may try this: https://stackoverflow.com/a/36902139
 """
-import platform
-import subprocess
+import os
 import sys
 import tarfile
+import warnings
 from distutils.core import setup
 from pathlib import Path
 
+import distro
 import requests
 from setuptools import find_packages
 
 ################################################################################
-# Check Platform and Python Version
-################################################################################
-
-if sys.version_info < (3,):
-    print('Python 2 has reached end-of-life and is no longer supported by PyTorch.')
-    sys.exit(-1)
-if sys.platform != 'linux':
-    TRITON_CLIENT_INSTALL = False
-else:
-    TRITON_CLIENT_INSTALL = True
-
-python_min_version = (3, 7, 0)
-python_min_version_str = '.'.join((str(num) for num in python_min_version))
-python_max_version = (3, 9, 0)
-python_max_version_str = '.'.join((str(num) for num in python_max_version))
-if sys.version_info < python_min_version or sys.version_info >= python_max_version:
-    print(
-        f'You are using Python {platform.python_version()}. Python >={python_min_version_str},<{python_max_version_str}'
-        f' is required.'
-    )
-    sys.exit(-1)
-
-################################################################################
-# Download Required non-pip Packages
+# Check Platform and  Download Required non-pip Packages
 ################################################################################
 
 TRITON_CLIENT_VERSION = '1.8.0'
 
 # Get Ubuntu version
-check_ubuntu_version_args = ['/usr/bin/lsb_release', '-sr']
-stdout = subprocess.check_output(check_ubuntu_version_args, universal_newlines=True, shell=False)
-try:
-    UBUNTU_VERSION = int(stdout.strip().replace('.', ''))
-except ValueError:
-    print('You are not using UBUNTU, Triton Client is not available.')
+system_name, system_version, _ = distro.linux_distribution()
+if sys.platform == 'linux' and system_name == 'ubuntu':
+    TRITON_CLIENT_INSTALL = True
+    UBUNTU_VERSION = system_version
+else:
     TRITON_CLIENT_INSTALL = False
+    warnings.warn('You are not using UBUNTU, Triton Client is not available.')
 
 
 def install_triton_client():
@@ -62,12 +39,13 @@ def install_triton_client():
     save_name.parent.mkdir(parents=True, exist_ok=True)
 
     url = f'https://github.com/triton-inference-server/server/releases/download/v{TRITON_CLIENT_VERSION}/{filename}'
+    wheel_file = f'tensorrtserver-{TRITON_CLIENT_VERSION}-py2.py3-none-linux_x86_64.whl'
     download = True
     if save_name.exists():
         # skip download
         try:
             tar_file = tarfile.open(save_name, mode='r')
-            tar_file.extractall()
+            tar_file.extract(f'python/{wheel_file}', path=save_name.parent)
             tar_file.close()
             download = False
         except Exception as e:
@@ -79,17 +57,82 @@ def install_triton_client():
             f.write(response.content)
         response.close()
         tar_file = tarfile.open(save_name, mode='r')
-        tar_file.extractall()
+        tar_file.extract(f'python/{wheel_file}', path=save_name.parent)
         tar_file.close()
 
-    package_path = save_name.parent / f'python/tensorrtserver-{TRITON_CLIENT_VERSION}-py2.py3-none-linux_x86_64.whl'
+    package_path = save_name.parent / f'python/{wheel_file}'
 
     return package_path
 
 
+# get torch ,torchvision and tensorflow version
+# reference: https://github.com/openvinotoolkit/nncf/blob/develop/setup.py
+# reference: https://www.tensorflow.org/install/source#gpu
+PRECOMPILED_TENSORFLOW_PAIRS = {
+    "cu110": {
+        "tensorflow": "tensorflow-gpu==2.4.0",
+        "tensorflow-serving-api": "tensorflow-serving-api-gpu==2.4.0"
+    },
+    "cu102": {
+        "tensorflow": "tensorflow-gpu==2.3.0",
+        "tensorflow-serving-api": "tensorflow-serving-api-gpu==2.3.0"
+    },
+    "cu101": {
+        "tensorflow": "tensorflow-gpu==2.3.0",
+        "tensorflow-serving-api": "tensorflow-serving-api-gpu==2.3.0"
+    },
+    "cpu": {
+        "tensorflow": "tensorflow==2.3.0",
+        "tensorflow-serving-api": "tensorflow-serving-api==2.3.0"
+    }
+}
+
+CUDA_VERSION = "cpu"
+PYTHON_VER = f'{sys.version_info[0]}{sys.version_info[1]}'
+torch_cuda_version = "cpu"
+tensorflow_cuda_version = "cpu"
+
+
+if "CUDA_HOME" in os.environ:
+    cuda_version_file = os.path.join(os.environ["CUDA_HOME"], "version.txt")
+    if os.path.exists(cuda_version_file):
+        with open(cuda_version_file) as f:
+            CUDA_VERSION = "cu".join(f.readline().strip().split(" ")[-1].split(".")[:2])
+            if CUDA_VERSION not in ["cpu", "cu92", "cu101", "cu102"]:
+                warnings.warn(
+                    f"There is no pre-complied pytorch 1.5.0 with CUDA {CUDA_VERSION}, "
+                    f"and you might need to install pytorch 1.5.0 with CUDA {CUDA_VERSION} from source."
+                )
+            else:
+                torch_cuda_version = CUDA_VERSION
+
+            if CUDA_VERSION not in PRECOMPILED_TENSORFLOW_PAIRS:
+                warnings.warn(
+                    f"There is no pre-complied tensorflow-gpu >=2.1.0 with CUDA {CUDA_VERSION}, "
+                    f"and you might need to install tensorflow-gpu >=2.1.0 with CUDA {CUDA_VERSION} from source."
+                )
+            else:
+                tensorflow_cuda_version = CUDA_VERSION
+
+TORCH_INSTALL_URL = f'https://download.pytorch.org/whl/{torch_cuda_version}/torch-1.5.0' \
+                    f'{"%2B"+torch_cuda_version if torch_cuda_version!="cu102" else ""}' \
+                    f'-cp{PYTHON_VER}-cp{PYTHON_VER}m-linux_x86_64.whl '
+TORCHVISION_INSTALL_URL = f'https://download.pytorch.org/whl/{torch_cuda_version}/torchvision-0.6.0' \
+                          f'{"%2B"+torch_cuda_version if torch_cuda_version!="cu102" else ""}' \
+                          f'-cp{PYTHON_VER}-cp{PYTHON_VER}m-linux_x86_64.whl'
+TENSORFLOW_REQ = PRECOMPILED_TENSORFLOW_PAIRS[tensorflow_cuda_version]["tensorflow"]
+TFS_REQ = PRECOMPILED_TENSORFLOW_PAIRS[tensorflow_cuda_version]["tensorflow-serving-api"]
+
 # parse required packages
+install_requires = list()
+install_requires.append(f"torch @ {TORCH_INSTALL_URL}")
+install_requires.append(f"torchvision @ {TORCHVISION_INSTALL_URL}")
+install_requires.append(TENSORFLOW_REQ)
+install_requires.append(TFS_REQ)
+install_requires.append("torchviz==0.0.1")
+install_requires.append("pytorch-lightning==1.1.4")
+
 with open('requirements.txt') as f:
-    install_requires = list()
     for line in f.readlines():
         install_requires.append(line.strip())
 
@@ -103,15 +146,9 @@ if TRITON_CLIENT_INSTALL:
 ################################################################################
 
 setup(
-    name='modelci',
-    version='1.0.0',
-    description='A complete platform for managing, converting, profiling, and deploying models as cloud services (MLaaS)',
-    author='NTU CAP',
-    author_email='huaizhen001@e.ntu.edu.sg',
-    url='https://github.com/cap-ntu/ML-Model-CI',
     install_requires=install_requires,
     packages=find_packages(),
-    python_requires='>=3.7',
+    DEPENDENCY_LINKS=[TORCH_INSTALL_URL, TORCHVISION_INSTALL_URL],
     entry_points='''
         [console_scripts]
         modelci=modelci.cli:cli
