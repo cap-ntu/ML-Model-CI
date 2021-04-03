@@ -111,8 +111,8 @@ tensorflow_cuda_version = "cpu"
 
 
 if "CUDA_HOME" in os.environ:
-    cuda_version_file = os.path.join(os.environ["CUDA_HOME"], "version.txt")
-    if os.path.exists(cuda_version_file):
+    cuda_version_file = Path(f'{os.environ["CUDA_HOME"]}/version.txt')
+    if cuda_version_file.exists():
         with open(cuda_version_file) as f:
             CUDA_VERSION = "cu".join(f.readline().strip().split(" ")[-1].split(".")[:2])
             if CUDA_VERSION not in ["cpu", "cu92", "cu101", "cu102"]:
