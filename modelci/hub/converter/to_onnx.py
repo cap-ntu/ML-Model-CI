@@ -18,6 +18,9 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Callable
 
 import onnx
+import tempfile
+import os
+import subprocess
 import onnxmltools as onnxmltools
 import torch
 import torch.jit
@@ -174,12 +177,8 @@ class ONNXConverter(object):
             saved_model_path: Path,
             opset: int = DEFAULT_OPSET,
     ):
-        import tempfile
-        import os
-        import subprocess
-        """return a loaded model in ONNX.
-            TODO: revise this function when tensorflow-onnx updated on pypi and use tf2onnx.convert.from_keras()
-
+        """ return a loaded model in ONNX.
+          TODO revise this function when tensorflow-onnx updated on pypi and use tf2onnx.convert.from_keras()
         Arguments:
             saved_model_path : savedmodel path.
             opset (int): ONNX op set version.
@@ -188,8 +187,8 @@ class ONNXConverter(object):
             save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
             onnx_save = str(save_path)+'/tf_savedmodel.onnx'
             try:
-                convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output', onnx_save,
-                              '--opset', str(opset)]
+                convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output',
+                              onnx_save, '--opset', str(opset)]
                 subprocess.run(convertcmd)
                 logger.info('ONNX format converted successfully')
                 return onnx.load(onnx_save)
