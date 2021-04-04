@@ -55,7 +55,7 @@ class CVTFSClient(BaseModelInspector):
     def make_request(self, input_batch) -> PredictRequest:
         input_batch = np.stack(input_batch)
         request = PredictRequest()
-        request.model_spec.name = self.model_info.name
+        request.model_spec.name = self.model_info.architecture
         request.model_spec.signature_name = self.signature_name
         for input_ in self.model_info.inputs:
             tensor_proto = tf.make_tensor_proto(input_batch, shape=input_batch.shape)

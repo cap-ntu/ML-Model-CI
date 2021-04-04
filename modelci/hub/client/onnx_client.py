@@ -50,7 +50,7 @@ class CVONNXClient(BaseModelInspector):
             {'shape': self.model_info.inputs[0].shape[1:], 'dtype': self.model_info.inputs[0].dtype}
         )
         request = InferRequest()
-        request.model_name = self.model_info.name
+        request.model_name = self.model_info.architecture
         request.meta = meta
         request.raw_input.extend(list(map(bytes, input_batch)))
         return request

@@ -238,9 +238,9 @@ def _get_remote_model_weights(models: List[ModelBO]):
     """
 
     # group by (task, architecture, framework, engine) pair
-    pairs = set(map(lambda x: (x.task, x.name, x.framework, x.engine), models))
+    pairs = set(map(lambda x: (x.task, x.architecture, x.framework, x.engine), models))
     model_groups = [
-        [model for model in models if (model.task, model.name, model.framework, model.engine) == pair] for pair in pairs
+        [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair] for pair in pairs
     ]
 
     # get weights of newest version of each pair
