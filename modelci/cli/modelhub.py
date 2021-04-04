@@ -26,7 +26,9 @@ from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null
-
+from modelci.types.bo import Framework as saveFramework, Engine as saveEngine, Task as saveTask, IOShape as convertIO
+from modelci.types.trtis_objects import ModelInputFormat
+from modelci.hub.utils import generate_path
 logger = Logger(__name__, welcome=False)
 
 app = typer.Typer()
@@ -242,3 +244,191 @@ def delete(model_id: str = typer.Argument(..., help='Model ID')):
     with requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
         if r.status_code == HTTPStatus.NO_CONTENT:
             typer.echo(f"Model {model_id} deleted")
+
+
+@app.command('convert')
+def convert(
+        src: Optional[str] = typer.Argument(..., help='the prototype model framework to be converted'),
+        dst: Optional[str] = typer.Argument(..., help='the destination model framework after converting'),
+        model_path: Optional[str] = typer.Argument(..., help='path of the model to be converted'
+                                                   'such as \'/home/model\' for keras savedmodel or'
+                                                   '\'/home/model/xxx.suffix\' for a file'),
+        model_name: Optional[str] = typer.Option(..., '-n', '--name', help='model name'),
+        version: Optional[int] = typer.Option(..., '-v', '--version', min=1, help='Version number'),
+
+        shape_input: Optional[str] = typer.Option(None, '-si', '--shapei', help='input shape such as [-1,28,28]'),
+        dtype_input: Optional[str] = typer.Option(None, '-di', '--dtypei', help='input data type such as \'float\' '
+                                                                                'or special types like \'tf.float32\''),
+        format_input: Optional[str] = typer.Option(None, '-fi', '--formati', help='input format for tensorrt such as'
+                                                                                  '\'FORMAT_NONE\' \'FORMAT_NHWC\' '
+                                                                                  '\'FORMAT_NCHW\' '),
+
+        shape_output: Optional[str] = typer.Option(None, '-so', '--shapeo', help='output shape such as [-1, 1000]'),
+        dtype_output: Optional[str] = typer.Option(None, '-do', '--dtypeo', help='output data type such as \'float\''),
+
+        model_task: Optional[str] = typer.Option(..., '-t', '--task', help='task of model'
+                                                                           'such as \'IMAGE_CLASSIFICATION\''
+                                                                           'or \'SEGMENTATION\'\'OBJECT_DETECTION\'')
+):
+    import modelci.hub.converter.converter as cvt
+    way = (src, dst)
+    task = {
+        'IMAGE_CLASSIFICATION': saveTask.IMAGE_CLASSIFICATION,
+        'SEGMENTATION': saveTask.SEGMENTATION,
+        'OBJECT_DETECTION': saveTask.OBJECT_DETECTION
+    }
+    in_format = {
+            'FORMAT_NONE': ModelInputFormat.FORMAT_NONE,
+            'FORMAT_NHWC': ModelInputFormat.FORMAT_NHWC,
+            'FORMAT_NCHW': ModelInputFormat.FORMAT_NCHW,
+    }
+    if way == ('keras', 'onnx'):
+        import onnx
+        import tensorflow as tf
+        loaded = tf.saved_model.load(model_path)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.TENSORFLOW,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        onnx_model = cvt.convert(model=loaded, src_framework='keras', dst_framework='onnx')
+        onnx.checker.check_model(onnx_model)
+        onnx.save(onnx_model, save_path)
+    if way == ('tensorflow', 'onnx'):
+        import onnx
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.TENSORFLOW,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        onnx_model = cvt.convert(model=model_path, src_framework='tensorflow', dst_framework='onnx')
+        onnx.checker.check_model(onnx_model)
+        onnx.save(onnx_model, save_path)
+    if way == ('keras', 'tensorflow_serving'):
+        import tensorflow as tf
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.TENSORFLOW,
+                                  task=task[model_task],
+                                  engine=saveEngine.TFS,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        loaded = tf.saved_model.load(model_path)
+        cvt.convert(model=loaded, src_framework='tensorflow', dst_framework='tfs', save_path=save_path)
+    if way == ('xgboost', 'onnx'):
+        import torch
+        import onnx
+        loaded = torch.load(model_path)
+        inputs = [convertIO(shape=eval(shape_input), dtype=eval(dtype_input), name='input_0')]
+        onnx_model = cvt.convert(model=loaded, src_framework='xgboost', dst_framework='onnx', inputs=inputs)
+        onnx.checker.check_model(onnx_model)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        onnx.save(onnx_model, save_path)
+    if way == ('xgboost', 'torch'):
+        import onnx
+        import torch
+        loaded = torch.load(model_path)
+        inputs = [convertIO(shape=eval(shape_input), dtype=eval(dtype_input), name='input_0')]
+        torch_model = cvt.convert(model=loaded, src_framework='xgboost', dst_framework='onnx', inputs=inputs)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.PYTORCH,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(torch_model, save_path)
+    if way == ('sklearn', 'onnx'):
+        import onnx
+        import torch
+        loaded = torch.load(model_path)
+        inputs = [convertIO(shape=eval(shape_input), dtype=eval(dtype_input), name='input_0')]
+        onnx_model = cvt.convert(model=loaded, src_framework='sklearn', dst_framework='onnx', inputs=inputs)
+        onnx.checker.check_model(onnx_model)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        onnx.save(onnx_model, save_path)
+    if way == ('sklearn', 'torch'):
+        import onnx
+        import torch
+        loaded = torch.load(model_path)
+        inputs = [convertIO(shape=eval(shape_input), dtype=eval(dtype_input), name='input_0')]
+        torch_model = cvt.convert(model=loaded, src_framework='sklearn', dst_framework='onnx', inputs=inputs)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.PYTORCH,
+                                  version=version)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(torch_model, save_path)
+    if way == ('torch', 'onnx'):
+        import torch
+        import onnx
+        loaded = torch.load(model_path)
+        inputs = [convertIO(shape=eval(shape_input), dtype=eval(dtype_input), name='input_0',
+                            format=in_format[format_input])]
+        outputs = [convertIO(shape=eval(shape_output), dtype=eval(dtype_output), name='probs')]
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        cvt.convert(model=loaded, src_framework='pytorch', dst_framework='onnx', save_path=save_path, inputs=inputs,
+                    outputs=outputs, opset=11)
+    if way == ('torch', 'torchscript'):
+        import torch
+        import onnx
+        loaded = torch.load(model_path)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        cvt.convert(model=loaded, src_framework='pytorch', dst_framework='torchscript', save_path=save_path)
+    if way == ('onnx', 'torch'):
+        import onnx
+        import torch
+        loaded = onnx.load(model_path)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.PYTORCH,
+                                  version=version)
+        torch_model = cvt.convert(model=loaded, src_framework='onnx', dst_framework='pytorch')
+        torch.save(torch_model, save_path)
+
+    if way == ('lightgbm', 'onnx'):
+        import onnx
+        import torch
+        loaded = torch.load(model_path)
+        inputs = [convertIO(shape=eval(shape_input), dtype=eval(dtype_input), name='input_0',
+                            format=in_format[format_input])]
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.ONNX,
+                                  version=version)
+        onnx_model = cvt.convert(model=loaded, src_framework='lightgbm', dst_framework='onnx', inputs=inputs, opset=9,
+                                 optimize=False)
+        onnx.save(onnx_model, save_path)
+
+    if way == ('lightgbm', 'pytorch'):
+        import onnx
+        import torch
+        loaded = torch.load(model_path)
+        save_path = generate_path(model_name=model_name,
+                                  framework=saveFramework.PYTORCH,
+                                  task=task[model_task],
+                                  engine=saveEngine.PYTORCH,
+                                  version=version)
+        torch_model = cvt.convert(model=loaded, src_framework='lightgbm', dst_framework='pytorch')
+        torch.save(torch_model, save_path)
