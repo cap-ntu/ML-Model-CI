@@ -270,6 +270,9 @@ def convert(
                                                                            'such as \'IMAGE_CLASSIFICATION\''
                                                                            'or \'SEGMENTATION\'\'OBJECT_DETECTION\'')
 ):
+    """
+    TODO replace input and output str with IOShape
+    """
     import modelci.hub.converter.converter as cvt
     way = (src, dst)
     task = {
