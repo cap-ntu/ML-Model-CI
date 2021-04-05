@@ -6,15 +6,13 @@ import tensorflow as tf
 import numpy as np
 from modelci.hub.converter import convert
 import onnx
-import os
-import tempfile
+from modelci.types.bo import IOShape
 
 
 class TestTensorflowConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        tmpdir = tempfile.mkdtemp()
 
         file = tf.keras.utils.get_file(
             "grace_hopper.jpg",
@@ -23,20 +21,19 @@ class TestTensorflowConverter(unittest.TestCase):
         cls.x = tf.keras.preprocessing.image.img_to_array(img)
         cls.x = tf.keras.applications.mobilenet.preprocess_input(
             cls.x[tf.newaxis, ...])
-        cls.shape = [1,224,224,3]
+        shape = [1, 224, 224, 3]
+        cls.inputs = IOShape(shape, tf.float32, 'input_0')
         labels_path = tf.keras.utils.get_file(
             'ImageNetLabels.txt',
             'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt')
         cls.imagenet_labels = np.array(open(labels_path).read().splitlines())
         cls.tf_model = tf.keras.applications.MobileNet()
         result_before_save = cls.tf_model(cls.x)
-        cls.mobilenet_save_path = os.path.join(tmpdir, "mobilenet/1/")
-        tf.saved_model.save(cls.tf_model, cls.mobilenet_save_path)
 
         cls.decoded = cls.imagenet_labels[np.argsort(result_before_save)[0, ::-1][:5] + 1]
 
     def test_tensorflow_to_onnx(self):
-        onnx_model = convert(self.mobilenet_save_path, 'tensorflow', 'onnx')
+        onnx_model = convert(self.tf_model, 'tensorflow', 'onnx', inputs=self.inputs)
         onnx.checker.check_model(onnx_model)
         sess = onnxruntime.InferenceSession(onnx_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
