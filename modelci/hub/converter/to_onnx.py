@@ -20,7 +20,7 @@ from typing import Iterable, List, Optional, Callable
 import onnx
 import tempfile
 import os
-import subprocess
+import tensorflow as tf
 import onnxmltools as onnxmltools
 import torch
 import torch.jit
@@ -174,28 +174,31 @@ class ONNXConverter(object):
 
     @staticmethod
     def from_tensorflow(
-            saved_model_path: Path,
+            model,
+            inputs: IOShape,
             opset: int = DEFAULT_OPSET,
     ):
-        """ return a loaded model in ONNX.
-          TODO revise this function when tensorflow-onnx updated on pypi and use tf2onnx.convert.from_keras()
+        """ return a model in ONNX.
         Arguments:
-            saved_model_path : savedmodel path.
+            model : tensorflow savedmodel.
+            inputs:
             opset (int): ONNX op set version.
+
         """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            save_path = os.path.join(tmpdir, "temp_from_tensorflow/")
-            onnx_save = str(save_path)+'/tf_savedmodel.onnx'
-            try:
-                convertcmd = ['python', '-m', 'tf2onnx.convert', '--saved-model', saved_model_path, '--output',
-                              onnx_save, '--opset', str(opset)]
-                subprocess.run(convertcmd)
-                logger.info('ONNX format converted successfully')
-                return onnx.load(onnx_save)
-            except Exception as e:
-                logger.error('Unable to convert to ONNX format, reason:')
-                logger.error(e)
-                return False
+        import tf2onnx
+        from modelci.types import type_conversion
+
+        dtype = type_conversion.model_data_type_to_tf(inputs.dtype)
+        spec = (tf.TensorSpec(inputs.shape, dtype, name="input"),)
+        try:
+            model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, opset=opset)
+            logger.info('ONNX format converted successfully')
+            return model_proto
+        except Exception as e:
+            logger.error('Unable to convert to ONNX format, reason:')
+            logger.error(e)
+            return False
+
 
     @staticmethod
     @_Wrapper.save
