@@ -151,3 +151,30 @@ def model_data_type_to_onnx(model_dtype):
             f'model_dtype is expecting one of the type: `int`, `str`, or `DataType` but got {type(model_dtype)}'
         )
     return mapper[model_dtype]
+
+
+def model_data_type_to_tf(model_dtype):
+    from modelci.types.bo import DataType
+    import tensorflow as tf
+    mapper = {
+        DataType.TYPE_INVALID: None,
+        DataType.TYPE_BOOL: tf.bool,
+        DataType.TYPE_UINT8: tf.uint8,
+        DataType.TYPE_INT8: tf.int8,
+        DataType.TYPE_INT16: tf.int16,
+        DataType.TYPE_INT32: tf.int32,
+        DataType.TYPE_INT64: tf.int64,
+        DataType.TYPE_FP16: tf.float16,
+        DataType.TYPE_FP32: tf.float32,
+        DataType.TYPE_FP64: tf.float64,
+    }
+
+    if isinstance(model_dtype, int):
+        model_dtype = DataType(model_dtype)
+    elif isinstance(model_dtype, str):
+        model_dtype = DataType[model_dtype]
+    elif not isinstance(model_dtype, DataType):
+        raise TypeError(
+            f'model_dtype is expecting one of the type: `int`, `str`, or `DataType` but got {type(model_dtype)}'
+        )
+    return mapper[model_dtype]
