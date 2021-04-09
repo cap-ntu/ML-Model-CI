@@ -1,0 +1,57 @@
+networks:
+  modelci:
+    name: modelci_network
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_USERNAME: modelci
+      MONGO_INITDB_PASSWORD: modelci@2020
+      MONGO_INITDB_DATABASE: modelci
+    hostname: mongodb
+    volumes:
+      - ../scripts/init_db.js:/docker-entrypoint-initdb.d/init_db.js
+    networks:
+      - modelci
+
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    command: --privileged
+    restart: always
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - modelci
+
+  backend:
+    image: mlmodelci/mlmodelci:cpu
+    container_name: modelci-backend
+    hostname: modelci
+    ports:
+      - 8000:8000
+    depends_on:
+      - mongo
+    networks:
+      - modelci
+
+  frontend:
+    image: mlmodelci/frontend:latest
+    container_name: modelci-frontend
+    ports:
+      - "3333:80"
+    depends_on:
+      - mongo
+      - backend
+    networks:
+      - modelci

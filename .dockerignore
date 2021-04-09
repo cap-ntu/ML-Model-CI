@@ -5,7 +5,6 @@ build
 dist
 *.egg-info
 *.egg/
-*.pyc
 *.swp
 
 .tox
@@ -15,7 +14,8 @@ html/*
 __pycache__
 
 ### Front end ###
-frontend
+node_modules
+npm-debug.log
 
 ### Build cache ###
 */**/*.cache

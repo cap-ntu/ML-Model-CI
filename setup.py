@@ -169,6 +169,6 @@ setup(
     DEPENDENCY_LINKS=[TORCH_INSTALL_URL, TORCHVISION_INSTALL_URL],
     entry_points='''
         [console_scripts]
-        modelci=modelci.cli:cli
+        modelci=modelci.cli:typer_click_object
     '''
 )
