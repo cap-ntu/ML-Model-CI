@@ -19,6 +19,8 @@ import requests
 import typer
 import yaml
 from pydantic import ValidationError
+import modelci.persistence.service_ as ModelDB
+from modelci.hub.manager import  _generate_model_family
 
 from modelci.config import app_settings
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdateSchema
@@ -242,3 +244,16 @@ def delete(model_id: str = typer.Argument(..., help='Model ID')):
     with requests.delete(f'{app_settings.api_v1_prefix}/model/{model_id}') as r:
         if r.status_code == HTTPStatus.NO_CONTENT:
             typer.echo(f"Model {model_id} deleted")
+
+
+@app.command('convert')
+def convert(
+        id: str = typer.Option(..., '-i', '--id', help='ID of model.'),
+):
+    if ModelDB.exists_by_id(id):
+        model = ModelDB.get_by_id(id)
+        # auto execute all possible convert and return a list of save paths of every converted model
+        generated_dir_list = _generate_model_family(model)
+        typer.echo(f"Converted models are save in: {generated_dir_list}")
+    else:
+        typer.echo(f"model id: {id} does not exit in modelhub")
