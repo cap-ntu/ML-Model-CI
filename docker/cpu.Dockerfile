@@ -8,9 +8,10 @@ ARG PYTHON_VER=3.7
 WORKDIR /root
 RUN apt-get update \
  && apt-get install -y gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev libopenblas-dev ninja-build git llvm-10-dev wget\
-  python${PYTHON_VER} python${PYTHON_VER}-venv python${PYTHON_VER}-dev python3-pip \
-  && cd /tmp \
-  && wget -q https://bootstrap.pypa.io/get-pip.py && python${PYTHON_VER} get-pip.py
+  python${PYTHON_VER} python${PYTHON_VER}-venv python${PYTHON_VER}-dev python3-pip
+
+WORKDIR /tmp
+RUN wget -q https://bootstrap.pypa.io/get-pip.py && python${PYTHON_VER} get-pip.py
 
 COPY . /content
 
@@ -22,7 +23,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Build tvm
 WORKDIR /root
 RUN git clone https://github.com/apache/tvm tvm --recursive
-
 WORKDIR /root/tvm
 RUN mkdir -p build \
  && cp cmake/config.cmake build \
@@ -45,11 +45,10 @@ RUN pip install .
 ARG OS_VER
 FROM ubuntu:${OS_VER} AS build-image
 ARG PYTHON_VER=3.7
-WORKDIR /root
-COPY --from=modelci-compile:cpu /venv /venv
+COPY --from=compile-image /venv /venv
 RUN apt-get update \
  && apt-get install llvm-10 libopenblas-dev lsof libgl1-mesa-glx libglib2.0-0 python${PYTHON_VER}-distutils python${PYTHON_VER} python${PYTHON_VER}-venv python${PYTHON_VER}-dev -y\
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 ENV PATH="/venv/bin:$PATH"
-CMD ["uvicorn", "modelci.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn",  "modelci.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

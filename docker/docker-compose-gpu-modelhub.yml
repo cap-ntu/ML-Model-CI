@@ -1,6 +1,6 @@
 networks:
   modelci:
-    name: modelci_cpu_network
+    name: modelci_gpu_network
 
 services:
   mongo:
@@ -35,7 +35,7 @@ services:
       - modelci
 
   backend:
-    image: mlmodelci/mlmodelci:cpu
+    image: mlmodelci/mlmodelci:cuda10.2-cudnn8
     container_name: modelci-backend
     hostname: modelci
     ports:

@@ -47,78 +47,142 @@ Several features are in beta testing and will be available in the next release s
 
 *If your want to join in our development team, please contact huaizhen001 @ e.ntu.edu.sg*
 
-## Installation
+## Demo
 
-### using pip
-
-```shell script
-# upgrade installation packages first
-pip install -U setuptools requests
-# install modelci from GitHub
-pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
-```
-
-### create conda workspace 
-
-**Note**
-- Conda and Docker are required to run this installation script.
-- To use TensorRT, you have to manually install TensorRT (`sudo` is required). See instruction 
-[here](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html). 
-
-```shell script
-bash scripts/install.sh
-```
-
-### Docker
-
-![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) ![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci)
-
-```shell script
-docker pull mlmodelci/mlmodelci
-```
-
-<!-- Please refer to [here](/integration/README.md) for more information. -->
-
-
-## Quick Start
-
-The below figurs illusrates the 
+The below figures illusrates the 
 | Web frontend |   Workflow     |
 |:------------:|:--------------:|
 | <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
 
-### 0. Start the ModelCI service
 
-Once you have installed, start MLModelCI service on a leader server by:
+## Installation Guide
+
+### Prerequisites
+
+- A GNU/Linux environment(Ubuntu preferred)
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker Compose](https://docs.docker.com/compose/) (for Installation via Docker)
+- [TVM](https://github.com/apache/incubator-tvm) and `tvm` Python module
+- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html) and Python API
+- Python >= 3.7
+
+### Installation using  pip
+
 ```shell script
+# install modelci from GitHub
+pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
+```
+
+Once you have installed, make sure the docker daemon is running, then you can start MLModelCI service on a leader server by:
+
+```bash
 modelci service init
 ```
 
-**We provide three options for users to use MLModelCI: CLI, Web interface and import it as a python package**
-### 1. CLI
+![CLI start service](https://i.loli.net/2021/04/12/wtyMuIlaJdsVchX.gif)
 
-```python
-# publish a model to the system
-modelci modelhub publish registration_example.yml
+Or stop the service by:
+
+```bash
+modelci service stop
 ```
 
-Please refer to [WIKI](https://github.com/cap-ntu/ML-Model-CI/wiki) for more CLIs.
+![CLI stop service](https://i.loli.net/2021/04/12/Hdi4JTclKkEaLfh.gif)
 
-### 2. Python Package
+### Installation using Docker
+
+![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) ![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci)
+
+####  For CPU-only Machines
+
+```shell script
+docker pull mlmodelci/mlmodelci:cpu
+```
+
+Start basic services by Docker Compose:
+
+```bash
+docker-compose -f ML-Model-CI/docker/docker-compose-cpu-modelhub.yml up -d
+```
+
+Stop the services by:
+
+```bash
+docker-compose -f ML-Model-CI/docker/docker-compose-cpu-modelhub.yml down
+```
+
+####  For GPU Machines
+
+```shell script
+docker pull mlmodelci/mlmodelci:cuda10.2-cudnn8
+```
+
+Start basic services by Docker Compose:
+
+```bash
+docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml up -d
+```
+
+![docker-compose start service](https://i.loli.net/2021/04/12/d8BNXxcvPS1ta5p.gif)
+
+Stop the services by:
+
+```bash
+docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml down
+```
+
+![docker-compose stop service](https://i.loli.net/2021/04/12/BGygfZ5rWt4h6U3.gif)
+
+<!-- Please refer to [here](/integration/README.md) for more information. -->
+
+
+## Usage
+
+**We provide three options for users to use MLModelCI: CLI, Running Programmatically and Web interface**
+
+### 1. CLI
+
+```shell-session
+# publish a model to the system
+modelci@modelci-PC:~$ modelci modelhub publish -f example/resnet50.yml
+{'data': {'id': ['60746e4bc3d5598e0e7a786d']}, 'status': True}
+```
+
+Please refer to [WIKI](https://github.com/cap-ntu/ML-Model-CI/wiki) for more commandline options.
+
+### 2. Running Programmatically
 
 ```python
 # utilize the convert function
-from modelci.hub.converter import ONNXConverter
+from modelci.hub.converter import convert
 from modelci.types.bo import IOShape
 
 # the system can trigger the function automaticlly
 # users can call the function individually 
-ONNXConverter.from_torch_module(
-    '<path to torch model>', 
-    '<path to export onnx model>', 
-    inputs=[IOShape([-1, 3, 224, 224], float)],
-)
+convert(
+    '<torch model>',
+    src_framework='pytorch', 
+    dst_framework='onnx',
+    save_path='<path to export onnx model>', 
+    inputs=[IOShape([-1, 3, 224, 224], dtype=float)], 
+    outputs=[IOShape([-1, 1000], dtype=float)], 
+    opset=11)
 ```
+
+### 3. Web Interface
+
+If you have installed MLModelCI via pip, you should start the frontend service manually.
+
+```bash
+# Navigate to the frontend folder
+cd frontend
+# Install dependencies
+yarn install
+# Start the frontend
+yarn start
+```
+
+The frontend will start on <http://localhost:3333>
 
 ## Quickstart with Notebook
 
