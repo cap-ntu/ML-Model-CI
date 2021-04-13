@@ -142,7 +142,7 @@ docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml down
 
 ### 1. CLI
 
-```shell-session
+```console
 # publish a model to the system
 modelci@modelci-PC:~$ modelci modelhub publish -f example/resnet50.yml
 {'data': {'id': ['60746e4bc3d5598e0e7a786d']}, 'status': True}
