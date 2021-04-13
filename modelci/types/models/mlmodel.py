@@ -7,33 +7,42 @@ Date: 2/17/2021
 """
 import getpass
 import os
+import gridfs
 from datetime import datetime
 from pathlib import Path
 from typing import Union, Optional, Dict, List, Any
 
 from bson import ObjectId
-from gridfs import GridOut
 from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, root_validator
 
 from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId, \
     named_enum_json_encoder
 from .pattern import as_form
 from ...hub.utils import parse_path_plain, generate_path_plain
+from modelci.config import db_settings
+from modelci.experimental.mongo_client import MongoClient
+
+_db = MongoClient()[db_settings.mongo_db]
+_fs = gridfs.GridFS(_db)
 
 
 class Weight(BaseModel):
     """TODO: Only works for MLModelIn"""
 
-    __slots__ = ('file',)
+    __slots__ = ('file', 'grid_out')
 
     __root__: Optional[PydanticObjectId]
 
     def __init__(self, __root__):
         if isinstance(__root__, Path):
             object.__setattr__(self, 'file', FilePath.validate(__root__))
+            object.__setattr__(self, 'grid_out', None)
             __root__ = None
 
-        self._grid_out: Optional[GridOut]
+        if isinstance(__root__, ObjectId):
+            if _fs.exists(__root__):
+                object.__setattr__(self, 'file', None)
+                object.__setattr__(self, 'grid_out', _fs.get(__root__))
 
         super().__init__(__root__=__root__)
 
@@ -41,11 +50,18 @@ class Weight(BaseModel):
     def filename(self):
         if self.file:
             return self.file.name
-        return ''
+        elif self.grid_out:
+            return self.grid_out.filename
+        else:
+            return ''
 
     def __bytes__(self):
         if self.file:
             return self.file.read_bytes()
+        elif self.grid_out:
+            return self.grid_out.read()
+        else:
+            return b''
 
 
 @as_form
@@ -85,7 +101,7 @@ class BaseMLModel(BaseModel):
         # fix metric key as a Enum
         metric: dict = data.get('metric', None)
         if metric:
-            data['metric'] = {Metric(k).name: v for k, v in metric.items() }
+            data['metric'] = {Metric(k).name: v for k, v in metric.items()}
 
         return data
 
