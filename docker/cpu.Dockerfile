@@ -6,9 +6,25 @@ ARG PYTHON_VER=3.7
 
 # Install tvm  dependencies and python
 WORKDIR /root
+# hadolint ignore=DL3008
 RUN apt-get update \
- && apt-get install -y gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev libopenblas-dev ninja-build git llvm-10-dev wget\
-  python${PYTHON_VER} python${PYTHON_VER}-venv python${PYTHON_VER}-dev python3-pip
+ && apt-get install -y --no-install-recommends\
+ gcc \
+ libtinfo-dev \
+ zlib1g-dev \
+ build-essential \
+ cmake \
+ libedit-dev \
+ libxml2-dev \
+ libopenblas-dev \
+ ninja-build \
+ git \
+ llvm-10-dev \
+ wget \
+ python${PYTHON_VER} \
+ python${PYTHON_VER}-venv \
+ python${PYTHON_VER}-dev \
+ python3-pip
 
 WORKDIR /tmp
 RUN wget -q https://bootstrap.pypa.io/get-pip.py && python${PYTHON_VER} get-pip.py
@@ -34,20 +50,30 @@ WORKDIR /root/tvm/build
 RUN cmake .. -G Ninja && ninja
 
 WORKDIR /root/tvm/python
-RUN pip install pip -U \
- && python setup.py install
+RUN pip install --no-cache-dir pip -U \
+ && python setup.py install --no-cache-dir
 
 # Install python dependencies
 WORKDIR /content
-RUN pip install .
+RUN pip install --no-cache-dir .
 
 # Stage2: Build
 ARG OS_VER
 FROM ubuntu:${OS_VER} AS build-image
 ARG PYTHON_VER=3.7
 COPY --from=compile-image /venv /venv
+# hadolint ignore=DL3008
 RUN apt-get update \
- && apt-get install llvm-10 libopenblas-dev lsof libgl1-mesa-glx libglib2.0-0 python${PYTHON_VER}-distutils python${PYTHON_VER} python${PYTHON_VER}-venv python${PYTHON_VER}-dev -y\
+ && apt-get install -y --no-install-recommends \
+ llvm-10 \
+ libopenblas-dev \
+ lsof \
+ libgl1-mesa-glx \
+ libglib2.0-0 \
+ python${PYTHON_VER}-distutils \
+ python${PYTHON_VER} \
+ python${PYTHON_VER}-venv \
+ python${PYTHON_VER}-dev -y\
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 ENV PATH="/venv/bin:$PATH"

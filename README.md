@@ -93,7 +93,7 @@ modelci service stop
 
 ![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) ![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci)
 
-####  For CPU-only Machines
+#### For CPU-only Machines
 
 ```shell script
 docker pull mlmodelci/mlmodelci:cpu
@@ -111,7 +111,7 @@ Stop the services by:
 docker-compose -f ML-Model-CI/docker/docker-compose-cpu-modelhub.yml down
 ```
 
-####  For GPU Machines
+#### For GPU Machines
 
 ```shell script
 docker pull mlmodelci/mlmodelci:cuda10.2-cudnn8

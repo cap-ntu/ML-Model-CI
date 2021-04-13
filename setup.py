@@ -44,7 +44,7 @@ TRITON_CLIENT_VERSION = '1.8.0'
 system_name, system_version, _ = distro.linux_distribution()
 if sys.platform == 'linux' and system_name == 'Ubuntu':
     TRITON_CLIENT_INSTALL = True
-    UBUNTU_VERSION = system_version
+    UBUNTU_VERSION = system_version.replace('.', '')
 else:
     TRITON_CLIENT_INSTALL = False
     warnings.warn('You are not using UBUNTU, Triton Client is not available.')

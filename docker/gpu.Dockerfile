@@ -3,8 +3,10 @@ FROM nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04 AS compile-image
 # Install tvm
 ARG PYTHON_VER=3.7
 WORKDIR /root
+# hadolint ignore=DL3008
 RUN apt-get update \
- && apt-get install -y gcc \
+ && apt-get install -y --no-install-recommends\
+ gcc \
  libtinfo-dev \
  zlib1g-dev \
  build-essential \
@@ -43,7 +45,7 @@ WORKDIR /root/tvm/build
 RUN cmake .. -G Ninja && ninja
 
 WORKDIR /root/tvm/python
-RUN pip install pip -U \
+RUN pip install --no-cache-dir pip -U \
  && python setup.py install
 
 WORKDIR /root
@@ -53,11 +55,11 @@ RUN cp /content/TensorRT-7.2.1.6.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.0.tar.
 
 # Install python libs
 WORKDIR /root/TensorRT-7.2.1.6/python
-RUN pip install tensorrt-7.2.1.6-cp37-none-linux_x86_64.whl \
-&& pip install 'pycuda>=2019.1.1' \
-&& pip install /root/TensorRT-7.2.1.6/uff/uff-0.6.9-py2.py3-none-any.whl \
-&& pip install /root/TensorRT-7.2.1.6/graphsurgeon/graphsurgeon-0.4.5-py2.py3-none-any.whl \
-&& pip install /root/TensorRT-7.2.1.6/onnx_graphsurgeon/onnx_graphsurgeon-0.2.6-py2.py3-none-any.whl
+RUN pip install --no-cache-dir tensorrt-7.2.1.6-cp37-none-linux_x86_64.whl \
+&& pip install --no-cache-dir 'pycuda>=2019.1.1' \
+&& pip install --no-cache-dir /root/TensorRT-7.2.1.6/uff/uff-0.6.9-py2.py3-none-any.whl \
+&& pip install --no-cache-dir /root/TensorRT-7.2.1.6/graphsurgeon/graphsurgeon-0.4.5-py2.py3-none-any.whl \
+&& pip install --no-cache-dir /root/TensorRT-7.2.1.6/onnx_graphsurgeon/onnx_graphsurgeon-0.2.6-py2.py3-none-any.whl
 
 # Set environment and working directory
 ENV TRT_LIBPATH /root/TensorRT-7.2.1.6/lib
@@ -66,13 +68,15 @@ ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${TRT_LIBPATH}"
 # Install python dependencies
 ENV CUDA_HOME "/usr/local/cuda"
 WORKDIR /content
-RUN pip install .
+RUN pip install --no-cache-dir .
 
 # Stage2: Build
 FROM nvidia/cuda:10.2-cudnn8-runtime-ubuntu18.04 AS build-image
 ARG PYTHON_VER=3.7
+# hadolint ignore=DL3008
 RUN apt-get update \
- && apt-get install llvm-10 \
+ && apt-get install -y --no-install-recommends\
+ llvm-10 \
  libopenblas-dev \
  lsof \
  libgl1-mesa-glx \
@@ -84,8 +88,8 @@ RUN apt-get update \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=modelci-compile:gpu /root/TensorRT-7.2.1.6/lib /root/TensorRT-7.2.1.6/lib
-COPY --from=modelci-compile:gpu /venv /venv
+COPY --from=compile-image /root/TensorRT-7.2.1.6/lib /root/TensorRT-7.2.1.6/lib
+COPY --from=compile-image /venv /venv
 # Reference: https://github.com/tensorflow/tensorflow/issues/38194#issuecomment-629801937
 RUN ln -s /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudart.so.10.2 /usr/lib/x86_64-linux-gnu/libcudart.so.10.1
 # Set environment and working directory
