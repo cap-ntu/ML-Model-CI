@@ -29,20 +29,20 @@ _fs = gridfs.GridFS(_db)
 class Weight(BaseModel):
     """TODO: Only works for MLModelIn"""
 
-    __slots__ = ('file', '_grid_out')
+    __slots__ = ('file', '_gridfs_out')
 
     __root__: Optional[PydanticObjectId]
 
     def __init__(self, __root__):
         if isinstance(__root__, Path):
             object.__setattr__(self, 'file', FilePath.validate(__root__))
-            object.__setattr__(self, '_grid_out', None)
+            object.__setattr__(self, '_gridfs_out', None)
             __root__ = None
 
         if isinstance(__root__, ObjectId):
             if _fs.exists(__root__):
                 object.__setattr__(self, 'file', None)
-                object.__setattr__(self, '_grid_out', _fs.get(__root__))
+                object.__setattr__(self, '_gridfs_out', _fs.get(__root__))
 
         super().__init__(__root__=__root__)
 
@@ -50,16 +50,16 @@ class Weight(BaseModel):
     def filename(self):
         if self.file:
             return self.file.name
-        elif self._grid_out:
-            return self._grid_out.filename
+        elif self._gridfs_out:
+            return self._gridfs_out.filename
         else:
             return ''
 
     def __bytes__(self):
         if self.file:
             return self.file.read_bytes()
-        elif self._grid_out:
-            return self._grid_out.read()
+        elif self._gridfs_out:
+            return self._gridfs_out.read()
         else:
             return b''
 
