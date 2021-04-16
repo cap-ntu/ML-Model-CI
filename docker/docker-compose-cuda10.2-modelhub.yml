@@ -15,7 +15,7 @@ services:
       MONGO_INITDB_DATABASE: modelci
     hostname: mongodb
     volumes:
-      - ../scripts/init_db.js:/docker-entrypoint-initdb.d/init_db.js
+      - ${PWD}/../scripts/init_db.js:/docker-entrypoint-initdb.d/init_db.js
     networks:
       - modelci
 

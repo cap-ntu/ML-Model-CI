@@ -49,7 +49,7 @@ Several features are in beta testing and will be available in the next release s
 
 ## Demo
 
-The below figures illusrates the 
+The below figures illusrates the web interface of our system and overall workflow.
 | Web frontend |   Workflow     |
 |:------------:|:--------------:|
 | <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
@@ -61,9 +61,9 @@ The below figures illusrates the
 
 - A GNU/Linux environment(Ubuntu preferred)
 - [Docker](https://docs.docker.com/engine/install/)
-- [Docker Compose](https://docs.docker.com/compose/) (for Installation via Docker)
-- [TVM](https://github.com/apache/incubator-tvm) and `tvm` Python module
-- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html) and Python API
+- [Docker Compose](https://docs.docker.com/compose/) (Optional, for Installation via Docker)
+- [TVM](https://github.com/apache/incubator-tvm) and `tvm` Python module(Optional)
+- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html) and Python API(Optional)
 - Python >= 3.7
 
 ### Installation using  pip
@@ -79,7 +79,9 @@ Once you have installed, make sure the docker daemon is running, then you can st
 modelci service init
 ```
 
-![CLI start service](https://i.loli.net/2021/04/12/wtyMuIlaJdsVchX.gif)
+![CLI start service](https://i.loli.net/2021/04/15/rLiMoxkqRO67Tyg.gif)
+
+
 
 Or stop the service by:
 
@@ -87,13 +89,17 @@ Or stop the service by:
 modelci service stop
 ```
 
-![CLI stop service](https://i.loli.net/2021/04/12/Hdi4JTclKkEaLfh.gif)
+![CLI stop service](https://i.loli.net/2021/04/16/jo1ZnWsqrmxFvlU.gif)
+
+
 
 ### Installation using Docker
 
-![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) ![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci)
+![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) 
 
 #### For CPU-only Machines
+
+![](https://img.shields.io/docker/v/mlmodelci/mlmodelci/cpu)![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci/cpu)
 
 ```shell script
 docker pull mlmodelci/mlmodelci:cpu
@@ -111,7 +117,9 @@ Stop the services by:
 docker-compose -f ML-Model-CI/docker/docker-compose-cpu-modelhub.yml down
 ```
 
-#### For GPU Machines
+#### For CUDA10.2 Machine
+
+![](https://img.shields.io/docker/v/mlmodelci/mlmodelci/cuda10.2-cudnn8)![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci/cuda10.2-cudnn8)
 
 ```shell script
 docker pull mlmodelci/mlmodelci:cuda10.2-cudnn8
@@ -123,7 +131,7 @@ Start basic services by Docker Compose:
 docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml up -d
 ```
 
-![docker-compose start service](https://i.loli.net/2021/04/12/d8BNXxcvPS1ta5p.gif)
+![docker-compose start service](https://i.loli.net/2021/04/15/65oYIBurfhPRK3U.gif)
 
 Stop the services by:
 
@@ -131,7 +139,7 @@ Stop the services by:
 docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml down
 ```
 
-![docker-compose stop service](https://i.loli.net/2021/04/12/BGygfZ5rWt4h6U3.gif)
+![docker-compose stop service](https://i.loli.net/2021/04/15/CyNzo4uhXkSrQRE.gif)
 
 <!-- Please refer to [here](/integration/README.md) for more information. -->
 
@@ -148,7 +156,7 @@ modelci@modelci-PC:~$ modelci modelhub publish -f example/resnet50.yml
 {'data': {'id': ['60746e4bc3d5598e0e7a786d']}, 'status': True}
 ```
 
-Please refer to [WIKI](https://github.com/cap-ntu/ML-Model-CI/wiki) for more commandline options.
+Please refer to [WIKI](https://github.com/cap-ntu/ML-Model-CI/wiki) for more CLI options.
 
 ### 2. Running Programmatically
 
