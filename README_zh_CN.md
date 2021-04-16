@@ -66,7 +66,7 @@ Machine Learning Model CI 是一个**云上一站式机器学习模型和服务�
 - [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose](https://docs.docker.com/compose/) (可选, 适用于经由 docker 的安装)
 - [TVM](https://github.com/apache/incubator-tvm)  以及其 Python 模块(可选)
-- [TensorRT ](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html) 以及其 Python API (可选)
+- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html) 以及其 Python API (可选)
 - Python >= 3.7
 
 ### pip安装
