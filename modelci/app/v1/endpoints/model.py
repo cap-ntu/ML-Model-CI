@@ -24,11 +24,12 @@ from modelci.types.models import MLModel, BaseMLModel, ModelUpdateSchema, Framew
 router = APIRouter()
 
 
-@router.get('/', response_model=List[MLModel], response_model_by_alias=False)
+@router.get('/')
 def get_all_models(architecture: str = None, framework: Framework = None, engine: Engine = None, task: Task = None,
                   version: int = None):
     models = get_models(architecture=architecture, framework=framework, engine=engine, task=task, version=version)
-    return models
+    content = list(map( lambda item: json.loads(item.json(by_alias=False)), models))
+    return JSONResponse(content=content)
 
 
 @router.get('/{id}')

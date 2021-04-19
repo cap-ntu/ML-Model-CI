@@ -3,10 +3,9 @@
 <h1 align="center">
     Machine Learning Model CI - 中文简介
 </h1>
-
 <p align="center">
     <a href="https://www.python.org/downloads/release/python-370/" title="python version"><img src="https://img.shields.io/badge/Python-3.7%2B-blue.svg"></a>
-    <a href="https://travis-ci.com/cap-ntu/ML-Model-CI" title="Build Status"><img src="https://travis-ci.com/cap-ntu/ML-Model-CI.svg?token=SvqJmaGbqAbwcc7DNkD2&branch=master"></a>
+    <a href="https://github.com/cap-ntu/ML-Model-CI/actions" title="Build Status"><img src="https://github.com/cap-ntu/ML-Model-CI/actions/workflows/run_test.yml/badge.svg?branch=master"></a>
     <a href="https://app.fossa.com/projects/custom%2B8170%2Fgithub.com%2Fcap-ntu%2FML-Model-CI?ref=badge_shield" title="FOSSA Status"><img src="https://app.fossa.com/api/projects/custom%2B8170%2Fgithub.com%2Fcap-ntu%2FML-Model-CI.svg?type=shield"></a>
     <a href="https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cap-ntu/ML-Model-CI&amp;utm_campaign=Badge_Grade" title="Codacy Badge"><img src="https://app.codacy.com/project/badge/Grade/bfb9f8b11d634602acd8b67484a43318"></a>
     <a href="https://codebeat.co/a/yizheng-huang/projects/github-com-cap-ntu-ml-model-ci-master"><img alt="codebeat badge" src="https://codebeat.co/badges/343cc340-21c6-4d34-ae2c-48a48e2862ba" /></a>
@@ -17,7 +16,7 @@
 <p align="center">
     <a href="README.md">English Version</a> •
     <a href="#系统简介">系统简介</a> •
-    <a href="#简易安装">简易安装</a> •
+    <a href="#安装指南">安装指南</a> •
     <a href="#快速使用">快速使用</a> •
     <a href="#更多例子">更多例子</a> •
     <a href="#详细教程">详细教程</a> •
@@ -25,6 +24,7 @@
     <a href="#文献引用">文献引用</a> •
     <a href="#版权许可">版权许可</a>
 </p>
+
 
 ## 系统简介
 
@@ -46,114 +46,148 @@ Machine Learning Model CI 是一个**云上一站式机器学习模型和服务�
 我们非常欢迎感兴趣的同学加入到我们的开发，请联系
 > *huaizhen001 AT e.ntu.edu.sg*
 
-## 简易安装
+
+
+## DEMO
+
+下面两幅图分别展示了我们系统的网页前台和整体的工作流程。
+
+|                         Web frontend                         |                           Workflow                           |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/> |
+
+
+
+## 安装指南
+
+### 环境准备
+
+- GNU/Linux 环境(推荐使用 Ubuntu 操作系统)
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker Compose](https://docs.docker.com/compose/) (可选, 适用于经由 docker 的安装)
+- [TVM](https://github.com/apache/incubator-tvm)  以及其 Python 模块(可选)
+- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html) 以及其 Python API (可选)
+- Python >= 3.7
 
 ### pip安装
+
 ```shell script
-# 确保安装依赖是最新版本
-pip install -U setuptools requests
 # 从github上自动下载安装
 pip install git+https://github.com/cap-ntu/ML-Model-CI.git@master
 ```
 
-### conda工作空间安装
-**Note**
-- 需要已经安装好conda和docker
-- 需要`sudo`权限安装TensorRT （如需使用）
-
-```shell script
-git clone git@github.com:cap-ntu/ML-Model-CI.git
-cd ML-Model-CI
-bash scripts/install.sh
-```
-
-### Docker快速安装
-
-![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) ![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci)
-
-```shell script
-docker pull mlmodelci/mlmodelci
-```
-
-## 快速使用
-下面两幅图分别展示了我们系统的网页前台和整体的工作流程。接下来我们简要介绍如何快速上手系统
-| Web frontend |   Workflow     |
-|:------------:|:--------------:|
-| <img src="https://i.loli.net/2020/12/10/4FsfciXjtPO12BQ.png" alt="drawing" width="500"/> | <img src="https://i.loli.net/2020/12/10/8IaeW9mS2NjQEYB.png" alt="drawing" width="500"/>    |
-
-### 1. 启动MLModelCI中心服务
+安装完成后，确保docker进程正在运行，就可以启动MLModelCI中心服务了。
 
 ```shell script
 modelci service init
 ```
 
-### 2. 注册和发布模型
+![CLI start service](https://i.loli.net/2021/04/15/rLiMoxkqRO67Tyg.gif)
 
-```python
-from modelci.hub.manager import register_model
-from modelci.types.bo import IOShape, Task, Metric
 
-# 利用模型管家快速发布模型到系统中
-register_model(
-    'home/ResNet50/pytorch/1.zip',
-    dataset='ImageNet',
-    metric={Metric.ACC: 0.76},
-    task=Task.IMAGE_CLASSIFICATION,
-    inputs=[IOShape([-1, 3, 224, 224], float)],
-    outputs=[IOShape([-1, 1000], float)],
-    convert=True,
-    profile=True
-)
+
+或者停止MLModelCI中心服务：
+
+```shell script
+modelci service stop
 ```
 
-### 3. 自动转换模型
+![CLI stop service](https://i.loli.net/2021/04/16/jo1ZnWsqrmxFvlU.gif)
+
+
+
+### Docker快速安装
+
+![](https://img.shields.io/docker/pulls/mlmodelci/mlmodelci.svg) 
+
+#### CPU 版本
+
+![](https://img.shields.io/docker/v/mlmodelci/mlmodelci/cpu)![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci/cpu)
+
+```shell script
+docker pull mlmodelci/mlmodelci:cpu
+```
+
+通过Docker Compose来启动一系列基本服务:
+
+```shell script
+docker-compose -f ML-Model-CI/docker/docker-compose-cpu-modelhub.yml up -d
+```
+
+停止所有服务:
+
+```shell script
+docker-compose -f ML-Model-CI/docker/docker-compose-cpu-modelhub.yml down
+```
+
+#### CUDA10.2 版本
+
+![](https://img.shields.io/docker/v/mlmodelci/mlmodelci/cuda10.2-cudnn8)![](https://img.shields.io/docker/image-size/mlmodelci/mlmodelci/cuda10.2-cudnn8)
+
+```shell script
+docker pull mlmodelci/mlmodelci:cuda10.2-cudnn8
+```
+
+通过Docker Compose来启动一系列基本服务:
+
+```shell script
+docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml up -d
+```
+
+![docker-compose start service](https://i.loli.net/2021/04/15/65oYIBurfhPRK3U.gif)
+
+停止所有服务:
+
+```shell script
+docker-compose -f ML-Model-CI/docker/docker-compose-gpu-modelhub.yml down
+```
+
+![docker-compose stop service](https://i.loli.net/2021/04/15/CyNzo4uhXkSrQRE.gif)
+
+## 快速使用
+**我们为用户提供了三种使用MLModelCI的方式：CLI使用、运行Python脚本和Web界面。**
+
+### 1. CLI使用
+
+```console
+# 利用模型管家快速发布模型到系统中
+modelci@modelci-PC:~$ modelci modelhub publish -f example/resnet50.yml
+{'data': {'id': ['60746e4bc3d5598e0e7a786d']}, 'status': True}
+```
+
+用户可以从 [WIKI](https://github.com/cap-ntu/ML-Model-CI/wiki) 中获取更多CLI的用法。
+
+### 2. 运行Python脚本
 
 ```python
-from modelci.hub.converter import ONNXConverter
+from modelci.hub.converter import convert
 from modelci.types.bo import IOShape
 
 # 系统会自动启动模型转换，用户也可以手工调用该函数
-ONNXConverter.from_torch_module(
-    '<path to torch model>', 
-    '<path to export onnx model>', 
-    inputs=[IOShape([-1, 3, 224, 224], float)],
-)
+convert(
+    '<torch model>',
+    src_framework='pytorch', 
+    dst_framework='onnx',
+    save_path='<path to export onnx model>', 
+    inputs=[IOShape([-1, 3, 224, 224], dtype=float)], 
+    outputs=[IOShape([-1, 1000], dtype=float)], 
+    opset=11)
 ```
 
-### 4. 自动模型性能解析
+### 3. Web界面
 
-```python
-from modelci.hub.client.torch_client import CVTorchClient
-from modelci.hub.profiler import Profiler
+如果用户是通过pip安装的MLModelCI， 则需要手动启动前端Web界面。
 
-# 系统会利用空闲机器，对模型性能进行分析。
-# 用户也可以单独调用该方法
-test_data_item = ...
-batch_num = ...
-batch_size = ...
-model_info = ...
-
-torch_client = CVTorchClient(test_data_item, batch_num, batch_size, asynchronous=False)
-
-profiler = Profiler(model_info=model_info, server_name='name of your server', inspector=torch_client)
-
-profiler.diagnose('device name')
+```bash
+# 到前端代码所在文件夹
+cd frontend
+# 安装npm依赖
+yarn install
+# 启动前端
+yarn start
 ```
 
-### 5. 模型部署上线
-
-```python
-from modelci.hub.deployer.dispatcher import serve
-from modelci.hub.manager import retrieve_model
-from modelci.types.bo import Framework, Engine
-
-model_info = ...
-
-# 获取模型信息，讲模型和模型服务系统绑定，并发布上线成为服务
-model_info = retrieve_model(architecture_name='ResNet50', framework=Framework.PYTORCH, engine=Engine.TORCHSCRIPT)
-
-serve(save_path=model_info[0].saved_path, device='cuda:0', name='torchscript-serving', batch_size=16) 
-```
+访问 <http://localhost:3333> ，就可以进入web界面的首页。
 
 ## 更多例子
 

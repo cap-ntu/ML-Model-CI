@@ -42,9 +42,9 @@ if sys.version_info < python_min_version or sys.version_info >= python_max_versi
 TRITON_CLIENT_VERSION = '1.8.0'
 # Get Ubuntu version
 system_name, system_version, _ = distro.linux_distribution()
-if sys.platform == 'linux' and system_name == 'ubuntu':
+if sys.platform == 'linux' and system_name == 'Ubuntu':
     TRITON_CLIENT_INSTALL = True
-    UBUNTU_VERSION = system_version
+    UBUNTU_VERSION = system_version.replace('.', '')
 else:
     TRITON_CLIENT_INSTALL = False
     warnings.warn('You are not using UBUNTU, Triton Client is not available.')
@@ -114,7 +114,7 @@ if "CUDA_HOME" in os.environ:
     cuda_version_file = Path(f'{os.environ["CUDA_HOME"]}/version.txt')
     if cuda_version_file.exists():
         with open(cuda_version_file) as f:
-            CUDA_VERSION = "cu".join(f.readline().strip().split(" ")[-1].split(".")[:2])
+            CUDA_VERSION = "cu" + "".join(f.readline().strip().split(" ")[-1].split(".")[:2])
             if CUDA_VERSION not in ["cpu", "cu92", "cu101", "cu102"]:
                 warnings.warn(
                     f"There is no pre-complied pytorch 1.5.0 with CUDA {CUDA_VERSION}, "
@@ -169,6 +169,6 @@ setup(
     DEPENDENCY_LINKS=[TORCH_INSTALL_URL, TORCHVISION_INSTALL_URL],
     entry_points='''
         [console_scripts]
-        modelci=modelci.cli:cli
+        modelci=modelci.cli:typer_click_object
     '''
 )
