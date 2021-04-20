@@ -13,6 +13,7 @@
 #  permissions and limitations under the License.
 from http import HTTPStatus
 from pathlib import Path
+from shutil import copy2, make_archive
 from typing import Dict, List, Optional
 
 import requests
@@ -20,11 +21,13 @@ import typer
 import yaml
 from pydantic import ValidationError
 import modelci.persistence.service_ as ModelDB
-from modelci.hub.manager import  _generate_model_family
+from modelci.hub.manager import generate_model_family
 
 from modelci.config import app_settings
+from modelci.hub.utils import parse_path_plain
 from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdateSchema
 from modelci.types.models import MLModelFromYaml, MLModel
+from modelci.types.models.common import ModelStatus
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null
@@ -248,12 +251,46 @@ def delete(model_id: str = typer.Argument(..., help='Model ID')):
 
 @app.command('convert')
 def convert(
-        id: str = typer.Option(..., '-i', '--id', help='ID of model.'),
+        id: str = typer.Option(None, '-i', '--id', help='ID of model.'),
+        yaml_file: Optional[Path] = typer.Option(
+            None, '-f', '--yaml-file', exists=True, file_okay=True,
+            help='Path to configuration YAML file. You should either set the `yaml_file` field or fields '
+                 '(`FILE_OR_DIR`, `--name`, `--framework`, `--engine`, `--version`, `--task`, `--dataset`,'
+                 '`--metric`, `--input`, `--output`).'
+        ),
+        register: bool = typer.Option(False, '-r', '--register', is_flag=True, help='register the converted models to modelhub, default false')
 ):
-    if ModelDB.exists_by_id(id):
-        model = ModelDB.get_by_id(id)
-        # auto execute all possible convert and return a list of save paths of every converted model
-        generated_dir_list = _generate_model_family(model)
-        typer.echo(f"Converted models are save in: {generated_dir_list}")
-    else:
-        typer.echo(f"model id: {id} does not exit in modelhub")
+    if id is not None and yaml_file is not None:
+        typer.echo("Do not use -id and -path at the same time.")
+        typer.Exit()
+    elif id is not None and yaml_file is None:
+        if ModelDB.exists_by_id(id):
+            model = ModelDB.get_by_id(id)
+        else:
+            typer.echo(f"model id: {id} does not exist in modelhub")
+    elif id is None and yaml_file is not None:
+        # get MLModel from yaml file
+        with open(yaml_file) as f:
+            model_config = yaml.safe_load(f)
+        model_yaml = MLModelFromYaml.parse_obj(model_config)
+        model_in_saved_path = model_yaml.saved_path
+        if model_in_saved_path != model_yaml.weight:
+            copy2(model_yaml.weight, model_in_saved_path)
+        if model_yaml.engine == Engine.TFS:
+            weight_dir = model_yaml.weight
+            make_archive(weight_dir.with_suffix('.zip'), 'zip', weight_dir)
+
+        model_data = model_yaml.dict(exclude_none=True, exclude={'convert', 'profile'})
+        model = MLModel.parse_obj(model_data)
+
+    # auto execute all possible convert and return a list of save paths of every converted model
+    generated_dir_list = generate_model_family(model)
+    typer.echo(f"Converted models are save in: {generated_dir_list}")
+    if register:
+        model_data = model.dict(exclude={'weight', 'id', 'model_status', 'engine'})
+        for model_dir in generated_dir_list:
+            parse_result = parse_path_plain(model_dir)
+            engine = parse_result['engine']
+            model_cvt = MLModel(**model_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
+            ModelDB.save(model_cvt)
+            typer.echo(f"converted {engine} are successfully registered in Modelhub")

@@ -36,7 +36,7 @@ from modelci.persistence.service_ import save
 from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
-           'retrieve_model_by_task', 'retrieve_model_by_parent_id']
+           'retrieve_model_by_task', 'retrieve_model_by_parent_id', 'generate_model_family']
 
 from modelci.types.models.common import Engine, ModelStatus
 
@@ -72,7 +72,7 @@ def register_model(
 
     # generate model family
     if convert:
-        model_dir_list.extend(_generate_model_family(model))
+        model_dir_list.extend(generate_model_family(model))
 
     # register
     model_data = model.dict(exclude={'weight', 'id', 'model_status', 'engine'})
@@ -149,11 +149,17 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     register_model(model, convert=model_yaml.convert, profile=model_yaml.profile)
 
 
-def _generate_model_family(
+def generate_model_family(
         model: MLModel,
         max_batch_size: int = -1
 ):
-    net = load(model.saved_path)
+    model_weight_path = model.saved_path
+    if not Path(model.saved_path).exists():
+        (filepath, filename) = os.path.split(model.saved_path)
+        os.makedirs(filepath)
+        with open(model.saved_path, 'wb') as f:
+            f.write(model.weight.__bytes__())
+    net = load(model_weight_path)
     build_saved_dir_from_engine = partial(
         generate_path_plain,
         **model.dict(include={'architecture', 'framework', 'task', 'version'}),
