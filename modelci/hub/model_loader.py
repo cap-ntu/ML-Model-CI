@@ -15,8 +15,14 @@ from pathlib import Path
 
 import tensorflow as tf
 import torch
-
+import joblib
 from modelci.hub.utils import parse_path_plain
+
+
+def sklearn_loader(model_weight_path: Path):
+    """Load from sklearn api of XGBoost or LightGBM, and sklearn model.
+    """
+    return joblib.load(model_weight_path)
 
 
 def pytorch_loader(model_weight_path: Path):
@@ -45,8 +51,9 @@ def load(model_weight_path: os.PathLike, *args, **kwargs):
     except ValueError as e:
         # TODO: handle other path format, e.g. torch hub
         raise e
-
     if model_info['framework'] == 'PYTORCH' and model_info['engine'] in ('NONE', 'PYTORCH'):  # PyTorch
         return pytorch_loader(model_weight_path)
     elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('None', 'TENSORFLOW'):  # TensorFlow
         return savedmodel_loader(model_weight_path)
+    elif model_info['framework'] in ('SKLEARN', 'XGBOOST', 'LIGHTGBM') and model_info['engine'] == 'NONE':  # sklearn
+        return sklearn_loader(model_weight_path)

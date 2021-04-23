@@ -28,6 +28,9 @@ class Framework(Enum):
     """
     TENSORFLOW = 0
     PYTORCH = 1
+    SKLEARN = 2
+    XGBOOST = 3
+    LIGHTGBM = 4
 
 
 @unique

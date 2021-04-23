@@ -23,6 +23,9 @@ import cv2
 import tensorflow as tf
 import torch
 import yaml
+import xgboost as xgb
+import lightgbm as lgb
+import sklearn as skl
 
 from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
@@ -175,29 +178,59 @@ def generate_model_family(
     onnx_dir = build_saved_dir_from_engine(engine=Engine.ONNX)
     trt_dir = build_saved_dir_from_engine(engine=Engine.TRT)
 
-    if isinstance(net, torch.nn.Module):
+    # TODO: expose custom settings to usrs
+    def torchfamily(torchmodel: torch.nn.Module, mlconvert: bool):
         # to TorchScript
-        if converter.convert(net, 'pytorch', 'torchscript', save_path=torchscript_dir):
+        if converter.convert(torchmodel, 'pytorch', 'torchscript', save_path=torchscript_dir):
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape, opset version
-        if converter.convert(net, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs, model_input=model_input, optimize=False):
+        if not mlconvert and converter.convert(torchmodel, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs,
+                                               outputs=outputs, model_input=model_input, optimize=False):
             generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
         # TRTConverter.from_onnx(
         #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
         # )
-
-    elif isinstance(net, tf.keras.Model):
+    def tffamily(tfmodel: tf.keras.Model):
         # to TFS
-        converter.convert(net, 'tensorflow', 'tfs', save_path=tfs_dir)
+        converter.convert(tfmodel, 'tensorflow', 'tfs', save_path=tfs_dir)
         generated_dir_list.append(tfs_dir.with_suffix('.zip'))
 
         # to TRT
-        converter.convert(net, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs, max_batch_size=32)
+        converter.convert(tfmodel, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs,
+                          max_batch_size=32)
         generated_dir_list.append(trt_dir.with_suffix('.zip'))
 
+    def xgbfamily(xgbmodel: xgb.XGBModel):
+        converter.convert(xgbmodel, 'xgboost', 'onnx', inputs=inputs, save_path=onnx_dir)
+        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+        torch_model = converter.convert(net, 'xgboost', 'pytorch', inputs=inputs)
+        torchfamily(torch_model, True)
+
+    def lgbfamily(lgbmodel: lgb.LGBMModel):
+        converter.convert(lgbmodel, 'lightgbm', 'onnx', inputs=inputs, save_path=onnx_dir)
+        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+        torch_model = converter.convert(net, 'lightgbm', 'pytorch')
+        torchfamily(torch_model, True)
+
+    def sklfamily(sklmodel: skl.base.BaseEstimator):
+        converter.convert(sklmodel, 'sklearn', 'onnx', inputs=inputs, save_path=onnx_dir)
+        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+        torch_model = converter.convert(net, 'sklearn', 'pytorch')
+        torchfamily(torch_model, True)
+
+    if isinstance(net, torch.nn.Module):
+        torchfamily(net, mlconvert=False)
+    elif isinstance(net, tf.keras.Model):
+        tffamily(net)
+    elif isinstance(net, xgb.XGBModel):
+        xgbfamily(net)
+    elif isinstance(net, lgb.LGBMModel):
+        lgbfamily(net)
+    elif isinstance(net, skl.base.BaseEstimator):
+        sklfamily(net)
     return generated_dir_list
 
 
@@ -246,7 +279,8 @@ def _get_remote_model_weights(models: List[ModelBO]):
     # group by (task, architecture, framework, engine) pair
     pairs = set(map(lambda x: (x.task, x.architecture, x.framework, x.engine), models))
     model_groups = [
-        [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair] for pair in pairs
+        [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair] for pair
+        in pairs
     ]
 
     # get weights of newest version of each pair
