@@ -165,13 +165,10 @@ class ONNXConverter(object):
     @staticmethod
     def from_keras(
             model: keras.models.Model,
-            save_path: Path = None,
             opset: int = DEFAULT_OPSET,
     ):
         onnx_model = onnxmltools.convert_keras(model, target_opset=opset)
         logger.info('keras to onnx converted successfully')
-        if save_path is not None:
-            onnx.save(onnx_model, save_path)
         return onnx_model
 
     @staticmethod
@@ -179,14 +176,11 @@ class ONNXConverter(object):
     def from_sklearn(
             model,
             inputs: Iterable[IOShape],
-            save_path: Path = None,
             opset: int = DEFAULT_OPSET,
     ):
         initial_type = ONNXConverter.convert_initial_type(inputs)
         onnx_model = onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
         logger.info('sklearn to onnx converted successfully')
-        if save_path is not None:
-            onnx.save(onnx_model, save_path)
         return onnx_model
 
     @staticmethod
@@ -194,13 +188,10 @@ class ONNXConverter(object):
     def from_xgboost(
             model,
             inputs: Iterable[IOShape],
-            save_path: Path = None,
             opset: int = DEFAULT_OPSET):
         initial_type = ONNXConverter.convert_initial_type(inputs)
         onnx_model = onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
         logger.info('xgboost to onnx converted successfully')
-        if save_path is not None:
-            onnx.save(onnx_model, save_path)
         return onnx_model
 
     @staticmethod
@@ -208,13 +199,10 @@ class ONNXConverter(object):
     def from_lightgbm(
             model,
             inputs: Iterable[IOShape],
-            save_path: Path = None,
             opset: int = DEFAULT_OPSET):
         initial_type = ONNXConverter.convert_initial_type(inputs)
         onnx_model = onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
         logger.info('lightgbm to onnx converted successfully')
-        if save_path is not None:
-            onnx.save(onnx_model, save_path)
         return onnx_model
 
     @staticmethod
