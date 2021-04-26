@@ -6,24 +6,34 @@ Email: univeroner@gmail.com
 Date: 2021/1/15
 
 """
+import io
+import tempfile
+from pathlib import Path
 
-from fastapi import APIRouter
-from modelci.persistence.service import ModelService
-from modelci.types.bo.model_objects import Engine
-from torchviz import make_dot
+import onnx
 import torch
+from fastapi import APIRouter
+
+from modelci.experimental.visualizer.onnx_visualizer import visualize_model
+from modelci.hub.converter import convert
+from modelci.persistence.service_ import get_by_id, get_models
+from modelci.types.models import Engine, Graph
 
 router = APIRouter()
 
 
-@router.get('/{id}')
+@router.get('/{id}', response_model=Graph)
 def generate_model_graph(*, id: str):  # noqa
-    model_bo = ModelService.get_model_by_id(id)
-    dot_graph = ''
-    if model_bo.engine == Engine.PYTORCH:
-        pytorch_model = torch.load(model_bo.saved_path)
-        sample_data = torch.zeros(1, *model_bo.inputs[0].shape[1:], dtype=torch.float, requires_grad=False)
-        out = pytorch_model(sample_data)
-        dot_graph = make_dot(out, params=dict(list(pytorch_model.named_parameters()) + [('x', sample_data)]))
-
-    return {'dot': str(dot_graph)}
+    model = get_by_id(id)
+    graph = None
+    if model.engine == Engine.PYTORCH:
+        result = get_models(architecture=model.architecture, framework=model.framework, engine=Engine.ONNX, task=model.task, version=model.version)
+        if len(result):
+            onnx_model = onnx.load(io.BytesIO(result[0].weight.__bytes__()))
+        else:
+            pytorch_model = torch.load(io.BytesIO(model.weight.__bytes__()))
+            onnx_path = Path(tempfile.gettempdir() + '/tmp.onnx')
+            convert(pytorch_model, 'pytorch', 'onnx', save_path=onnx_path, inputs=model.inputs, outputs=model.outputs, opset=11)
+            onnx_model = onnx.load(onnx_path)
+        graph = visualize_model(onnx_model)
+    return graph
