@@ -231,7 +231,7 @@ def get_remote_model_weight(model: ModelBO):
                 save_path.parent,  # ~/.modelci/<model-arch-name>/<framework>-<engine>/<task>/
                 inputs=model.inputs,
                 outputs=model.outputs,
-                arch_name=model.name,
+                arch_name=model.architecture,
                 platform=TensorRTPlatform.TENSORFLOW_SAVEDMODEL
             )
 

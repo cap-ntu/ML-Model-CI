@@ -7,6 +7,7 @@ Date: 2/17/2021
 
 Persistence service using PyMongo.
 """
+from enum import Enum
 from typing import List
 
 import gridfs
@@ -83,7 +84,14 @@ def get_models(**kwargs) -> List[MLModel]:
 
     """
     valid_keys = {'architecture', 'framework', 'engine', 'task', 'version'}
-    valid_kwargs = {key: value for key, value in kwargs.items() if value is not None and key in valid_keys}
+    valid_kwargs = {}
+    for key, value in kwargs.items():
+        if value is not None and key in valid_keys:
+            if isinstance(value, Enum):
+                valid_kwargs[key] = value.value
+            else:
+                valid_kwargs[key] = value
+
     models = _collection.find(valid_kwargs)
     return list(map(MLModel.parse_obj, models))
 
