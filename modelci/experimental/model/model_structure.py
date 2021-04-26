@@ -9,6 +9,8 @@ ML model structure definitions.
 """
 import abc
 import inspect
+import re
+import sys
 from enum import Enum
 from typing import Optional, Union, Tuple, Dict, OrderedDict
 
@@ -250,3 +252,23 @@ class Structure(BaseModel):
         default_factory=dict,
         example={'conv1': {'fc1': 'A'}}
     )
+
+
+# TODO add get_connection_mapping function
+def get_layer_mapping(model):
+    from collections import OrderedDict
+    layer_mapping = OrderedDict()
+
+    layer_list = [param.replace(".weight", "") for param in dict(list(model.named_parameters())).keys() if
+                  ".weight" in param]
+    for layer_name in layer_list:
+        layer_path_str = re.sub("\.(\d+)\.", r"[\1].", layer_name)
+        layer_path_str = re.sub("\.(\d+)$", r"[\1]", layer_path_str)
+        model_layer = eval(f'model.{layer_path_str}')
+        layer_class_name = str(model_layer.__class__).split(".")[-1].split("'")[0]
+        if hasattr(sys.modules[__name__], layer_class_name):
+            layer: ModelLayer = getattr(sys.modules[__name__], layer_class_name)
+            layer_mapping[layer_name] = layer.parse_layer_obj(model_layer)
+        else:
+            raise NotImplementedError(f"layer type {layer_class_name} parser is not available currently")
+    return layer_mapping
