@@ -126,3 +126,24 @@ h3.ant-typography{
 .ant-row > span {
     font-size: medium;
 }
+
+/* Visualizer */
+.node-item-type  { background-color: #303030; }
+.node-item-type p { background-color: #dfdfdf; }
+.node-item-type:hover { cursor: hand; }
+.node-item-type:hover  { background-color: #808080; }
+.node-item-type:hover p { background-color: #dfdfdf; }
+
+
+.node-item-type-layer  { background-color: rgba(51, 85, 136, 0.7); }
+.node-item-type-activation  { background-color: rgba(75, 27, 22, 0.7); }
+.node-item-type-activation  { background-color: rgba(75, 27, 22, 0.7); }
+.node-item-type-pool  { background-color: rgba(51, 85, 51, 0.7); }
+.node-item-type-pool  { background-color: rgba(51, 85, 51, 0.7); }
+.node-item-type-normalization  { background-color: rgba(51, 85, 68, 0.7); }
+.node-item-type-dropout  { background-color: rgba(69, 71, 112, 0.7); }
+.node-item-type-shape  { background-color: rgba(108, 79, 71, 0.7); }
+.node-item-type-tensor  { background-color: rgba(89, 66, 59, 0.7); }
+.node-item-type-transform  { background-color: rgba(51, 85, 68, 0.7); }
+.node-item-type-data  { background-color: rgba(85, 85, 85, 0.7); }
+.node-item-type-custom  { background-color: rgb(64, 64, 64, 0.7); }

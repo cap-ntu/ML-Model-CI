@@ -140,3 +140,6 @@ dmypy.json
 .idea/
 modelci/cli/exp.py
 .cache
+
+# Frontend
+node_modules/

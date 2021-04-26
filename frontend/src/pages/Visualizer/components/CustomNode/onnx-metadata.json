@@ -1,0 +1,210 @@
+[
+  {
+    "name": "And",
+    "category": "Logic"
+  },
+  {
+    "name": "AveragePool",
+    "category": "Pool"
+  },
+  {
+    "name": "BatchNormalization",
+    "category": "Normalization"
+  },
+  {
+    "name": "Concat",
+    "category": "Tensor"
+  },
+  {
+    "name": "Constant",
+    "category": "Constant"
+  },
+  {
+    "name": "Conv",
+    "category": "Layer"
+  },
+  {
+    "name": "ConvInteger",
+    "category": "Layer"
+  },
+  {
+    "name": "ConvTranspose",
+    "category": "Layer"
+  },
+  {
+    "name": "Dropout",
+    "category": "Dropout"
+  },
+  {
+    "name": "Elu",
+    "category": "Activation"
+  },
+  {
+    "name": "Equal",
+    "category": "Logic"
+  },
+  {
+    "name": "Flatten",
+    "category": "Shape"
+  },
+  {
+    "name": "GRU",
+    "category": "Layer"
+  },
+  {
+    "name": "Gather",
+    "category": "Transform"
+  },
+  {
+    "name": "Gemm",
+    "category": "Layer"
+  },
+  {
+    "name": "GlobalAveragePool",
+    "category": "Pool"
+  },
+  {
+    "name": "GlobalLpPool",
+    "category": "Pool"
+  },
+  {
+    "name": "GlobalMaxPool",
+    "category": "Pool"
+  },
+  {
+    "name": "Greater",
+    "category": "Logic"
+  },
+  {
+    "name": "HardSigmoid",
+    "category": "Activation"
+  },
+  {
+    "name": "InstanceNormalization",
+    "category": "Normalization"
+  },
+  {
+    "name": "LRN",
+    "category": "Normalization"
+  },
+  {
+    "name": "LSTM",
+    "category": "Layer"
+  },
+  {
+    "name": "LeakyRelu",
+    "category": "Activation"
+  },
+  {
+    "name": "Less",
+    "category": "Logic"
+  },
+  {
+    "name": "LogSoftmax",
+    "category": "Activation"
+  },
+  {
+    "name": "LpNormalization",
+    "category": "Normalization"
+  },
+  {
+    "name": "LpPool",
+    "category": "Pool"
+  },
+  {
+    "name": "MaxPool",
+    "category": "Pool"
+  },
+  {
+    "name": "MaxRoiPool",
+    "category": "Pool"
+  },
+  {
+    "name": "Not",
+    "category": "Logic"
+  },
+  {
+    "name": "Or",
+    "category": "Logic"
+  },
+  {
+    "name": "PRelu",
+    "category": "Activation"
+  },
+  {
+    "name": "Pad",
+    "category": "Tensor"
+  },
+  {
+    "name": "RNN",
+    "category": "Layer"
+  },
+  {
+    "name": "Relu",
+    "category": "Activation"
+  },
+  {
+    "name": "Reshape",
+    "category": "Shape"
+  },
+  {
+    "name": "Selu",
+    "category": "Activation"
+  },
+  {
+    "name": "Sigmoid",
+    "category": "Activation"
+  },
+  {
+    "name": "Slice",
+    "category": "Tensor"
+  },
+  {
+    "name": "Softmax",
+    "category": "Activation"
+  },
+  {
+    "name": "Softplus",
+    "category": "Activation"
+  },
+  {
+    "name": "Softsign",
+    "category": "Activation"
+  },
+  {
+    "name": "Split",
+    "category": "Tensor"
+  },
+  {
+    "name": "Squeeze",
+    "category": "Transform"
+  },
+  {
+    "name": "Tanh",
+    "category": "Activation"
+  },
+  {
+    "name": "ThresholdedRelu",
+    "category": "Activation"
+  },
+  {
+    "name": "Tile",
+    "category": "Shape"
+  },
+  {
+    "name": "Transpose",
+    "category": "Transform"
+  },
+  {
+    "name": "Unsqueeze",
+    "category": "Transform"
+  },
+  {
+    "name": "Upsample",
+    "category": "Data"
+  },
+  {
+    "name": "Xor",
+    "category": "Logic"
+  }
+]
