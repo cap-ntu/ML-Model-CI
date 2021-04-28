@@ -21,14 +21,16 @@ from betterproto import Casing
 from google.protobuf import json_format
 
 from modelci.hub.utils import parse_path, GiB, TensorRTPlatform
-from modelci.types.bo import IOShape
+from modelci.types.models import IOShape
 from modelci.types.trtis_objects import (
     ModelConfig,
     ModelVersionPolicy,
     ModelOutput,
     ModelInput,
+    ModelInputFormat,
     ModelInstanceGroup,
     ModelInstanceGroupKind,
+    DataType,
 )
 from modelci.utils import Logger
 
@@ -87,6 +89,7 @@ class TRTConverter(object):
                     print('Loading ONNX file from path {}...'.format(onnx_path))
                     with open(onnx_path, 'rb') as model:
                         parser.parse(model.read())
+                    network.get_input(0).shape = [dim if dim != -1 else 1 for dim in inputs[0].shape]
                     engine = builder.build_cuda_engine(network)
 
                     with open(save_path / 'model.plan', 'wb') as f:
@@ -196,9 +199,9 @@ class TRTConverter(object):
 
             model_input = ModelInput(
                 name=node.name,
-                data_type=node.dtype,
+                data_type=DataType(node.dtype.value),
                 dims=dims,
-                format=node.format
+                format=ModelInputFormat(node.format.value)
             )
 
             # TODO: help to reshape
@@ -218,7 +221,7 @@ class TRTConverter(object):
 
             model_output = ModelOutput(
                 name=node.name,
-                data_type=node.dtype,
+                data_type=DataType(node.dtype.value),
                 dims=dims
             )
 
