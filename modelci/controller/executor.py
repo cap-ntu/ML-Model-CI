@@ -22,7 +22,7 @@ class Job(object):
             self,
             client: BaseModelInspector,
             device: str,
-            model_info: ModelBO,
+            model_info: ModelBO, # TODO replace with MLModel type
             container_name: str = None
     ):
         self.client = client

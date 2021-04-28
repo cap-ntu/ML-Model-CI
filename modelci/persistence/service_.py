@@ -7,6 +7,7 @@ Date: 2/17/2021
 
 Persistence service using PyMongo.
 """
+from enum import Enum
 from typing import List
 
 import gridfs
@@ -16,7 +17,8 @@ from fastapi.encoders import jsonable_encoder
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, ModelUpdateSchema
+from modelci.types.models import MLModel, ModelUpdateSchema, Task, Metric
+from modelci.utils.misc import remove_dict_null
 
 _db = MongoClient()[db_settings.mongo_db]
 _collection = _db['model_d_o']
@@ -58,18 +60,48 @@ def save(model_in: MLModel):
     return model
 
 
-def get_by_id(id: str) -> MLModel:
+def get_by_id(_id: str) -> MLModel:
     """Get a MLModel object by its ID.
+
+    Args:
+        _id:  Model ID
+
+    Returns: the model object
+
     """
-    model_data = _collection.find_one(filter={'_id': ObjectId(id)})
+    model_data = _collection.find_one(filter={'_id': ObjectId(_id)})
     if model_data is not None:
         return MLModel.parse_obj(model_data)
     else:
-        raise ServiceException(f'Model with id={id} does not exist.')
+        raise ServiceException(f'Model with id={_id} does not exist.')
 
 
-def exists_by_id(id: str) -> MLModel:
-    model = _collection.find_one(filter={'_id': ObjectId(id)})
+def get_by_parent_id(id_: str) -> List[MLModel]:
+    """ Get MLModel objects by its parent model ID.
+
+    Args:
+        id_:  The ID of parent model
+
+    Returns: List of model objects
+
+    """
+    models = _collection.find(filter={'parent_model_id': ObjectId(id_)})
+    if len(models):
+        return list(map(MLModel.parse_obj, models))
+    else:
+        raise ServiceException(f'Model with parent model ID={id_} does not exist.')
+
+
+def exists_by_id(id_: str) -> MLModel:
+    """Check if a MLModel object with specific id exists
+
+    Args:
+        id_: model ID
+
+    Returns: True or False
+
+    """
+    model = _collection.find_one(filter={'_id': ObjectId(id_)})
     return model is not None
 
 
@@ -83,22 +115,46 @@ def get_models(**kwargs) -> List[MLModel]:
 
     """
     valid_keys = {'architecture', 'framework', 'engine', 'task', 'version'}
-    valid_kwargs = {key: value for key, value in kwargs.items() if value is not None and key in valid_keys}
+
+    valid_kwargs = {
+        key: (value.value if isinstance(value, Enum) else value)
+        for key, value in remove_dict_null(kwargs).items()
+        if key in valid_keys
+    }
     models = _collection.find(valid_kwargs)
     return list(map(MLModel.parse_obj, models))
 
 
-def update_model(id: str, schema: ModelUpdateSchema) -> MLModel:
-    prev_model = get_by_id(id)
+def update_model(id_: str, schema: ModelUpdateSchema) -> MLModel:
+    """ Update existed model info
+
+    Args:
+        id_:  the ID of targeted model
+        schema:
+
+    Returns: the updated model object
+
+    """
+    prev_model = get_by_id(id_)
+    if schema.metric:
+        schema.metric = {Metric(k).name: v for k, v in schema.metric.items()}
     updated_data = {
         key: value for key, value in jsonable_encoder(schema, exclude_unset=True).items()
         if getattr(schema, key) != getattr(prev_model, key)
     }
-    _collection.update_one({'_id': ObjectId(id)}, {"$set": updated_data})
-    return get_by_id(id)
+    _collection.update_one({'_id': ObjectId(id_)}, {"$set": updated_data})
+    return get_by_id(id_)
 
 
 def delete_model(id_: str):
+    """
+
+    Args:
+        id_:  the ID of target model
+
+    Returns: An instance of :class:`~pymongo.results.DeleteResult`
+
+    """
     model = _collection.find_one(filter={'_id': ObjectId(id_)})
     if _fs.exists(ObjectId(model['weight'])):
         _fs.delete(ObjectId(model['weight']))

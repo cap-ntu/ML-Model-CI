@@ -1,23 +1,25 @@
+from pathlib import Path
+
+from modelci.hub.manager import register_model_from_yaml
+from modelci.hub.publish import _download_model_from_url
 from modelci.persistence import mongo
 from modelci.persistence.service import ModelService
+from modelci.persistence.service_ import get_models, get_by_id, update_model
 from modelci.types.bo import (
     DynamicProfileResultBO,
     ProfileMemory,
     ProfileLatency,
     ProfileThroughput,
-    ModelBO,
-    Framework,
-    Engine,
-    ModelVersion,
-    IOShape,
-    Weight,
     StaticProfileResultBO,
-    InfoTuple,
-    Task,
-    Metric,
-    ModelStatus
+    InfoTuple
 )
-from modelci.types.trtis_objects import ModelInputFormat
+from modelci.types.models import Task,  Metric, ModelUpdateSchema
+
+Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
+_download_model_from_url(
+    'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
+)
 
 
 def test_init():
@@ -25,25 +27,11 @@ def test_init():
 
 
 def test_register_model():
-    model = ModelBO(
-        'ResNet50',
-        framework=Framework.PYTORCH,
-        engine=Engine.PYTORCH,
-        version=ModelVersion(1),
-        dataset='ImageNet',
-        metric={Metric.ACC: 0.80},
-        task=Task.IMAGE_CLASSIFICATION,
-        inputs=[IOShape([-1, 3, 224, 224], dtype=float, format=ModelInputFormat.FORMAT_NCHW)],
-        outputs=[IOShape([-1, 1000], dtype=int)],
-        model_status=[ModelStatus.PUBLISHED],
-        weight=Weight(bytes([123]))
-    )
-
-    assert ModelService.post_model(model)
+    register_model_from_yaml("../example/resnet50_explicit_path.yml")
 
 
 def test_get_model_by_name():
-    models = ModelService.get_models('ResNet50')
+    models = get_models(architecture='ResNet50')
 
     # check length
     assert len(models) == 1
@@ -53,36 +41,31 @@ def test_get_model_by_name():
 
 
 def test_get_model_by_task():
-    models = ModelService.get_models_by_task(Task.IMAGE_CLASSIFICATION)
+    models = get_models(task=Task.Image_Classification)
 
     # check length
     assert len(models) == 1
     # check name
     for model in models:
-        assert model.task == Task.IMAGE_CLASSIFICATION
+        assert model.task == Task.Image_Classification
 
 
 def test_get_model_by_id():
-    model_bo = ModelService.get_models('ResNet50')[0]
-    model = ModelService.get_model_by_id(model_bo.id)
+    model = get_models()[0]
+    model_by_id = get_by_id(str(model.id))
 
     # check model id
-    assert model.id == model_bo.id
+    assert model.id == model_by_id.id
 
 
 def test_update_model():
-    model = ModelService.get_models('ResNet50')[0]
-    model.metric[Metric.ACC] = 0.9
-    model.weight.weight = bytes([123, 255])
+    model = get_models()[0]
 
     # check if update success
-    assert ModelService.update_model(model)
-
-    model_ = ModelService.get_models('ResNet50')[0]
+    model_ = update_model(str(model.id), ModelUpdateSchema(metric={Metric.acc: 0.9}))
 
     # check updated model
-    assert abs(model_.metric[Metric.ACC] - 0.9) < 1e-6
-    assert model_.weight.weight == model.weight.weight
+    assert abs(model_.metric[Metric.acc] - 0.9) < 1e-6
 
 
 def test_register_static_profiling_result():

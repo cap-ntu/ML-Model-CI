@@ -24,23 +24,21 @@ import tensorflow as tf
 import torch
 import yaml
 
+from modelci.hub import converter
 from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
-from modelci.hub import converter
 from modelci.hub.model_loader import load
 from modelci.hub.utils import TensorRTPlatform, parse_path_plain, generate_path_plain
-from modelci.persistence.service import ModelService
-from modelci.persistence.service_ import save
-from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
+from modelci.persistence.service_ import save, update_model, get_by_parent_id, get_models
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
-           'retrieve_model_by_task', 'retrieve_model_by_parent_id', 'generate_model_family']
+           'retrieve_model_by_parent_id', 'generate_model_family']
 
-from modelci.types.models.common import Engine, ModelStatus
+from modelci.types.models.common import Engine, Task, Framework, ModelStatus
 
-from modelci.types.models import MLModelFromYaml, MLModel
+from modelci.types.models import MLModelFromYaml, MLModel, ModelUpdateSchema
 
 
 def register_model(
@@ -101,8 +99,7 @@ def register_model(
         }
 
         for model in models:
-            model.model_status = [ModelStatus.PROFILING]
-            ModelService.update_model(model)
+            update_model(str(model.id), ModelUpdateSchema(model_status=[ModelStatus.PROFILING]))
             kwargs['model_info'] = model
             engine = model.engine
 
@@ -181,7 +178,8 @@ def generate_model_family(
             generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
 
         # to ONNX, TODO(lym): batch cache, input shape, opset version
-        if converter.convert(net, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs, model_input=model_input, optimize=False):
+        if converter.convert(net, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs,
+                             model_input=model_input, optimize=False):
             generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
@@ -195,13 +193,14 @@ def generate_model_family(
         generated_dir_list.append(tfs_dir.with_suffix('.zip'))
 
         # to TRT
-        converter.convert(net, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs, max_batch_size=32)
+        converter.convert(net, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs,
+                          max_batch_size=32)
         generated_dir_list.append(trt_dir.with_suffix('.zip'))
 
     return generated_dir_list
 
 
-def get_remote_model_weight(model: ModelBO):
+def get_remote_model_weight(model: MLModel):
     """Download a local cache of model from remote ModelDB in a structured path. And generate a configuration file.
     TODO(lym):
         1. set force insert config.pbtxt
@@ -209,7 +208,7 @@ def get_remote_model_weight(model: ModelBO):
     This function will keep a local cache of the used model in the path:
         `~/.modelci/<architecture_name>/<framework>-<engine>/<task>/<version>`
     Arguments:
-        model (ModelBO): Model business object.
+        model (MLModel): MLModelobject.
     Return:
         Path: Model saved path.
     """
@@ -218,8 +217,9 @@ def get_remote_model_weight(model: ModelBO):
     save_path.parent.mkdir(exist_ok=True, parents=True)
 
     if not save_path.exists():
+        # TODO save TFS or TRT model files from gridfs
         with open(str(save_path), 'wb') as f:
-            f.write(model.weight.weight)
+            f.write(model.weight.__bytes__())
         if model.engine == Engine.TFS:
             subprocess.call(['unzip', save_path, '-d', '/'])
             os.remove(save_path)
@@ -238,7 +238,7 @@ def get_remote_model_weight(model: ModelBO):
     return save_path
 
 
-def _get_remote_model_weights(models: List[ModelBO]):
+def _get_remote_model_weights(models: List[MLModel]):
     """Get remote model weights from a list of models.
     Only models with highest version of each unique task, architecture, framework, and engine pair are download.
     """
@@ -246,7 +246,11 @@ def _get_remote_model_weights(models: List[ModelBO]):
     # group by (task, architecture, framework, engine) pair
     pairs = set(map(lambda x: (x.task, x.architecture, x.framework, x.engine), models))
     model_groups = [
-        [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair] for pair in pairs
+        sorted(
+            [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair],
+            key=lambda model: model.version, reverse=True
+        ) for pair
+        in pairs
     ]
 
     # get weights of newest version of each pair
@@ -254,38 +258,38 @@ def _get_remote_model_weights(models: List[ModelBO]):
         get_remote_model_weight(model_group[0])
 
 
-def delete_remote_weight(model: ModelBO):
+def delete_remote_weight(model: MLModel):
     save_path = model.saved_path
 
-    if model.engine in [Engine.TORCHSCRIPT, Engine.ONNX]:
+    if os.path.isfile(save_path):
         os.remove(save_path)
-    else:
+    elif os.path.isdir(save_path):
         os.removedirs(save_path)
 
 
 def retrieve_model(
-        architecture_name: str = 'ResNet50',
+        architecture: str = 'ResNet50',
         task: Task = None,
         framework: Framework = None,
         engine: Engine = None,
-        version: ModelVersion = None,
+        version: int = None,
         download: bool = True,
-) -> List[ModelBO]:
+) -> List[MLModel]:
     """Query a model by name, task, framework, engine or version.
 
     Arguments:
-        architecture_name (str): Model architecture name.
+        architecture (str): Model architecture name.
         task (Task): which machine learn task is model used for,Default to None
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
-        version (ModelVersion): Model version. Default to None.
+        version (Int): Model version. Default to None.
         download (bool): Flag for whether the model needs to be cached locally.
 
     Returns:
-        List[ModelBO]: A list of model business object.
+        List[MLModel]: A list of model business object.
     """
     # retrieve
-    models = ModelService.get_models(architecture_name, task=task, framework=framework, engine=engine, version=version)
+    models = get_models(architecture=architecture, task=task, framework=framework, engine=engine, version=version)
     # check if found
     if len(models) != 0 and download:
         _get_remote_model_weights(models)
@@ -293,28 +297,7 @@ def retrieve_model(
     return models
 
 
-def retrieve_model_by_task(task: Task) -> List[ModelBO]:
-    """Query a model by task.
-    This function will download a cache model from the model DB.
-
-    Arguments:
-        task (Task): Task name the model is used for.
-
-    Returns:
-        List[ModelBO]: A list of model business object.
-    """
-    # retrieve
-    models = ModelService.get_models_by_task(task)
-    # check if found
-    if len(models) == 0:
-        raise FileNotFoundError('Model not found!')
-
-    _get_remote_model_weights(models)
-
-    return models
-
-
-def retrieve_model_by_parent_id(parent_id: str) -> List[ModelBO]:
+def retrieve_model_by_parent_id(parent_id: str) -> List[MLModel]:
     """
     Query models by specifying the parent model id
 
@@ -322,9 +305,9 @@ def retrieve_model_by_parent_id(parent_id: str) -> List[ModelBO]:
         parent_id (str): : the parent model id of current model if this model is derived from a pre-existing one
 
     Returns:
-        List[ModelBO]: A list of model business object.
+        List[MLModel]: A list of MLModel object.
     """
-    models = ModelService.get_models_by_parent_id(parent_id)
+    models = get_by_parent_id(parent_id)
     # check if found
     if len(models) == 0:
         raise FileNotFoundError('Model not found!')
