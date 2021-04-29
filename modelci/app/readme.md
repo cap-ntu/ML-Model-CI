@@ -3,7 +3,7 @@
 ## Start server
 
 ```shell script
-uvicorn main:app
+uvicorn modelci.app.main:app --port 8000
 ```
 
 The server will start at http://localhost:8000.
