@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, ModelUpdateSchema, Task, Metric
+from modelci.types.models import MLModel, ModelUpdateSchema, Metric
 from modelci.utils.misc import remove_dict_null
 
 _db = MongoClient()[db_settings.mongo_db]
@@ -55,7 +55,7 @@ def save(model_in: MLModel):
 
     # TODO: update weight ID in the MLModelIn
     weight_id = _fs.put(bytes(model_in.weight), filename=model_in.weight.filename)
-    model = MLModel(**model_in.dict(exclude={'weight'}), weight=weight_id)
+    model = MLModel(**model_in.dict(exclude={'weight', 'model_input'}), weight=weight_id)
     model.id = _collection.insert_one(model.dict(exclude_none=True, by_alias=True, use_enum_values=True)).inserted_id
     return model
 

@@ -73,7 +73,7 @@ def register_model(
         model_dir_list.extend(generate_model_family(model))
 
     # register
-    model_data = model.dict(exclude={'weight', 'id', 'model_status', 'engine'})
+    model_data = model.dict(exclude={'weight', 'id', 'model_status', 'engine', 'model_input'})
     for model_dir in model_dir_list:
         parse_result = parse_path_plain(model_dir)
         engine = parse_result['engine']
@@ -179,7 +179,7 @@ def generate_model_family(
 
         # to ONNX, TODO(lym): batch cache, input shape, opset version
         if converter.convert(net, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs, outputs=outputs,
-                             model_input=model_input, optimize=False):
+                             model_input=model_input, optimize=False, opset=11):
             generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
 
         # to TRT
