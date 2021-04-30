@@ -14,8 +14,7 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-from .converter import convert
-from .converter import generate_model_family
+from .converter import convert, generate_model_family
 from .to_trt import TRTConverter
 from .to_tfs import TFSConverter
 from .to_onnx import ONNXConverter

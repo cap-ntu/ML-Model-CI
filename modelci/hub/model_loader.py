@@ -38,22 +38,22 @@ def savedmodel_loader(model_weight_path: Path):
     return tf.keras.models.load_model(model_weight_path)
 
 
-def load(model_weight_path: os.PathLike, *args, **kwargs):
+def load(model_path: os.PathLike):
     """A unify API to load model weight files in various format.
 
     Args:
-        model_weight_path: Path to the model weight file. The model is saved in ModelCI standard directory.
+        model_path: Path to the entire model file. The model is saved in ModelCI standard directory.
     """
 
-    model_weight_path = Path(model_weight_path)
+    model_path = Path(model_path)
     try:
-        model_info = parse_path_plain(model_weight_path)
+        model_info = parse_path_plain(model_path)
     except ValueError as e:
         # TODO: handle other path format, e.g. torch hub
         raise e
     if model_info['framework'] == 'PYTORCH' and model_info['engine'] in ('NONE', 'PYTORCH'):  # PyTorch
-        return pytorch_loader(model_weight_path)
-    elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('None', 'TENSORFLOW'):  # TensorFlow
-        return savedmodel_loader(model_weight_path)
+        return pytorch_loader(model_path)
+    elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('NONE', 'TENSORFLOW'):  # TensorFlow
+        return savedmodel_loader(model_path)
     elif model_info['framework'] in ('SKLEARN', 'XGBOOST', 'LIGHTGBM') and model_info['engine'] == 'NONE':  # sklearn
-        return sklearn_loader(model_weight_path)
+        return sklearn_loader(model_path)

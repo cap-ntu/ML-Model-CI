@@ -2,13 +2,15 @@
 from pathlib import Path
 
 import requests
+import torch
 from typer.testing import CliRunner
-
+import torchvision
 from modelci.config import app_settings
 from modelci.cli.modelhub import app
 
 runner = CliRunner()
-Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
+example_path = f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification"
+Path(example_path).mkdir(parents=True, exist_ok=True)
 
 
 def test_get():
