@@ -14,32 +14,28 @@
 
 import os
 import subprocess
-from functools import partial
+
 from pathlib import Path
 from shutil import copy2, make_archive
 from typing import Union, List
 
 import cv2
 import tensorflow as tf
-import torch
 import yaml
-import xgboost as xgb
-import lightgbm as lgb
-import sklearn as skl
 
 from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub import converter
-from modelci.hub.model_loader import load
+
 from modelci.hub.utils import TensorRTPlatform, parse_path_plain, generate_path_plain
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import save
 from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
 
 __all__ = ['get_remote_model_weight', 'register_model', 'register_model_from_yaml', 'retrieve_model',
-           'retrieve_model_by_task', 'retrieve_model_by_parent_id', 'generate_model_family']
+           'retrieve_model_by_task', 'retrieve_model_by_parent_id']
 
 from modelci.types.models.common import Engine, ModelStatus
 
@@ -75,7 +71,7 @@ def register_model(
 
     # generate model family
     if convert:
-        model_dir_list.extend(generate_model_family(model))
+        model_dir_list.extend(converter.generate_model_family(model))
 
     # register
     model_data = model.dict(exclude={'weight', 'id', 'model_status', 'engine'})
@@ -150,88 +146,6 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     model_data = model_yaml.dict(exclude_none=True, exclude={'convert', 'profile'})
     model = MLModel.parse_obj(model_data)
     register_model(model, convert=model_yaml.convert, profile=model_yaml.profile)
-
-
-def generate_model_family(
-        model: MLModel,
-        max_batch_size: int = -1
-):
-    model_weight_path = model.saved_path
-    if not Path(model.saved_path).exists():
-        (filepath, filename) = os.path.split(model.saved_path)
-        os.makedirs(filepath)
-        with open(model.saved_path, 'wb') as f:
-            f.write(model.weight.__bytes__())
-    net = load(model_weight_path)
-    build_saved_dir_from_engine = partial(
-        generate_path_plain,
-        **model.dict(include={'architecture', 'framework', 'task', 'version'}),
-    )
-    inputs = model.inputs
-    outputs = model.outputs
-    model_input = model.model_input
-
-    generated_dir_list = list()
-
-    torchscript_dir = build_saved_dir_from_engine(engine=Engine.TORCHSCRIPT)
-    tfs_dir = build_saved_dir_from_engine(engine=Engine.TFS)
-    onnx_dir = build_saved_dir_from_engine(engine=Engine.ONNX)
-    trt_dir = build_saved_dir_from_engine(engine=Engine.TRT)
-
-    # TODO: expose custom settings to usrs
-    def torchfamily(torchmodel: torch.nn.Module, mlconvert: bool):
-        # to TorchScript
-        if converter.convert(torchmodel, 'pytorch', 'torchscript', save_path=torchscript_dir):
-            generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
-
-        # to ONNX, TODO(lym): batch cache, input shape, opset version
-        if not mlconvert and converter.convert(torchmodel, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs,
-                                               outputs=outputs, model_input=model_input, optimize=False):
-            generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-
-        # to TRT
-        # TRTConverter.from_onnx(
-        #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
-        # )
-    def tffamily(tfmodel: tf.keras.Model):
-        # to TFS
-        converter.convert(tfmodel, 'tensorflow', 'tfs', save_path=tfs_dir)
-        generated_dir_list.append(tfs_dir.with_suffix('.zip'))
-
-        # to TRT
-        converter.convert(tfmodel, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs,
-                          max_batch_size=32)
-        generated_dir_list.append(trt_dir.with_suffix('.zip'))
-
-    def xgbfamily(xgbmodel: xgb.XGBModel):
-        converter.convert(xgbmodel, 'xgboost', 'onnx', inputs=inputs, save_path=onnx_dir)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-        torch_model = converter.convert(net, 'xgboost', 'pytorch', inputs=inputs)
-        torchfamily(torch_model, True)
-
-    def lgbfamily(lgbmodel: lgb.LGBMModel):
-        converter.convert(lgbmodel, 'lightgbm', 'onnx', inputs=inputs, save_path=onnx_dir)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-        torch_model = converter.convert(net, 'lightgbm', 'pytorch')
-        torchfamily(torch_model, True)
-
-    def sklfamily(sklmodel: skl.base.BaseEstimator):
-        converter.convert(sklmodel, 'sklearn', 'onnx', inputs=inputs, save_path=onnx_dir)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-        torch_model = converter.convert(net, 'sklearn', 'pytorch')
-        torchfamily(torch_model, True)
-
-    if isinstance(net, torch.nn.Module):
-        torchfamily(net, mlconvert=False)
-    elif isinstance(net, tf.keras.Model):
-        tffamily(net)
-    elif isinstance(net, xgb.XGBModel):
-        xgbfamily(net)
-    elif isinstance(net, lgb.LGBMModel):
-        lgbfamily(net)
-    elif isinstance(net, skl.base.BaseEstimator):
-        sklfamily(net)
-    return generated_dir_list
 
 
 def get_remote_model_weight(model: ModelBO):

@@ -21,7 +21,7 @@ import typer
 import yaml
 from pydantic import ValidationError
 import modelci.persistence.service_ as ModelDB
-from modelci.hub.manager import generate_model_family
+from modelci.hub.converter.converter import generate_model_family
 
 from modelci.config import app_settings
 from modelci.hub.utils import parse_path_plain
@@ -260,9 +260,13 @@ def convert(
         ),
         register: bool = typer.Option(False, '-r', '--register', is_flag=True, help='register the converted models to modelhub, default false')
 ):
+    model = None
+    if id is None and yaml_file is None:
+        typer.echo("WARNING: Please assign a way to find the target model! details refer to --help")
+        return 0
     if id is not None and yaml_file is not None:
-        typer.echo("Do not use -id and -path at the same time.")
-        typer.Exit()
+        typer.echo("WARNING: Do not use -id and -path at the same time!")
+        return 0
     elif id is not None and yaml_file is None:
         if ModelDB.exists_by_id(id):
             model = ModelDB.get_by_id(id)
