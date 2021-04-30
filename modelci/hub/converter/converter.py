@@ -79,57 +79,63 @@ def generate_model_family(
     onnx_dir = build_saved_dir_from_engine(engine=Engine.ONNX)
     trt_dir = build_saved_dir_from_engine(engine=Engine.TRT)
 
-    # TODO: expose custom settings to usrs
-    def torchfamily(torchmodel: torch.nn.Module, mlconvert: bool):
-        # to TorchScript
-        if convert(torchmodel, 'pytorch', 'torchscript', save_path=torchscript_dir):
-            generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
-
-        # to ONNX, TODO(lym): batch cache, input shape, opset version
-        if not mlconvert and convert(torchmodel, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs,
-                                               outputs=outputs, model_input=model_input, optimize=False):
-            generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-
-        # to TRT
-        # TRTConverter.from_onnx(
-        #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
-        # )
-    def tffamily(tfmodel: tf.keras.Model):
-        # to TFS
-        convert(tfmodel, 'tensorflow', 'tfs', save_path=tfs_dir)
-        generated_dir_list.append(tfs_dir.with_suffix('.zip'))
-
-        # to TRT
-        convert(tfmodel, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs,
-                max_batch_size=32)
-        generated_dir_list.append(trt_dir.with_suffix('.zip'))
-
-    def xgbfamily(xgbmodel: xgb.XGBModel):
-        convert(xgbmodel, 'xgboost', 'onnx', inputs=inputs, save_path=onnx_dir)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-        torch_model = convert(xgbmodel, 'xgboost', 'pytorch', inputs=inputs)
-        torchfamily(torch_model, True)
-
-    def lgbfamily(lgbmodel: lgb.LGBMModel):
-        convert(lgbmodel, 'lightgbm', 'onnx', inputs=inputs, save_path=onnx_dir)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-        torch_model = convert(lgbmodel, 'lightgbm', 'pytorch')
-        torchfamily(torch_model, True)
-
-    def sklfamily(sklmodel: skl.base.BaseEstimator):
-        convert(sklmodel, 'sklearn', 'onnx', inputs=inputs, save_path=onnx_dir)
-        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
-        torch_model = convert(sklmodel, 'sklearn', 'pytorch')
-        torchfamily(torch_model, True)
-
     if isinstance(net, torch.nn.Module):
-        torchfamily(net, mlconvert=False)
+        _torchfamily(net, False, torchscript_dir, onnx_dir, generated_dir_list, inputs, outputs, model_input)
     elif isinstance(net, tf.keras.Model):
-        tffamily(net)
+        _tffamily(net, tfs_dir, generated_dir_list, trt_dir, inputs, outputs)
     elif isinstance(net, xgb.XGBModel):
-        xgbfamily(net)
+        _xgbfamily(net, inputs, onnx_dir, generated_dir_list, torchscript_dir, outputs, model_input)
     elif isinstance(net, lgb.LGBMModel):
-        lgbfamily(net)
+        _lgbfamily(net, inputs, onnx_dir, generated_dir_list,torchscript_dir, outputs, model_input)
     elif isinstance(net, skl.base.BaseEstimator):
-        sklfamily(net)
+        _sklfamily(net, inputs, onnx_dir, generated_dir_list, torchscript_dir, outputs, model_input)
     return generated_dir_list
+
+
+def _torchfamily(torchmodel: torch.nn.Module, mlconvert: bool, torchscript_dir: Path, onnx_dir, generated_dir_list, inputs, outputs, model_input):
+    # to TorchScript
+    if convert(torchmodel, 'pytorch', 'torchscript', save_path=torchscript_dir):
+        generated_dir_list.append(torchscript_dir.with_suffix('.zip'))
+
+    # to ONNX, TODO(lym): batch cache, input shape, opset version
+    if not mlconvert and convert(torchmodel, 'pytorch', 'onnx', save_path=onnx_dir, inputs=inputs,
+                                     outputs=outputs, model_input=model_input, optimize=False):
+        generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+
+    # to TRT
+    # TRTConverter.from_onnx(
+    #     onnx_path=onnx_dir.with_suffix('.onnx'), save_path=trt_dir, inputs=inputs, outputs=outputs
+    # )
+    # TODO: expose custom settings to usrs
+
+
+def _tffamily(tfmodel: tf.keras.Model, tfs_dir: Path, generated_dir_list, trt_dir, inputs, outputs):
+    # to TFS
+    convert(tfmodel, 'tensorflow', 'tfs', save_path=tfs_dir)
+    generated_dir_list.append(tfs_dir.with_suffix('.zip'))
+
+    # to TRT
+    convert(tfmodel, 'tfs', 'trt', tf_path=tfs_dir, save_path=trt_dir, inputs=inputs, outputs=outputs,
+            max_batch_size=32)
+    generated_dir_list.append(trt_dir.with_suffix('.zip'))
+
+
+def _xgbfamily(xgbmodel: xgb.XGBModel, inputs, onnx_dir: Path, generated_dir_list, torchscript_dir: Path, outputs, model_input):
+    convert(xgbmodel, 'xgboost', 'onnx', inputs=inputs, save_path=onnx_dir)
+    generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+    torch_model = convert(xgbmodel, 'xgboost', 'pytorch', inputs=inputs)
+    _torchfamily(torch_model, True, torchscript_dir, onnx_dir, generated_dir_list, inputs, outputs, model_input)
+
+
+def _lgbfamily(lgbmodel: lgb.LGBMModel, inputs, onnx_dir, generated_dir_list, torchscript_dir: Path, outputs, model_input):
+    convert(lgbmodel, 'lightgbm', 'onnx', inputs=inputs, save_path=onnx_dir)
+    generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+    torch_model = convert(lgbmodel, 'lightgbm', 'pytorch')
+    _torchfamily(torch_model, True, torchscript_dir, onnx_dir, generated_dir_list, inputs, outputs, model_input)
+
+
+def _sklfamily(sklmodel: skl.base.BaseEstimator, inputs, onnx_dir: Path, generated_dir_list, torchscript_dir: Path, outputs, model_input):
+    convert(sklmodel, 'sklearn', 'onnx', inputs=inputs, save_path=onnx_dir)
+    generated_dir_list.append(onnx_dir.with_suffix('.onnx'))
+    torch_model = convert(sklmodel, 'sklearn', 'pytorch')
+    _torchfamily(torch_model, True, torchscript_dir, onnx_dir, generated_dir_list, inputs, outputs, model_input)

@@ -14,15 +14,10 @@
 
 import os
 import subprocess
-
-from pathlib import Path
-
 from typing import List
 from modelci.hub import converter
-
 from modelci.hub.utils import TensorRTPlatform
 from modelci.persistence.service import ModelService
-
 from modelci.types.bo import Task, ModelVersion, Framework, ModelBO
 
 __all__ = ['get_remote_model_weight', 'retrieve_model',
@@ -76,8 +71,7 @@ def _get_remote_model_weights(models: List[ModelBO]):
     # group by (task, architecture, framework, engine) pair
     pairs = set(map(lambda x: (x.task, x.architecture, x.framework, x.engine), models))
     model_groups = [
-        [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair] for pair
-        in pairs
+        [model for model in models if (model.task, model.architecture, model.framework, model.engine) == pair] for pair in pairs
     ]
 
     # get weights of newest version of each pair

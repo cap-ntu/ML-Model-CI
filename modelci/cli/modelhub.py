@@ -263,10 +263,10 @@ def convert(
     model = None
     if id is None and yaml_file is None:
         typer.echo("WARNING: Please assign a way to find the target model! details refer to --help")
-        return 0
+        raise RuntimeError
     if id is not None and yaml_file is not None:
         typer.echo("WARNING: Do not use -id and -path at the same time!")
-        return 0
+        raise RuntimeError
     elif id is not None and yaml_file is None:
         if ModelDB.exists_by_id(id):
             model = ModelDB.get_by_id(id)

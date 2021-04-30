@@ -80,8 +80,8 @@ class Framework(NamedEnum):
     TensorFlow = 0
     PyTorch = 1
     sklearn = 2
-    xgboost = 3
-    lightgbm = 4
+    XGBoost = 3
+    LightGBM = 4
 
 
 class Engine(NamedEnum):
