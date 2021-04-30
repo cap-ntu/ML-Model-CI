@@ -59,3 +59,12 @@ def test_delete():
     result = runner.invoke(app, ['delete', model_id])
     assert result.exit_code == 0
     assert f"Model {model_id} deleted\n" == result.output
+
+def test_convert():
+    torch_model = torchvision.models.resnet50(pretrained=False)
+    torch_model.load_state_dict(torch.load(example_path))
+    torch.save(torch_model, example_path)
+    result = runner.invoke(app, [
+        'convert', '-f', 'example/resnet50.yml'
+    ])
+    assert result.exit_code == 0
