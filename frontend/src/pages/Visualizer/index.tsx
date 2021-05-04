@@ -13,12 +13,13 @@ import {
   Row,
   Col,
   Card,
-  Drawer,
   Button,
   Divider,
   Progress,
   Modal,
   Tooltip,
+  Dropdown,
+  Space,
 } from 'antd';
 import axios from 'axios';
 import { config } from 'ice';
@@ -219,7 +220,6 @@ VisualizerState
     // TODO validation check of model layer name
     const layersInfo: object = this.state.modelStructure.layer;
     if (layerName in layersInfo && layerName !== this.state.currentLayerName) {
-      console.log(layerName);
       const layerInfo = { ...layersInfo[layerName] };
       this.setState({ currentLayerInfo: layersInfo[layerName] });
       this.setState({ currentLayerName: layerName });
@@ -309,57 +309,74 @@ VisualizerState
                 Model Structure
               </h5>
               <Divider />
-              <div
-                id="graphviz"
-                style={{ position: 'relative', overflow: 'hidden' }}
+              <Dropdown
+                visible={this.state.visible}
+                overlayStyle={{
+                  width: 300,
+                  height: 400,
+                  padding: 20,
+                  overflowY: 'scroll',
+                  backgroundColor: 'whitesmoke',
+                }}
+                overlay={
+                  <Form
+                    schema={this.state.layerSchema}
+                    onSubmit={this.layerSubmit}
+                    onChange={this.onLayerChange}
+                  >
+                    <Space>
+                      <Button type="primary" htmlType="submit">
+                      Submit
+                      </Button>
+                      <Button
+                        htmlType="button"
+                        onClick={()=>this.setState({ visible: false })}
+                      >
+                      Close
+                      </Button>
+                    </Space>
+
+                  </Form>
+                }
+                trigger={['contextMenu', 'click']}
               >
-                <Drawer
-                  title="Modify Layer Paramaters"
-                  placement="right"
-                  visible={this.state.visible}
-                  onClose={() => {
-                    this.setState({ visible: false });
-                  }}
-                  getContainer={false}
-                  closable={false}
-                  style={{ position: 'absolute' }}
+                <div
+                  id="graphviz"
+                  style={{ position: 'relative', overflow: 'hidden' }}
                 >
-                  <div>
-                    <Form
-                      schema={this.state.layerSchema}
-                      onSubmit={this.layerSubmit}
-                      onChange={this.onLayerChange}
-                    />
-                  </div>
-                </Drawer>
-                <div style={{ height: '100%' }}>
-                  <UncontrolledReactSVGPanZoom width={1000} height={800} background='#fff'>
-                    <svg width={500} height={15000}>
-                      {this.state.isLoaded ? (
-                        <DagreReact
-                          nodes={this.state.graph.nodes}
-                          edges={this.state.graph.links}
-                          renderNode={this.renderNode}
-                          defaultNodeConfig={{
-                            styles: {
-                              shape: {
-                                styles: { fill: '#845', strokeWidth: '2' },
+                  <div style={{ height: '100%' }}>
+                    <UncontrolledReactSVGPanZoom
+                      width={1000}
+                      height={800}
+                      background="#fff"
+                    >
+                      <svg width={500} height={15000}>
+                        {this.state.isLoaded ? (
+                          <DagreReact
+                            nodes={this.state.graph.nodes}
+                            edges={this.state.graph.links}
+                            renderNode={this.renderNode}
+                            defaultNodeConfig={{
+                              styles: {
+                                shape: {
+                                  styles: { fill: '#845', strokeWidth: '2' },
+                                },
                               },
-                            },
-                          }}
-                          graphOptions={{
-                            marginx: 15,
-                            marginy: 15,
-                            rankdir: 'TD',
-                            ranksep: 55,
-                            nodesep: 15,
-                          }}
-                        />
-                      ) : null}
-                    </svg>
-                  </UncontrolledReactSVGPanZoom>
+                            }}
+                            graphOptions={{
+                              marginx: 15,
+                              marginy: 15,
+                              rankdir: 'TD',
+                              ranksep: 55,
+                              nodesep: 15,
+                            }}
+                          />
+                        ) : null}
+                      </svg>
+                    </UncontrolledReactSVGPanZoom>
+                  </div>
                 </div>
-              </div>
+              </Dropdown>
             </Card>
           </Col>
           <Col span={7} offset={1}>
