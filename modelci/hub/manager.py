@@ -67,7 +67,8 @@ def register_model(
     models = list()
 
     model_dir_list = list()
-    model.model_status = [ModelStatus.PUBLISHED]
+    if not model.model_status:
+        model.model_status = [ModelStatus.PUBLISHED]
     models.append(save(model))
 
     # generate model family

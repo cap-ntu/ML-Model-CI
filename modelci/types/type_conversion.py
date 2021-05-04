@@ -9,7 +9,7 @@ def type_to_data_type(tensor_type):
     import tensorflow as tf
     import torch
 
-    from modelci.types.bo import DataType
+    from modelci.types.models.common import DataType
 
     mapper = defaultdict(
         lambda: DataType.TYPE_INVALID, {

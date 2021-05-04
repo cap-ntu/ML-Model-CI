@@ -199,3 +199,4 @@ class ModelUpdateSchema(BaseModel):
         default_factory=list,
         example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
     )
+    model_status: Optional[List[ModelStatus]] = Field(default_factory=list)
