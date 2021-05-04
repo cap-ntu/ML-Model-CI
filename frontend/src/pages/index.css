@@ -5,10 +5,6 @@
   font-size: 20px;
 }
 
-.ant-tag {
-  font-size: 20px;
-}
-
 .ant-table-placeholder, .ant-empty-normal {
   display: none;
 }
@@ -87,12 +83,13 @@ h3.ant-typography{
 }
 
 .ant-tag{
-    height: 40px;
-    border-radius:30px;
-    min-width: 80px;
-    text-align: center;
-    padding-top: 10px;
+    height: 40px !important;
+    border-radius:30px !important;
+    min-width: 80px !important;
+    text-align: center !important;
+    padding-top: 10px !important;
     background-color: transparent;
+    font-size: large !important;
 }
 
 .panel >.MuiFormControl-root > .MuiBox-root {
