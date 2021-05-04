@@ -12,21 +12,19 @@ def get_node_shape(node):
 # reference: https://github.com/onnx/onnxmltools/blob/master/onnxmltools/utils/visualize.py
 def get_nodes(graph) -> List[Node]:
     initializer_names = [init.name for init in graph.initializer]
-    weight_nodes = {node.name: node for node in graph.input if ".weight" in node.name}
+    weight_nodes = {node.name: node for node in graph.input}
 
     graph_nodes = []
     label_type = None
     for i, node in enumerate(graph.node, 0):
         shape = None
-        input = list(node.input)
-        weight_input = list(filter(lambda input: ".weight" in input, node.input))
         name = node.name
-        if weight_input:
+        weight_input = list(filter(lambda input: ".weight" in input, node.input))
+        if len(weight_input ):
             name = weight_input[0].replace(".weight", "")
-            if node.op_type != "BatchNormalization":
-                input_node = weight_nodes.get(weight_input[0])
-                shape = get_node_shape(input_node)
-                label_type = "html"
+            input_node = weight_nodes.get(weight_input[0])
+            shape = get_node_shape(input_node)
+            label_type = "html"
         graph_nodes.append(
             Node(id=i, label=node.op_type, meta={"shape": shape, "name": name}, labelType=label_type)
         )

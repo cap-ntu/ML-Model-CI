@@ -13,7 +13,7 @@ from modelci.config import db_settings
 from modelci.experimental.model.model_train import TrainingJob, TrainingJobIn, TrainingJobUpdate
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.persistence.model_dao import ModelDAO
+from modelci.persistence.service_ import exists_by_id as model_exists_by_id
 
 _db = MongoClient()[db_settings.mongo_db]
 _collection = _db['training_job']
@@ -42,7 +42,7 @@ def get_all() -> List[TrainingJob]:
 
 def save(training_job_in: TrainingJobIn) -> str:
     model_id = training_job_in.model
-    if not ModelDAO.exists_by_id(ObjectId(model_id)):
+    if not model_exists_by_id(model_id):
         raise ServiceException(f'Model with ID {model_id} not exist.')
 
     training_job = TrainingJob(**training_job_in.dict(exclude_none=True))
@@ -55,7 +55,7 @@ def update(training_job: TrainingJobUpdate) -> int:
         raise ValueError(f'id {training_job.id} not found.')
 
     # check model ID
-    if training_job.model and not ModelDAO.exists_by_id(ObjectId(training_job.model)):
+    if training_job.model and not model_exists_by_id(training_job.model):
         raise ServiceException(f'Model with ID {training_job.model} not exist.')
 
     # save update

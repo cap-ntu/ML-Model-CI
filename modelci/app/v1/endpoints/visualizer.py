@@ -29,11 +29,11 @@ def generate_model_graph(*, id: str):  # noqa
     if model.engine == Engine.PYTORCH:
         result = get_models(architecture=model.architecture, framework=model.framework, engine=Engine.ONNX, task=model.task, version=model.version)
         if len(result):
-            onnx_model = onnx.load(io.BytesIO(result[0].weight.__bytes__()))
+            onnx_model = onnx.load(io.BytesIO(bytes(result[0].weight)))
         else:
-            pytorch_model = torch.load(io.BytesIO(model.weight.__bytes__()))
+            pytorch_model = torch.load(io.BytesIO(bytes(model.weight)))
             onnx_path = Path(tempfile.gettempdir() + '/tmp.onnx')
-            convert(pytorch_model, 'pytorch', 'onnx', save_path=onnx_path, inputs=model.inputs, outputs=model.outputs, opset=11)
+            convert(pytorch_model, 'pytorch', 'onnx', save_path=onnx_path, inputs=model.inputs, outputs=model.outputs, optimize=False)
             onnx_model = onnx.load(onnx_path)
         graph = visualize_model(onnx_model)
     return graph
