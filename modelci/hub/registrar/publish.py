@@ -37,11 +37,10 @@ from modelci.types.models.common import Engine, ModelStatus
 from modelci.utils.misc import make_dir
 
 
-def _download_model_from_url(url, file_path, hash_prefix=None, progress=True):
+def download_model_from_url(url, file_path, hash_prefix=None, progress=True):
     file_size = None
-
     req = Request(url)
-    u = urlopen(req)
+    u = urlopen(req)  #nosec
     meta = u.info()
     if hasattr(meta, 'getheaders'):
         content_length = meta.getheaders("Content-Length")
@@ -189,8 +188,3 @@ def register_model_from_yaml(file_path: Union[Path, str]):
     model = MLModel.parse_obj(model_data)
     register_model(model, convert=model_yaml.convert, profile=model_yaml.profile)
 
-
-if __name__ == "__main__":
-    resnet18_url = "https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth"
-    model_name = "resnet18.pth"
-    _download_model_from_url(resnet18_url, model_name)

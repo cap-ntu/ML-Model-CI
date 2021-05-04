@@ -79,7 +79,7 @@ class PydanticObjectId(ObjectId):
 class Framework(NamedEnum):
     TensorFlow = 0
     PyTorch = 1
-    sklearn = 2
+    Sklearn = 2
     XGBoost = 3
     LightGBM = 4
 

@@ -17,7 +17,7 @@ from fastapi.exceptions import RequestValidationError, HTTPException
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.responses import JSONResponse
 
-from modelci.hub.publish import register_model
+from modelci.hub.registrar.publish import register_model
 from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
 from modelci.types.models import MLModel, BaseMLModel, ModelUpdateSchema, Framework, Engine, Task
 

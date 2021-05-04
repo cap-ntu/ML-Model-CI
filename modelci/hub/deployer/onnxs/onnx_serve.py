@@ -11,11 +11,13 @@ import numpy as np
 import onnx
 import onnxruntime
 from grpc._cython import cygrpc
-from proto import service_pb2_grpc
-from proto.service_pb2 import InferResponse
-from proto.service_pb2_grpc import add_PredictServicer_to_server
+
+from modelci.types.bo import DataType
+from modelci.types.proto import service_pb2_grpc
+from modelci.types.proto.service_pb2 import InferResponse
+from modelci.types.proto.service_pb2_grpc import add_PredictServicer_to_server
 from toolz import compose
-from utils import model_data_type_to_np, DataType
+from modelci.types.type_conversion import model_data_type_to_np
 
 
 class ServingEngine(object):
