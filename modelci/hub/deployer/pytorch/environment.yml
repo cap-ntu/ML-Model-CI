@@ -7,7 +7,6 @@ dependencies:
   - c-ares=1.15.0
   - ca-certificates=2020.1.1
   - certifi=2020.4.5.1
-  - cudatoolkit=10.1.243
   - grpcio=1.27.2
   - intel-openmp=2020.0
   - ld_impl_linux-64=2.33.1
