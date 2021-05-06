@@ -170,7 +170,7 @@ def download_model_from_url(
 ):
     """Download a model weight file from an online URL."""
 
-    from modelci.hub.registrar.publish import download_model_from_url
+    from modelci.hub.registrar import download_model_from_url
 
     download_model_from_url(url, path)
     typer.echo(f'{path} model downloaded successfully.')

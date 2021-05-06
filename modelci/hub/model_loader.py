@@ -19,7 +19,7 @@ import joblib
 from modelci.hub.utils import parse_path_plain
 
 
-def sklearn_loader(model_weight_path: Path):
+def joblib_loader(model_weight_path: Path):
     """Load from sklearn api of XGBoost or LightGBM, and sklearn model.
     """
     return joblib.load(model_weight_path)
@@ -56,4 +56,4 @@ def load(model_path: os.PathLike):
     elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('NONE', 'TENSORFLOW'):  # TensorFlow
         return savedmodel_loader(model_path)
     elif model_info['framework'] in ('SKLEARN', 'XGBOOST', 'LIGHTGBM') and model_info['engine'] == 'NONE':  # sklearn
-        return sklearn_loader(model_path)
+        return joblib_loader(model_path)

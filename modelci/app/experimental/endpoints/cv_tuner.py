@@ -10,7 +10,7 @@ import torch
 from fastapi import APIRouter
 
 from modelci.experimental.model.model_structure import Structure, Operation
-from modelci.hub.registrar.publish import register_model
+from modelci.hub.registrar import register_model
 from modelci.hub.manager import get_remote_model_weight
 from modelci.hub.utils import generate_path_plain
 from modelci.persistence.service import ModelService
