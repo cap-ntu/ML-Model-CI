@@ -13,6 +13,7 @@ from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
 from modelci.types.type_conversion import model_data_type_to_np
 from ..deployer.config import TRT_GRPC_PORT
+from ...types.models import MLModel
 
 try:
     from tensorrtserver.api import (
@@ -30,7 +31,7 @@ class CVTRTClient(BaseModelInspector):
     def __init__(
             self,
             repeat_data,
-            model_info: ModelBO,
+            model_info: MLModel,
             batch_num=1,
             batch_size=1,
             asynchronous=None
@@ -57,13 +58,13 @@ class CVTRTClient(BaseModelInspector):
 
     def infer(self, request):
         name = self.model_info.architecture
-        version = self.model_info.version.ver
+        version = self.model_info.version
         ctx = InferContext(self.SERVER_URI, ProtocolType.GRPC, name, version)
         ctx.run(request[0], request[1], self.batch_size)
 
     def check_model_status(self) -> bool:
         name = self.model_info.architecture
-        version = self.model_info.version.ver
+        version = self.model_info.version
         ctx = ServerStatusContext(self.SERVER_URI, ProtocolType.GRPC, self.model_info.architecture)
         try:
             server_status: ServerStatus = ctx.get_server_status()

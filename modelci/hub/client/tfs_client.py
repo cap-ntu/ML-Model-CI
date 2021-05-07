@@ -17,6 +17,7 @@ from tensorflow_serving.apis.predict_pb2 import PredictRequest
 from modelci.hub.deployer.config import TFS_GRPC_PORT, TFS_HTTP_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
+from modelci.types.models import MLModel
 from modelci.types.type_conversion import model_data_type_to_np
 
 
@@ -27,7 +28,7 @@ class CVTFSClient(BaseModelInspector):
     def __init__(
             self,
             repeat_data,
-            model_info: ModelBO,
+            model_info: MLModel,
             batch_num=1,
             batch_size=1,
             asynchronous=None,
@@ -64,7 +65,7 @@ class CVTFSClient(BaseModelInspector):
         return request
 
     def check_model_status(self) -> bool:
-        api_url = f'http://{self.SERVER_HTTP_URI}/v1/models/{self.model_info.name}/versions/{self.version}'
+        api_url = f'http://{self.SERVER_HTTP_URI}/v1/models/{self.model_info.architecture}/versions/{self.version}'
         try:
             response = requests.get(api_url)
             state = response.json()['model_version_status'][0]['state']

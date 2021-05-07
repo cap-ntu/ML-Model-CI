@@ -4,8 +4,9 @@ from threading import Thread
 
 import GPUtil
 
-from modelci.hub import Profiler
+from modelci.hub.profiler import Profiler
 from modelci.monitor import GPUNodeExporter
+from modelci.types.models import MLModel
 
 
 class UtilMonitor(Thread):
@@ -50,7 +51,7 @@ class UtilMonitor(Thread):
         self.stopped = True
 
 
-def auto_model_profiling(model_info, server_name, device_util_thd=0.01, device_memory_thd=0.01, period=10):
+def auto_model_profiling(model_info: MLModel, server_name, device_util_thd=0.01, device_memory_thd=0.01, period=10):
     """
     Start model profiling automatically.
 

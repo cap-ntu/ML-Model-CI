@@ -103,3 +103,20 @@ def delete_model(id_: str):
     if _fs.exists(ObjectId(model['weight'])):
         _fs.delete(ObjectId(model['weight']))
     return _collection.delete_one({'_id': ObjectId(id_)})
+
+
+def append_dynamic_profiling_result(cls, id_: str, dynamic_result):
+    """Add one dynamic profiling result to a model.
+
+    Args:
+        id_ (str): ID of the object
+        dynamic_result (DynamicProfileResultBO): Dynamic profiling result
+
+        Return:
+        int: number of affected rows
+
+    Raises:
+        DoesNotExistException: `model.id` does not exist in ModelDB
+    """
+    pass
+    raise NotImplementedError

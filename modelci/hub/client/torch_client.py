@@ -15,6 +15,7 @@ from torchvision import transforms
 from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.types.bo import ModelBO
+from modelci.types.models import MLModel
 from modelci.types.proto.service_pb2 import InferRequest
 from modelci.types.proto.service_pb2_grpc import PredictStub
 
@@ -22,7 +23,7 @@ from modelci.types.proto.service_pb2_grpc import PredictStub
 class CVTorchClient(BaseModelInspector):
     SERVER_HOST = 'localhost'
 
-    def __init__(self, repeat_data, model_info: ModelBO, batch_num=1, batch_size=1, asynchronous=None):
+    def __init__(self, repeat_data, model_info: MLModel, batch_num=1, batch_size=1, asynchronous=None):
         super().__init__(
             repeat_data=repeat_data,
             model_info=model_info,
