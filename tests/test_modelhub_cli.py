@@ -2,13 +2,16 @@
 from pathlib import Path
 
 import requests
+import torch
 from typer.testing import CliRunner
-
+import torchvision
 from modelci.config import app_settings
 from modelci.cli.modelhub import app
 
 runner = CliRunner()
-Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
+file_dir = f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification"
+Path(file_dir).mkdir(parents=True, exist_ok=True)
+file_path = file_dir + "/1.pth"
 
 
 def test_get():
@@ -57,3 +60,13 @@ def test_delete():
     result = runner.invoke(app, ['delete', model_id])
     assert result.exit_code == 0
     assert f"Model {model_id} deleted\n" == result.output
+
+
+def test_convert():
+    torch_model = torchvision.models.resnet50(pretrained=False)
+    torch_model.load_state_dict(torch.load(file_path))
+    torch.save(torch_model, file_path)
+    result = runner.invoke(app, [
+        'convert', '-f', 'example/resnet50.yml'
+    ])
+    assert result.exit_code == 0

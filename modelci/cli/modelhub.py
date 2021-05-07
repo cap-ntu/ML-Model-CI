@@ -21,7 +21,7 @@ import typer
 import yaml
 from pydantic import ValidationError
 import modelci.persistence.service_ as ModelDB
-from modelci.hub.manager import generate_model_family
+from modelci.hub.converter import generate_model_family
 
 from modelci.config import app_settings
 from modelci.hub.utils import parse_path_plain
@@ -170,9 +170,9 @@ def download_model_from_url(
 ):
     """Download a model weight file from an online URL."""
 
-    from modelci.hub.publish import _download_model_from_url
+    from modelci.hub.registrar import download_model_from_url
 
-    _download_model_from_url(url, path)
+    download_model_from_url(url, path)
     typer.echo(f'{path} model downloaded successfully.')
 
 
@@ -260,9 +260,11 @@ def convert(
         ),
         register: bool = typer.Option(False, '-r', '--register', is_flag=True, help='register the converted models to modelhub, default false')
 ):
+    model = None
+    if id is None and yaml_file is None:
+        raise ValueError('WARNING: Please assign a way to find the target model! details refer to --help')
     if id is not None and yaml_file is not None:
-        typer.echo("Do not use -id and -path at the same time.")
-        typer.Exit()
+        raise ValueError('WARNING: Do not use -id and -path at the same time!')
     elif id is not None and yaml_file is None:
         if ModelDB.exists_by_id(id):
             model = ModelDB.get_by_id(id)

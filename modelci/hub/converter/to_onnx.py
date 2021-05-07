@@ -57,7 +57,7 @@ class ONNXConverter(object):
                     if save_path_with_ext.exists() and not override:
                         # file exist yet override flag is not set
                         logger.info('Use cached model')
-                        onnx_model = onnx.load(str(save_path))
+                        onnx_model = onnx.load(str(save_path_with_ext))
 
                 if onnx_model is None:
                     # otherwise, convert model
@@ -167,7 +167,9 @@ class ONNXConverter(object):
             model: keras.models.Model,
             opset: int = DEFAULT_OPSET,
     ):
-        return onnxmltools.convert_keras(model, target_opset=opset)
+        onnx_model = onnxmltools.convert_keras(model, target_opset=opset)
+        logger.info('keras to onnx converted successfully')
+        return onnx_model
 
     @staticmethod
     @_Wrapper.save
@@ -177,19 +179,31 @@ class ONNXConverter(object):
             opset: int = DEFAULT_OPSET,
     ):
         initial_type = ONNXConverter.convert_initial_type(inputs)
-        return onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
+        onnx_model = onnxmltools.convert_sklearn(model, initial_types=initial_type, target_opset=opset)
+        logger.info('sklearn to onnx converted successfully')
+        return onnx_model
 
     @staticmethod
     @_Wrapper.save
-    def from_xgboost(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
+    def from_xgboost(
+            model,
+            inputs: Iterable[IOShape],
+            opset: int = DEFAULT_OPSET):
         initial_type = ONNXConverter.convert_initial_type(inputs)
-        return onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
+        onnx_model = onnxmltools.convert_xgboost(model, initial_types=initial_type, target_opset=opset)
+        logger.info('xgboost to onnx converted successfully')
+        return onnx_model
 
     @staticmethod
     @_Wrapper.save
-    def from_lightgbm(model, inputs: Iterable[IOShape], opset: int = DEFAULT_OPSET):
+    def from_lightgbm(
+            model,
+            inputs: Iterable[IOShape],
+            opset: int = DEFAULT_OPSET):
         initial_type = ONNXConverter.convert_initial_type(inputs)
-        return onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
+        onnx_model = onnxmltools.convert_lightgbm(model, initial_types=initial_type, target_opset=opset)
+        logger.info('lightgbm to onnx converted successfully')
+        return onnx_model
 
     @staticmethod
     def convert_initial_type(inputs: Iterable[IOShape]):

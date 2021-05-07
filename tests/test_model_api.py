@@ -11,10 +11,10 @@ from pathlib import Path
 import requests
 
 from modelci.config import app_settings
-from modelci.hub.publish import _download_model_from_url
+from modelci.hub.registrar import download_model_from_url
 
 Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
-_download_model_from_url(
+download_model_from_url(
     'https://download.pytorch.org/models/resnet50-19c8e357.pth',
     f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
 )
