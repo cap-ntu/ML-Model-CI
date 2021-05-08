@@ -15,8 +15,7 @@ ENV MODEL_NAME='model'
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-# Copy source
-COPY . /content/
+COPY ./environment.yml /content/
 
 WORKDIR /content/
 
@@ -41,5 +40,8 @@ RUN find ${CONDA_ROOT}/ -follow -type f -name '*.a' -delete 2> /dev/null; exit 0
  && find ${CONDA_ROOT}/ -follow -type f -name '*.js.map' -delete 2> /dev/null; exit 0 \
  && find ${CONDA_ROOT}/lib/python*/site-packages/bokeh/server/static \
      -follow -type f -name '*.js' ! -name '*.min.js' -delete 2> /dev/null; exit 0
+
+# Copy source
+COPY . /content/
 
 CMD python pytorch_serve.py ${MODEL_NAME}
