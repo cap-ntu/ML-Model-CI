@@ -130,7 +130,7 @@ def model_data_type_to_torch(model_dtype):
 
 
 def model_data_type_to_onnx(model_dtype):
-    from modelci.types.bo import DataType
+    from modelci.types.models.common import DataType
 
     mapper = {
         DataType.TYPE_INVALID: onnxconverter_common,
