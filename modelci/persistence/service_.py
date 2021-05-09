@@ -60,20 +60,20 @@ def save(model_in: MLModel):
     return model
 
 
-def get_by_id(_id: str) -> MLModel:
+def get_by_id(id_: str) -> MLModel:
     """Get a MLModel object by its ID.
 
     Args:
-        _id:  Model ID
+        id_:  Model ID
 
     Returns: the model object
 
     """
-    model_data = _collection.find_one(filter={'_id': ObjectId(_id)})
+    model_data = _collection.find_one(filter={'_id': ObjectId(id_)})
     if model_data is not None:
         return MLModel.parse_obj(model_data)
     else:
-        raise ServiceException(f'Model with id={_id} does not exist.')
+        raise ServiceException(f'Model with id={id_} does not exist.')
 
 
 def get_by_parent_id(id_: str) -> List[MLModel]:
