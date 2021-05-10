@@ -9,16 +9,17 @@ from http import HTTPStatus
 from pathlib import Path
 
 import requests
+import torch
+import torchvision
 
 from modelci.config import app_settings
-from modelci.hub.registrar import download_model_from_url
 
-Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
-download_model_from_url(
-    'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
-)
+file_dir = f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification"
+Path(file_dir).mkdir(parents=True, exist_ok=True)
+model_path = f'{file_dir}/1.pth'
 
+torch_model = torchvision.models.resnet50(pretrained=True)
+torch.save(torch_model, model_path)
 
 def test_get_all_models():
     response = requests.get(f'{app_settings.api_v1_prefix}/model')

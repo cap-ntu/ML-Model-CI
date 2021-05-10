@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from build.lib.modelci.hub.publish import _download_model_from_url
+import torch
+import torchvision
+
 from modelci.hub.registrar import register_model_from_yaml
 from modelci.persistence import mongo
 from modelci.persistence.service import ModelService
@@ -13,13 +15,14 @@ from modelci.types.bo import (
     StaticProfileResultBO,
     InfoTuple
 )
-from modelci.types.models import Task,  Metric, ModelUpdateSchema
+from modelci.types.models import Task, Metric, ModelUpdateSchema
 
-Path(f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification").mkdir(parents=True, exist_ok=True)
-_download_model_from_url(
-    'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
-)
+file_dir = f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification"
+Path(file_dir).mkdir(parents=True, exist_ok=True)
+model_path = f'{file_dir}/1.pth'
+
+torch_model = torchvision.models.resnet50(pretrained=True)
+torch.save(torch_model, model_path)
 
 
 def test_init():
