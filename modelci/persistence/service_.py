@@ -16,6 +16,7 @@ from fastapi.encoders import jsonable_encoder
 
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
+from modelci.hub.cache_manager import delete_remote_weight
 from modelci.persistence.exceptions import ServiceException
 from modelci.types.models import MLModel, ModelUpdateSchema, Metric
 from modelci.utils.misc import remove_dict_null
@@ -158,4 +159,5 @@ def delete_model(id_: str):
     model = _collection.find_one(filter={'_id': ObjectId(id_)})
     if _fs.exists(ObjectId(model['weight'])):
         _fs.delete(ObjectId(model['weight']))
+    delete_remote_weight(model)
     return _collection.delete_one({'_id': ObjectId(id_)})
