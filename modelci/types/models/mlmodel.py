@@ -190,6 +190,7 @@ class ModelUpdateSchema(BaseModel):
     version: Optional[PositiveInt] = Field(None, example=1)
     dataset: Optional[str] = Field(None, example='ImageNet')
     metric: Optional[Dict[Metric, float]] = Field(None, example='{"acc": 0.76}')
+    status: Optional[Status] = Field(None, example='UNKNOWN')
     task: Optional[Task]
     inputs: Optional[List[IOShape]] = Field(
         default_factory=list,

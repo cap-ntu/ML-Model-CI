@@ -82,8 +82,8 @@ class JobExecutor(Thread):
             else:
                 container_name = job.container_name
             # change model status
-            update_schema = ModelUpdateSchema.parse_obj(job.model.dict(exclude={'status'}, status=Status.RUNNING))
-            job.model.status = Status.RUNNING
+            update_schema = ModelUpdateSchema(status=Status.Running)
+            #job.model.status = Status.RUNNING
             update_model(str(job.model.id), update_schema)
 
             profiler = Profiler(model_info=job.model, server_name=container_name, inspector=job.client)
@@ -91,8 +91,8 @@ class JobExecutor(Thread):
             append_dynamic_profiling_result(job.model, str(job.model.id), dynamic_result=dpr)
 
             # set model status to pass
-            job.model.status = Status.PASS
-            update_schema = ModelUpdateSchema.parse_obj(job.model.dict(exclude={'status'}, status=Status.PASS))
+            #job.model.status = Status.PASS
+            update_schema = ModelUpdateSchema(status=Status.PASS)
             update_model(str(job.model.id), update_schema)
 
             if job.container_name is None:
