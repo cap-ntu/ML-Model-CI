@@ -3,7 +3,7 @@ from pathlib import Path
 import torch
 import torchvision
 
-from build.lib.modelci.persistence.service_ import delete_model
+from modelci.persistence.service_ import delete_model
 from modelci.hub.registrar import register_model_from_yaml
 from modelci.persistence import mongo
 from modelci.persistence.service import ModelService
