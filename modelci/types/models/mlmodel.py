@@ -48,9 +48,9 @@ class Weight(BaseModel):
 
     @property
     def filename(self):
-        if self.file:
+        if hasattr(self, 'file'):
             return self.file.name
-        elif self._gridfs_out:
+        elif hasattr(self, '_gridfs_out'):
             return self._gridfs_out.filename
         else:
             return ''

@@ -3,6 +3,7 @@ from pathlib import Path
 import torch
 import torchvision
 
+from build.lib.modelci.persistence.service_ import delete_model
 from modelci.hub.registrar import register_model_from_yaml
 from modelci.persistence import mongo
 from modelci.persistence.service import ModelService
@@ -173,8 +174,9 @@ def test_delete_dynamic_profiling_result():
 
 
 def test_delete_model():
-    model = ModelService.get_models('ResNet50')[0]
-    assert ModelService.delete_model_by_id(model.id)
+    model_list= get_models(architecture='ResNet50')
+    for model in model_list:
+        assert delete_model(str(model.id))
 
 
 def test_drop_test_database():

@@ -58,17 +58,18 @@ def test_update():
     assert result.exit_code == 0
 
 
-def test_delete():
-    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
-        model_list = r.json()
-    model_id = model_list[0]["id"]
-    result = runner.invoke(app, ['delete', model_id])
-    assert result.exit_code == 0
-    assert f"Model {model_id} deleted\n" == result.output
-
-
 def test_convert():
     result = runner.invoke(app, [
         'convert', '-f', 'example/resnet50.yml'
     ])
     assert result.exit_code == 0
+
+
+def test_delete():
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    for model in model_list:
+        model_id = model["id"]
+        result = runner.invoke(app, ['delete', model_id])
+        assert result.exit_code == 0
+        assert f"Model {model_id} deleted\n" == result.output

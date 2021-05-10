@@ -159,5 +159,6 @@ def delete_model(id_: str):
     model = _collection.find_one(filter={'_id': ObjectId(id_)})
     if _fs.exists(ObjectId(model['weight'])):
         _fs.delete(ObjectId(model['weight']))
-    delete_remote_weight(model)
+    ml_model = MLModel.parse_obj(model)
+    delete_remote_weight(ml_model)
     return _collection.delete_one({'_id': ObjectId(id_)})
