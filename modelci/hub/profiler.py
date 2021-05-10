@@ -57,6 +57,8 @@ class Profiler(object):
         self.server_name = server_name
         self.model_info = model_info
         self.docker_client = docker.from_env()
+    def start_server(self):
+        from modelci.hub.deployer.dispatcher import serve
 
     def diagnose(self, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResultBO:
         """Start diagnosing and profiling model.

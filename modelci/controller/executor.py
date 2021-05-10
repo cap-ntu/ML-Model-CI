@@ -25,13 +25,11 @@ class Job(object):
             device: str,
             model_info: MLModel,
             container_name: str = None,
-            update_schema: ModelUpdateSchema = None
     ):
         self.client = client
         self.device = device
         self.model = model_info
         self.container_name = container_name
-        self.update_schema = update_schema
 
 
 class JobExecutor(Thread):
@@ -84,8 +82,9 @@ class JobExecutor(Thread):
             else:
                 container_name = job.container_name
             # change model status
+            update_schema = ModelUpdateSchema.parse_obj(job.model.dict(exclude={'status'}, status=Status.RUNNING))
             job.model.status = Status.RUNNING
-            update_model(str(job.model.id), job.update_schema)
+            update_model(str(job.model.id), update_schema)
 
             profiler = Profiler(model_info=job.model, server_name=container_name, inspector=job.client)
             dpr = profiler.diagnose(device=job.device)
@@ -93,7 +92,8 @@ class JobExecutor(Thread):
 
             # set model status to pass
             job.model.status = Status.PASS
-            update_model(str(job.model.id), job.update_schema)
+            update_schema = ModelUpdateSchema.parse_obj(job.model.dict(exclude={'status'}, status=Status.PASS))
+            update_model(str(job.model.id), update_schema)
 
             if job.container_name is None:
                 # get holding container

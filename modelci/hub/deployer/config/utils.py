@@ -38,7 +38,6 @@ def model_data_type_to_np(model_dtype):
         DataType.TYPE_FP64: np.float64,
         DataType.TYPE_STRING: np.dtype(object)
     }
-
     if isinstance(model_dtype, int):
         model_dtype = DataType(model_dtype)
     elif isinstance(model_dtype, str):

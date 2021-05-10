@@ -18,6 +18,7 @@ from modelci.types.bo import ModelBO
 from modelci.types.models import MLModel
 from modelci.types.proto.service_pb2 import InferRequest
 from modelci.types.proto.service_pb2_grpc import PredictStub
+from modelci.types.type_conversion import model_data_type_to_torch
 
 
 class CVTorchClient(BaseModelInspector):
@@ -31,7 +32,8 @@ class CVTorchClient(BaseModelInspector):
             batch_size=batch_size,
             asynchronous=asynchronous
         )
-        self.stub = PredictStub(grpc.insecure_channel(f'{self.SERVER_HOST}:{TORCHSCRIPT_GRPC_PORT}'))
+        self.channel = grpc.insecure_channel(f'{self.SERVER_HOST}:{TORCHSCRIPT_GRPC_PORT}')
+        self.stub = PredictStub(self.channel)
 
     def data_preprocess(self, x):
         transform = transforms.Compose(
@@ -47,8 +49,9 @@ class CVTorchClient(BaseModelInspector):
         return transform(x)
 
     def make_request(self, input_batch):
+        dtype = str(self.model_info.inputs[0].dtype).split('.')[1]
         meta = json.dumps(
-            {'shape': self.model_info.inputs[0].shape[1:], 'dtype': self.model_info.inputs[0].dtype, 'torch_flag': True}
+            {'shape': self.model_info.inputs[0].shape[1:], 'dtype': dtype, 'torch_flag': True}
         )
         request = InferRequest()
         request.model_name = self.model_info.architecture

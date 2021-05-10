@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Union
 
 from modelci.types.bo import Framework, Engine, ModelVersion, Task
-from modelci.types.trtis_objects import DataType, ModelInputFormat
+from modelci.types.models.common import DataType
+from modelci.types.trtis_objects import ModelInputFormat
 
 
 def parse_path(path: Path):
