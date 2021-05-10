@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from modelci.hub.manager import register_model_from_yaml
-from modelci.hub.publish import _download_model_from_url
+from build.lib.modelci.hub.publish import _download_model_from_url
+from modelci.hub.registrar import register_model_from_yaml
 from modelci.persistence import mongo
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import get_models, get_by_id, update_model
@@ -27,7 +27,7 @@ def test_init():
 
 
 def test_register_model():
-    register_model_from_yaml("../example/resnet50_explicit_path.yml")
+    register_model_from_yaml("example/resnet50_explicit_path.yml")
 
 
 def test_get_model_by_name():

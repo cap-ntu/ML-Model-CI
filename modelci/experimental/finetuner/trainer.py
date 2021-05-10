@@ -19,7 +19,7 @@ from modelci.experimental.finetuner import OUTPUT_DIR
 from modelci.experimental.finetuner.pytorch_datamodule import PyTorchDataModule
 from modelci.experimental.finetuner.transfer_learning import freeze, FineTuneModule
 from modelci.experimental.model.model_train import TrainingJob, TrainingJobUpdate
-from modelci.hub.manager import get_remote_model_weight
+from modelci.hub.cache_manager import get_remote_model_weight
 from modelci.persistence.service import ModelService
 from modelci.types.bo import Engine, ModelStatus
 from modelci.types.vo import Status

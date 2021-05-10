@@ -7,13 +7,7 @@ Date: 1/31/2021
 
 ML model structure related API
 """
-import torch
 from fastapi import APIRouter
-from modelci.hub.manager import get_remote_model_weight
-
-from modelci.types.bo import Engine
-
-from modelci.persistence.service import ModelService
 
 from modelci.experimental.model.model_structure import Structure
 
