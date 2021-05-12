@@ -12,26 +12,27 @@
 #  or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
+import hashlib
 import os
 import tempfile
-import hashlib
 from pathlib import Path
+from shutil import copy2, make_archive, move
 from typing import List, Union
+from urllib.request import urlopen, Request
 
 import cv2
 import tensorflow as tf
 import yaml
-from shutil import copy2, make_archive, move
+from tqdm.auto import tqdm
+
 from modelci.hub.client.onnx_client import CVONNXClient
 from modelci.hub.client.tfs_client import CVTFSClient
 from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import converter
 from modelci.hub.utils import parse_path_plain
-from modelci.persistence.service_ import save, update_model
-from modelci.types.models import MLModelFromYaml, MLModel, ModelUpdateSchema
-from urllib.request import urlopen, Request
-from tqdm.auto import tqdm
+from modelci.persistence.service_ import save
+from modelci.types.models import MLModelFromYaml, MLModel
 from modelci.types.models.common import Engine, ModelStatus
 from modelci.utils.misc import make_dir
 
