@@ -10,7 +10,7 @@ from modelci.config import app_settings
 from modelci.cli.modelhub import app
 
 runner = CliRunner()
-file_dir = f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification"
+file_dir = str(Path.home() / '.modelci/ResNet50/pytorh-pytorch/image_classification')
 Path(file_dir).mkdir(parents=True, exist_ok=True)
 weight_path = f'{tempfile.gettempdir()}/1.pth'
 model_path = f'{file_dir}/1.pth'

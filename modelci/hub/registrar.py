@@ -140,9 +140,6 @@ def register_model(
         }
 
         for model in models:
-            if ModelStatus.PROFILING not in model.model_status:
-                model.model_status.append(ModelStatus.PROFILING)
-            update_model(str(model.id), ModelUpdateSchema(model_status=model.model_status))
             kwargs['model_info'] = model
             engine = model.engine
 

@@ -6,7 +6,7 @@ from modelci.hub import converter
 from modelci.hub.utils import TensorRTPlatform
 from modelci.types.models import MLModel, Engine
 
-__all__ = ['get_remote_model_weight', 'get_remote_model_weights', 'delete_remote_weight']
+__all__ = ['get_remote_model_weight', 'get_remote_model_weights', 'delete_cache_weight']
 
 
 def get_remote_model_weight(model: MLModel):
@@ -30,10 +30,10 @@ def get_remote_model_weight(model: MLModel):
         with open(str(save_path), 'wb') as f:
             f.write(bytes(model.weight))
         if model.engine == Engine.TFS:
-            subprocess.call(['unzip', save_path, '-d', '/']) # nosec
+            subprocess.call(['unzip', save_path, '-d', '/'])  # nosec
             os.remove(save_path)
         elif model.engine == Engine.TRT:
-            subprocess.call(['unzip', save_path, '-d', '/']) # nosec
+            subprocess.call(['unzip', save_path, '-d', '/'])  # nosec
             os.remove(save_path)
 
             converter.TRTConverter.generate_trt_config(
@@ -67,7 +67,7 @@ def get_remote_model_weights(models: List[MLModel]):
         get_remote_model_weight(model_group[0])
 
 
-def delete_remote_weight(model: MLModel):
+def delete_cache_weight(model: MLModel):
     save_path = model.saved_path
 
     if os.path.isfile(save_path):

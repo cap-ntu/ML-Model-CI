@@ -14,7 +14,10 @@ from docker.models.containers import Container
 from modelci.hub.profiler import Profiler
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.service import ModelService
+from modelci.persistence.service_ import update_model
 from modelci.types.bo import ModelBO, Status
+from modelci.types.models import ModelUpdateSchema
+from modelci.types.models.common import ModelStatus
 
 
 class Job(object):
@@ -81,16 +84,18 @@ class JobExecutor(Thread):
             else:
                 container_name = job.container_name
             # change model status
-            job.model.status = Status.RUNNING
-            ModelService.update_model(job.model)
+            if ModelStatus.PROFILING not in job.model.model_status:
+                job.model.model_status.append(ModelStatus.PROFILING)
+            update_model(str(job.model.id), ModelUpdateSchema(model_status=job.model.model_status))
 
             profiler = Profiler(model_info=job.model, server_name=container_name, inspector=job.client)
             dpr = profiler.diagnose(device=job.device)
             ModelService.append_dynamic_profiling_result(job.model.id, dynamic_result=dpr)
 
-            # set model status to pass
-            job.model.status = Status.PASS
-            ModelService.update_model(job.model)
+            # remove profiling status
+            if ModelStatus.PROFILING in job.model.model_status:
+                job.model.model_status.remove(ModelStatus.PROFILING)
+            update_model(str(job.model.id), ModelUpdateSchema(model_status=job.model.model_status))
 
             if job.container_name is None:
                 # get holding container

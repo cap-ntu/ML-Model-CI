@@ -36,7 +36,7 @@ def retrieve_model(
         task (Task): which machine learn task is model used for,Default to None
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
-        version (Int): Model version. Default to None.
+        version (int): Model version. Default to None.
         download (bool): Flag for whether the model needs to be cached locally.
 
     Returns:
