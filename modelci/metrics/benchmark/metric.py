@@ -18,6 +18,7 @@ import numpy as np
 
 from modelci.metrics import CAdvisor
 from modelci.types.bo import ModelBO
+from modelci.types.models import MLModel
 from modelci.utils.misc import get_device
 
 
@@ -38,7 +39,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     def __init__(
             self,
             repeat_data,
-            model_info: ModelBO,
+            model_info: MLModel,
             batch_num: int = 1,
             batch_size: int = 1,
             asynchronous: bool = False,
@@ -174,11 +175,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
     def start_infer_with_time(self, batch_input):
-        """Perform inference non-asynchronously, and return the total time.
 
-        Args:
-            batch_input: The batch data in the request.
-        """
         request = self.make_request(batch_input)
         start_time = time.time()
         self.infer(request)

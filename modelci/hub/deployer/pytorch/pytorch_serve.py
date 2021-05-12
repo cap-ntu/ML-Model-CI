@@ -10,23 +10,27 @@ import grpc
 import numpy as np
 import torch.jit
 from grpc._cython import cygrpc
-from proto import service_pb2_grpc
-from proto.service_pb2 import InferResponse
-from proto.service_pb2_grpc import add_PredictServicer_to_server
 from toolz import compose
-from utils import model_data_type_to_np, DataType
+
+from modelci.types.models.common import DataType
+from modelci.types.proto import service_pb2_grpc
+from modelci.types.proto.service_pb2 import InferResponse
+from modelci.types.proto.service_pb2_grpc import add_PredictServicer_to_server
+from modelci.types.type_conversion import model_data_type_to_np
 
 
 class ServingEngine(object):
     def __init__(self):
-        model_base_dir = Path('/models') / sys.argv[1]
+        #model_base_dir = Path('/models') / sys.argv[1]
         # get valid version sub dir
-        model_dir = list(filter(lambda x: os.path.isfile(x) and str(x.stem).isdigit(), model_base_dir.glob('**/*')))
+        #model_dir = list(filter(lambda x: os.path.isfile(x) and str(x.stem).isdigit(), model_base_dir.glob('**/*')))
         # set device
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+        #self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = 'cpu'
+        model_dir = "/home/dixing/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip"
         # load the latest version of a TorchScript model
-        self.model = torch.jit.load(str(max(model_dir)), map_location=self.device)
+        #self.model = torch.jit.load(str(max(model_dir)), map_location=self.device)
+        self.model = torch.jit.load(model_dir, map_location=self.device)
         self.model.eval()
 
     def batch_predict(self, inputs: torch.Tensor):
@@ -52,16 +56,12 @@ class PredictServicer(service_pb2_grpc.PredictServicer):
         shape = meta['shape']
         dtype = model_data_type_to_np(DataType(meta['dtype']))
         torch_flag = meta['torch_flag']
-
         decode_pipeline = compose(
             partial(np.reshape, newshape=shape),
             partial(np.fromstring, dtype=dtype),
         )
-
-        buffer = list(map(decode_pipeline, buffer))
-
+        buffer = list(map(decode_pipeline, buffer))  # issue here
         buffer = np.stack(buffer)
-
         if torch_flag:
             buffer = torch.from_numpy(buffer)
         return buffer
@@ -87,9 +87,9 @@ def grpc_serve():
     )
     servicer = PredictServicer()
     add_PredictServicer_to_server(servicer, server)
-    server.add_insecure_port('[::]:8001')
+    server.add_insecure_port('[::]:8101')
     server.start()
-    print('Listening on port 8001')
+    print('Listening on port 8101')
     server.wait_for_termination()
 
 

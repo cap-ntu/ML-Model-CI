@@ -35,10 +35,10 @@ class ProfileLatency(BaseModel):
         inference_latency (InfoTuple): inference latency.
         postprocess_latency (InfoTuple): post-processing latency.
     """
-    init_latency: InfoTuple = InfoTuple(avg=0, p50=0, p90=0, p95=0)
-    preprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p90=0, p95=0)
-    inference_latency: InfoTuple = InfoTuple(avg=0, p50=0, p90=0, p95=0)
-    postprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p90=0, p95=0)
+    init_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    preprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    inference_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    postprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
 
 
 class ProfileThroughput(BaseModel):
