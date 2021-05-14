@@ -18,6 +18,7 @@ from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, roo
 from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId, \
     named_enum_json_encoder
 from .pattern import as_form
+from .profile import ProfileResult
 from ...hub.utils import parse_path_plain, generate_path_plain
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
@@ -127,7 +128,7 @@ class MLModel(BaseMLModel):
     id: Optional[PydanticObjectId] = Field(default=None, alias='_id')
     parent_model_id: Optional[PydanticObjectId]
     weight: Weight
-    profile_result: Optional[Any]
+    profile_result: ProfileResult = ProfileResult()
     status: Optional[Status] = Status.Unknown
     model_input: Optional[list]  # TODO: merge into field `inputs`
     model_status: Optional[List[ModelStatus]] = Field(default_factory=list)
