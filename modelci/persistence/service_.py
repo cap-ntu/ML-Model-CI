@@ -7,6 +7,7 @@ Date: 2/17/2021
 
 Persistence service using PyMongo.
 """
+from enum import Enum
 from ipaddress import IPv4Address, IPv6Address
 from typing import List, Union, Optional
 
@@ -17,8 +18,9 @@ from fastapi.encoders import jsonable_encoder
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, ModelUpdateSchema
+from modelci.types.models import MLModel, ModelUpdateSchema, Metric
 from modelci.types.models.profile import StaticProfileResult, DynamicProfileResult
+from modelci.utils.misc import remove_dict_null
 
 _db = MongoClient()[db_settings.mongo_db]
 _collection = _db['model_d_o']
@@ -85,19 +87,35 @@ def get_models(**kwargs) -> List[MLModel]:
 
     """
     valid_keys = {'architecture', 'framework', 'engine', 'task', 'version'}
-    valid_kwargs = {key: value for key, value in kwargs.items() if value is not None and key in valid_keys}
+
+    valid_kwargs = {
+        key: (value.value if isinstance(value, Enum) else value)
+        for key, value in remove_dict_null(kwargs).items()
+        if key in valid_keys
+    }
     models = _collection.find(valid_kwargs)
     return list(map(MLModel.parse_obj, models))
 
 
-def update_model(id: str, schema: ModelUpdateSchema) -> MLModel:
-    prev_model = get_by_id(id)
+def update_model(id_: str, schema: ModelUpdateSchema) -> MLModel:
+    """ Update existed model info
+
+    Args:
+        id_:  the ID of targeted model
+        schema:
+
+    Returns: the updated model object
+
+    """
+    prev_model = get_by_id(id_)
+    if schema.metric:
+        schema.metric = {Metric(k).name: v for k, v in schema.metric.items()}
     updated_data = {
         key: value for key, value in jsonable_encoder(schema, exclude_unset=True).items()
         if getattr(schema, key) != getattr(prev_model, key)
     }
-    _collection.update_one({'_id': ObjectId(id)}, {"$set": updated_data})
-    return get_by_id(id)
+    _collection.update_one({'_id': ObjectId(id_)}, {"$set": updated_data})
+    return get_by_id(id_)
 
 
 def delete_model(id_: str):

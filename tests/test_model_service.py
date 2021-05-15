@@ -1,23 +1,29 @@
+from pathlib import Path
+
+import torch
+import torchvision
+
+from modelci.hub.registrar import register_model_from_yaml
 from modelci.persistence import mongo
-from modelci.persistence.service import ModelService
-from modelci.types.bo import (
-    DynamicProfileResultBO,
+from modelci.persistence.service_ import delete_model, register_static_profiling_result, \
+    register_dynamic_profiling_result, update_dynamic_profiling_result, delete_dynamic_profiling_result
+from modelci.persistence.service_ import get_models, get_by_id, update_model
+from modelci.types.models import Task, Metric, ModelUpdateSchema
+from modelci.types.models.profile import (
+    StaticProfileResult,
+    DynamicProfileResult,
     ProfileMemory,
     ProfileLatency,
     ProfileThroughput,
-    ModelBO,
-    Framework,
-    Engine,
-    ModelVersion,
-    IOShape,
-    Weight,
-    StaticProfileResultBO,
-    InfoTuple,
-    Task,
-    Metric,
-    ModelStatus
+    InfoTuple
 )
-from modelci.types.trtis_objects import ModelInputFormat
+
+file_dir = str(Path.home() / '.modelci/ResNet50/pytorh-pytorch/image_classification')
+Path(file_dir).mkdir(parents=True, exist_ok=True)
+model_path = f'{file_dir}/1.pth'
+
+torch_model = torchvision.models.resnet50(pretrained=True)
+torch.save(torch_model, model_path)
 
 
 def test_init():
@@ -25,25 +31,11 @@ def test_init():
 
 
 def test_register_model():
-    model = ModelBO(
-        'ResNet50',
-        framework=Framework.PYTORCH,
-        engine=Engine.PYTORCH,
-        version=ModelVersion(1),
-        dataset='ImageNet',
-        metric={Metric.ACC: 0.80},
-        task=Task.IMAGE_CLASSIFICATION,
-        inputs=[IOShape([-1, 3, 224, 224], dtype=float, format=ModelInputFormat.FORMAT_NCHW)],
-        outputs=[IOShape([-1, 1000], dtype=int)],
-        model_status=[ModelStatus.PUBLISHED],
-        weight=Weight(bytes([123]))
-    )
-
-    assert ModelService.post_model(model)
+    register_model_from_yaml("example/resnet50_explicit_path.yml")
 
 
 def test_get_model_by_name():
-    models = ModelService.get_models('ResNet50')
+    models = get_models(architecture='ResNet50')
 
     # check length
     assert len(models) == 1
@@ -53,54 +45,49 @@ def test_get_model_by_name():
 
 
 def test_get_model_by_task():
-    models = ModelService.get_models_by_task(Task.IMAGE_CLASSIFICATION)
+    models = get_models(task=Task.Image_Classification)
 
     # check length
     assert len(models) == 1
     # check name
     for model in models:
-        assert model.task == Task.IMAGE_CLASSIFICATION
+        assert model.task == Task.Image_Classification
 
 
 def test_get_model_by_id():
-    model_bo = ModelService.get_models('ResNet50')[0]
-    model = ModelService.get_model_by_id(model_bo.id)
+    model = get_models()[0]
+    model_by_id = get_by_id(str(model.id))
 
     # check model id
-    assert model.id == model_bo.id
+    assert model.id == model_by_id.id
 
 
 def test_update_model():
-    model = ModelService.get_models('ResNet50')[0]
-    model.metric[Metric.ACC] = 0.9
-    model.weight.weight = bytes([123, 255])
+    model = get_models()[0]
 
     # check if update success
-    assert ModelService.update_model(model)
-
-    model_ = ModelService.get_models('ResNet50')[0]
+    model_ = update_model(str(model.id), ModelUpdateSchema(metric={Metric.acc: 0.9}))
 
     # check updated model
-    assert abs(model_.metric[Metric.ACC] - 0.9) < 1e-6
-    assert model_.weight.weight == model.weight.weight
+    assert abs(model_.metric[Metric.acc] - 0.9) < 1e-6
 
 
 def test_register_static_profiling_result():
-    model = ModelService.get_models('ResNet50')[0]
-    spr = StaticProfileResultBO(5000, 200000, 200000, 10000, 10000, 10000)
-    assert ModelService.register_static_profiling_result(model.id, spr)
+    model = get_models()[0]
+    spr = StaticProfileResult(parameters=5000, flops=200000, memory=200000, mread=10000, mwrite=10000, mrw=10000)
+    assert register_static_profiling_result(str(model.id), spr)
 
 
 def test_register_dynamic_profiling_result():
-    model = ModelService.get_models('ResNet50')[0]
+    model = get_models()[0]
     dummy_info_tuple = InfoTuple(avg=1, p50=1, p95=1, p99=1)
-    dpr = DynamicProfileResultBO(
+    dpr = DynamicProfileResult(
         device_id='gpu:01',
         device_name='Tesla K40c',
         batch=1,
-        memory=ProfileMemory(1000, 1000, 0.5),
+        memory=ProfileMemory(total_memory=1000, memory_usage=1000, utilization=0.5),
         latency=ProfileLatency(
-            init_latency=dummy_info_tuple,
+            initialization_latency=dummy_info_tuple,
             preprocess_latency=dummy_info_tuple,
             inference_latency=dummy_info_tuple,
             postprocess_latency=dummy_info_tuple,
@@ -112,20 +99,20 @@ def test_register_dynamic_profiling_result():
             postprocess_throughput=1,
         )
     )
-    assert ModelService.append_dynamic_profiling_result(model.id, dpr)
+    assert register_dynamic_profiling_result(str(model.id), dpr)
 
 
 def test_update_dynamic_profiling_result():
-    model = ModelService.get_models('ResNet50')[0]
+    model = get_models(architecture='ResNet50')[0]
     dummy_info_tuple = InfoTuple(avg=1, p50=1, p95=1, p99=1)
     updated_info_tuple = InfoTuple(avg=1, p50=2, p95=1, p99=1)
-    dpr = DynamicProfileResultBO(
+    dpr = DynamicProfileResult(
         device_id='gpu:01',
         device_name='Tesla K40c',
         batch=1,
-        memory=ProfileMemory(1000, 2000, 0.5),
+        memory=ProfileMemory(total_memory=1000, memory_usage=2000, utilization=0.5),
         latency=ProfileLatency(
-            init_latency=dummy_info_tuple,
+            initialization_latency=dummy_info_tuple,
             preprocess_latency=dummy_info_tuple,
             inference_latency=updated_info_tuple,
             postprocess_latency=dummy_info_tuple,
@@ -138,25 +125,25 @@ def test_update_dynamic_profiling_result():
         )
     )
     # check update
-    assert ModelService.update_dynamic_profiling_result(model.id, dpr)
+    assert update_dynamic_profiling_result(str(model.id), dpr)
     # check result
-    model = ModelService.get_models('ResNet50')[0]
-    assert model.profile_result.dynamic_results[0].memory.memory_usage == 2000
-    assert model.profile_result.dynamic_results[0].latency.inference_latency.p50 == 2
+    model = get_models()[0]
+    assert model.profile_result.dynamic_profile_results[0].memory.memory_usage == 2000
+    assert model.profile_result.dynamic_profile_results[0].latency.inference_latency.p50 == 2
 
 
 def test_delete_dynamic_profiling_result():
-    model = ModelService.get_models('ResNet50')[0]
+    model = get_models()[0]
     dummy_info_tuple1 = InfoTuple(avg=1, p50=1, p95=1, p99=2)
     dummy_info_tuple2 = InfoTuple(avg=1, p50=1, p95=1, p99=1)
 
-    dpr = DynamicProfileResultBO(
+    dpr = DynamicProfileResult(
         device_id='gpu:02',
         device_name='Tesla K40c',
         batch=1,
-        memory=ProfileMemory(1000, 1000, 0.5),
+        memory=ProfileMemory(total_memory=1000, memory_usage=1000, utilization=0.5),
         latency=ProfileLatency(
-            init_latency=dummy_info_tuple1,
+            initialization_latency=dummy_info_tuple1,
             preprocess_latency=dummy_info_tuple2,
             inference_latency=dummy_info_tuple2,
             postprocess_latency=dummy_info_tuple2,
@@ -168,27 +155,28 @@ def test_delete_dynamic_profiling_result():
             postprocess_throughput=1,
         )
     )
-    ModelService.append_dynamic_profiling_result(model.id, dpr)
+    register_dynamic_profiling_result(str(model.id), dpr)
 
     # reload
-    model = ModelService.get_models('ResNet50')[0]
-    dpr_bo = model.profile_result.dynamic_results[0]
-    dpr_bo2 = model.profile_result.dynamic_results[1]
+    model = get_models()[0]
+    dpr_bo = model.profile_result.dynamic_profile_results[0]
+    dpr_bo2 = model.profile_result.dynamic_profile_results[1]
 
     # check delete
-    assert ModelService.delete_dynamic_profiling_result(model.id, dpr_bo.ip, dpr_bo.device_id)
+    assert delete_dynamic_profiling_result(str(model.id), dpr_bo.ip, dpr_bo.device_id)
 
     # check result
-    model = ModelService.get_models('ResNet50')[0]
-    assert len(model.profile_result.dynamic_results) == 1
+    model = get_models()[0]
+    assert len(model.profile_result.dynamic_profile_results) == 1
 
-    dpr_left = model.profile_result.dynamic_results[0]
-    assert dpr_bo2.latency.init_latency.avg == dpr_left.latency.init_latency.avg
+    dpr_left = model.profile_result.dynamic_profile_results[0]
+    assert dpr_bo2.latency.initialization_latency.avg == dpr_left.latency.initialization_latency.avg
 
 
 def test_delete_model():
-    model = ModelService.get_models('ResNet50')[0]
-    assert ModelService.delete_model_by_id(model.id)
+    model_list = get_models(architecture='ResNet50')
+    for model in model_list:
+        assert delete_model(str(model.id))
 
 
 def test_drop_test_database():
