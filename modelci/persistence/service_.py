@@ -72,6 +72,19 @@ def get_by_id(id: str) -> MLModel:
         raise ServiceException(f'Model with id={id} does not exist.')
 
 
+def get_by_parent_id(id_: str) -> List[MLModel]:
+    """ Get MLModel objects by its parent model ID.
+    Args:
+        id_:  The ID of parent model
+    Returns: List of model objects
+    """
+    models = _collection.find(filter={'parent_model_id': ObjectId(id_)})
+    if len(models):
+        return list(map(MLModel.parse_obj, models))
+    else:
+        raise ServiceException(f'Model with parent model ID={id_} does not exist.')
+
+
 def exists_by_id(id: str) -> MLModel:
     model = _collection.find_one(filter={'_id': ObjectId(id)})
     return model is not None
