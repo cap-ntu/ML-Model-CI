@@ -9,7 +9,7 @@ def type_to_data_type(tensor_type):
     import tensorflow as tf
     import torch
 
-    from modelci.types.bo import DataType
+    from modelci.types.models import DataType
 
     mapper = defaultdict(
         lambda: DataType.TYPE_INVALID, {
@@ -71,7 +71,7 @@ def type_to_data_type(tensor_type):
 
 
 def model_data_type_to_np(model_dtype):
-    from modelci.types.bo import DataType
+    from modelci.types.models import DataType
 
     mapper = {
         DataType.TYPE_INVALID: None,
@@ -102,7 +102,7 @@ def model_data_type_to_np(model_dtype):
 
 
 def model_data_type_to_torch(model_dtype):
-    from modelci.types.models.common import DataType
+    from modelci.types.models import DataType
     import torch
 
     mapper = {
@@ -130,7 +130,7 @@ def model_data_type_to_torch(model_dtype):
 
 
 def model_data_type_to_onnx(model_dtype):
-    from modelci.types.models.common import DataType
+    from modelci.types.models import DataType
 
     mapper = {
         DataType.TYPE_INVALID: onnxconverter_common,

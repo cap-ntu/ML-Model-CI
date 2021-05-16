@@ -28,7 +28,6 @@ from modelci.hub.client.torch_client import CVTorchClient
 from modelci.hub.client.trt_client import CVTRTClient
 from modelci.hub.converter import converter
 from modelci.hub.utils import parse_path_plain
-from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import save
 from modelci.types.models import MLModelFromYaml, MLModel
 from urllib.request import urlopen, Request
@@ -141,8 +140,6 @@ def register_model(
         }
 
         for model in models:
-            model.model_status = [ModelStatus.PROFILING]
-            ModelService.update_model(model)
             kwargs['model_info'] = model
             engine = model.engine
 

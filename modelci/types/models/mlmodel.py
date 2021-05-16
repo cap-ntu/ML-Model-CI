@@ -49,9 +49,9 @@ class Weight(BaseModel):
 
     @property
     def filename(self):
-        if self.file:
+        if getattr(self, 'file', None):
             return self.file.name
-        elif self._gridfs_out:
+        elif hasattr(self, '_gridfs_out') and self._gridfs_out is not None:
             return self._gridfs_out.filename
         else:
             return ''
@@ -200,3 +200,4 @@ class ModelUpdateSchema(BaseModel):
         default_factory=list,
         example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
     )
+    model_status: Optional[List[ModelStatus]] = Field(default_factory=list)
