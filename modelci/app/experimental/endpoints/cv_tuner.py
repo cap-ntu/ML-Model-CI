@@ -116,7 +116,7 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
     if not isinstance(output_tensors, (list, tuple)):
         output_tensors = (output_tensors,)
     for output_tensor in output_tensors:
-        output_shape = IOShape(shape=[bs, *output_tensor.shape[1:]], dtype=type_to_data_type(output_tensor.dtype))
+        output_shape = IOShape(name="output", shape=[bs, *output_tensor.shape[1:]], dtype=type_to_data_type(output_tensor.dtype))
         output_shapes.append(output_shape)
 
     if not dry_run:
@@ -142,20 +142,20 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             version=version
         )
         saved_path.parent.mkdir(parents=True, exist_ok=True)
-        torch.save(model, saved_path.with_suffix('.pt'))
+        torch.save(net, saved_path.with_suffix('.pt'))
         mlmodelin = MLModel(
             dataset='',
             metric={key: 0 for key in model.metric.keys()},
             task=model.task,
             inputs=model.inputs,
             outputs=output_shapes,
-            architecture=model.name,
+            architecture=model.architecture,
             framework=model.framework,
             engine=Engine.NONE,
             model_status=[ModelStatus.DRAFT],
             parent_model_id=model.id,
             version=version,
-            weight=saved_path
+            weight=saved_path.with_suffix('.pt')
         )
         register_model(
             mlmodelin,
@@ -170,4 +170,4 @@ def update_finetune_model_as_new(id: str, updated_layer: Structure, dry_run: boo
             version=version
         )[0]
 
-        return {'id': ml_model.id}
+        return {'id': str(ml_model.id)}

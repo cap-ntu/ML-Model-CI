@@ -14,7 +14,7 @@ from typing import Optional, Union, Tuple, List
 from pydantic import BaseModel, PositiveInt, PositiveFloat, root_validator, validator, confloat
 
 from modelci.experimental.model.common import ObjectIdStr
-from modelci.types.vo import Status
+from modelci.types.models import Status
 
 
 class DataModuleProperty(BaseModel):
@@ -154,7 +154,7 @@ class TrainingJob(BaseModel):
     lr_scheduler_type: LRSchedulerType
     lr_scheduler_property: _LRSchedulerProperty
     loss_function: LossFunctionType
-    status: Optional[Status] = Status.UNKNOWN
+    status: Optional[Status] = Status.Unknown
     valdation_accuracy: Optional[float] = None
 
     @root_validator(pre=True)
