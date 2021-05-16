@@ -5,12 +5,13 @@ from typing import Union
 import docker
 from docker.models.containers import Container
 from docker.types import Mount, Ulimit
-from modelci.persistence.service import ModelService
 
 from modelci.hub.deployer import config
-from modelci.hub.manager import retrieve_model, retrieve_model_by_task
+from modelci.hub.manager import retrieve_model
 from modelci.hub.utils import parse_path
+from modelci.persistence.service import update_model
 from modelci.types.bo import Framework, Engine, ModelStatus
+from modelci.types.models import ModelUpdateSchema
 from modelci.utils.misc import remove_dict_null, get_device
 
 
@@ -96,26 +97,24 @@ def serve_by_name(args):
     framework = Framework[args.framework.upper()]
     engine = Engine[args.engine.upper()]
 
-    model_bo = retrieve_model(architecture_name=model, framework=framework, engine=engine)
-    serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    ml_model = retrieve_model(architecture=model, framework=framework, engine=engine)
+    serve(ml_model[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
     # TODO: check if the service is dispatched sucessfully
-    new_status = [item for item in model_bo[0].model_status if
+    new_status = [item for item in ml_model[0].model_status if
                   item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
     new_status.append(ModelStatus.IN_SERVICE)
-    model_bo[0].model_status = new_status
-    ModelService.update_model(model_bo[0])
+    update_model(str(ml_model[0].id), ModelUpdateSchema(model_status=new_status))
 
 
 def serve_by_task(args):
-    model_bo = retrieve_model_by_task(task=args.task)
-    serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
+    ml_model = retrieve_model(task=args.task)
+    serve(ml_model[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
     # TODO: check if the service is dispatched sucessfully
-    new_status = [item for item in model_bo[0].model_status if
+    new_status = [item for item in ml_model[0].model_status if
                   item is not (ModelStatus.CONVERTED or ModelStatus.PUBLISHED)]
     new_status.append(ModelStatus.IN_SERVICE)
-    model_bo[0].model_status = new_status
-    ModelService.update_model(model_bo[0])
+    update_model(str(ml_model[0].id), ModelUpdateSchema(model_status=new_status))
 
 
 if __name__ == '__main__':
