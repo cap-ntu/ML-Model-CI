@@ -6,7 +6,6 @@ Email: yli056@e.ntu.edu.sg
 Date: 6/20/2020
 """
 import asyncio
-import http
 import json
 import shutil
 from pathlib import Path
@@ -15,7 +14,7 @@ from typing import List
 from fastapi import APIRouter, File, UploadFile, Depends
 from fastapi.exceptions import RequestValidationError, HTTPException
 from pydantic.error_wrappers import ErrorWrapper
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from modelci.hub.registrar import register_model
 from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
@@ -52,7 +51,7 @@ def update(id: str, schema: ModelUpdateSchema):
     return update_model(id, schema)
 
 
-@router.delete('/{id}', status_code=http.HTTPStatus.NO_CONTENT)
+@router.delete('/{id}', status_code=204, response_class=Response)
 def delete(id: str):
     if not exists_by_id(id):
         raise HTTPException(
