@@ -15,7 +15,7 @@
 from typing import List
 
 from modelci.hub.cache_manager import get_remote_model_weights
-from modelci.persistence.service_ import get_by_parent_id, get_models
+from modelci.persistence.service import get_by_parent_id, get_models
 from modelci.types.models import MLModel, Task, Framework, Engine
 
 __all__ = ['retrieve_model', 'retrieve_model_by_parent_id']

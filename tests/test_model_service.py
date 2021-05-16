@@ -5,9 +5,9 @@ import torchvision
 
 from modelci.hub.registrar import register_model_from_yaml
 from modelci.persistence import mongo
-from modelci.persistence.service_ import delete_model, register_static_profiling_result, \
+from modelci.persistence.service import delete_model, register_static_profiling_result, \
     register_dynamic_profiling_result, update_dynamic_profiling_result, delete_dynamic_profiling_result
-from modelci.persistence.service_ import get_models, get_by_id, update_model
+from modelci.persistence.service import get_models, get_by_id, update_model
 from modelci.types.models import Task, Metric, ModelUpdateSchema
 from modelci.types.models.profile import (
     StaticProfileResult,

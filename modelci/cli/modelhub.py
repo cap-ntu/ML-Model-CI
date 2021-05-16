@@ -20,7 +20,7 @@ import requests
 import typer
 import yaml
 from pydantic import ValidationError
-import modelci.persistence.service_ as ModelDB
+import modelci.persistence.service as ModelDB
 from modelci.hub.converter import generate_model_family
 
 from modelci.config import app_settings

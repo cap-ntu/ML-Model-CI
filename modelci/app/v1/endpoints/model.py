@@ -17,7 +17,7 @@ from pydantic.error_wrappers import ErrorWrapper
 from starlette.responses import JSONResponse, Response
 
 from modelci.hub.registrar import register_model
-from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
+from modelci.persistence.service import get_by_id, get_models, update_model, delete_model, exists_by_id
 from modelci.types.models import MLModel, BaseMLModel, ModelUpdateSchema, Framework, Engine, Task
 
 router = APIRouter()

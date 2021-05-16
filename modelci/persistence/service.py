@@ -1,328 +1,253 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Author: Li Yuanming
+Email: yli056@e.ntu.edu.sg
+Date: 2/17/2021
+
+Persistence service using PyMongo.
+"""
+from enum import Enum
 from ipaddress import IPv4Address, IPv6Address
-from typing import Union
+from typing import List, Union, Optional
 
+import gridfs
 from bson import ObjectId
+from fastapi.encoders import jsonable_encoder
 
-from modelci.types.bo import DynamicProfileResultBO, ModelBO, Task, Framework, Engine, StaticProfileResultBO, \
-    ModelVersion
-from . import mongo
-from .exceptions import ServiceException, DoesNotExistException, BadRequestValueException
-from .model_dao import ModelDAO
+from modelci.config import db_settings
+from modelci.experimental.mongo_client import MongoClient
+from modelci.persistence.exceptions import ServiceException
+from modelci.types.models import MLModel, ModelUpdateSchema, Metric
+from modelci.types.models.profile import StaticProfileResult, DynamicProfileResult
+from modelci.utils.misc import remove_dict_null
+
+_db = MongoClient()[db_settings.mongo_db]
+_collection = _db['model_d_o']
+_fs = gridfs.GridFS(_db)
 
 
-class ModelService(object):
-    __model_DAO = ModelDAO
+def save(model_in: MLModel):
+    """Register a model into ModelDB and GridFS. `model.id` should be set as `None`, otherwise, the function will
+    raise a `ValueError`.
 
-    @classmethod
-    def get_models(
-            cls,
-            architecture: str = None,
-            task: Task = None,
-            framework: Framework = None,
-            engine: Engine = None,
-            version: ModelVersion = None
+    Args:
+        model_in (MLModelIn): model object to be registered
+
+    Return:
+        MLModel: Saved ML model object.
+
+    Raises:
+        BadRequestValueException: If `model.id` is not None.
+        ServiceException: If model has exists with the same primary keys (name, framework, engine and version).
+    """
+
+    if _collection.count_documents(
+            filter=model_in.dict(
+                use_enum_values=True,
+                include={'architecture', 'framework', 'engine', 'version', 'task', 'dataset'}
+            ),
+            limit=1
     ):
-        """Get a list of model BO given primary key(s).
+        raise ServiceException(
+            f'Model with primary keys architecture={model_in.architecture}, '
+            f'framework={model_in.framework}, engine={model_in.engine}, version={model_in.version},'
+            f'task={model_in.task}, and dataset={model_in.dataset} has exists.'
+        )
 
-        Args:
-            architecture (str): model architecture for searching
-            task (Task): model task for searching
-            framework (Framework): model framework. Default to None, having no effect on the searching result.
-            engine (Engine): model engine. Default to None, having no effect on the searching result.
-            version (ModelVersion): model version. Default to None, having no effect on the searching result.
-
-        Return:
-            A list of `ModelBO`.
-        """
-        # build kwargs
-        kwargs = dict()
-        if architecture is not None:
-            kwargs['architecture'] = architecture
-        if task is not None:
-            kwargs['task'] = task.value
-        if framework is not None:
-            kwargs['framework'] = framework.value
-        if engine is not None:
-            kwargs['engine'] = engine.value
-        if version is not None:
-            kwargs['version'] = version.ver
-
-        model_pos = cls.__model_DAO.get_models(**kwargs)
-        models = list(map(ModelBO.from_model_do, model_pos))
-        return models
-
-    @classmethod
-    def get_models_by_task(cls, task: Task):
-        """Get a list of model BO given task.
-
-        Args:
-            task (Task): model task for searching
-
-        Return:
-            A list of `ModelBO`
-        """
-        model_pos = cls.__model_DAO.get_models_by_task(task=task.value)
-
-        return list(map(ModelBO.from_model_do, model_pos))
-
-    @classmethod
-    def get_model_by_id(cls, id_: str):
-        """Get model given model ID.
-
-        Args:
-            id_ (str): model ID, should be a valid BSON Object ID
-
-        Return:
-             A model BO if found.
-
-        Raises:
-            DoesNotExistException: If the model with given ID does not found.
-        """
-        if not cls.__model_DAO.exists_by_id(ObjectId(id_)):
-            raise DoesNotExistException(f'Model id={id_} does not exists.')
-
-        return ModelBO.from_model_do(cls.__model_DAO.get_model_by_id(ObjectId(id_)))
-
-    @classmethod
-    def get_models_by_parent_id(cls, parent_id: str):
-        """
-
-        Args:
-            parent_id ():
-
-        Returns:
-            A list of model BO if found.
-        """
-        model_pos = cls.__model_DAO.get_models_by_parent_id(parent_id=parent_id)
-
-        return list(map(ModelBO.from_model_do, model_pos))
-
-    @classmethod
-    def post_model(cls, model: ModelBO):
-        """Register a model into ModelDB and GridFS. `model.id` should be set as `None`, otherwise, the function will
-        raise a `ValueError`.
-
-        Args:
-            model (ModelBO): model business object to be registered
-
-        Return:
-            bool: True if successful, False otherwise
-
-        Raises:
-            BadRequestValueException: If `model.id` is not None.
-            ServiceException: If model has exists with the same primary keys (architecture, framework, engine
-                and version).
-        """
-        # check model id
-        if model.id is not None:
-            raise BadRequestValueException(
-                'field `id` is expected `None`, but got {}. You should use `update_model` for a existing '
-                'model BO'.format(model.id)
-            )
-
-        model_po = model.to_model_do()
-        if cls.__model_DAO.exists_by_primary_keys(
-                architecture=model_po.architecture,
-                task=model_po.task,
-                framework=model_po.framework,
-                engine=model_po.engine,
-                version=model_po.version,
-                dataset=model_po.dataset
-        ):
-            raise ServiceException(
-                f'Model business object with primary keys architecture={model_po.architecture}, '
-                f'task={model_po.task}, framework={model_po.framework}, engine={model_po.engine}, '
-                f'version={model_po.version}, dataset={model_po.dataset} has exists.'
-            )
-
-        return bool(cls.__model_DAO.save_model(model_po))
-
-    @classmethod
-    def update_model(cls, model: ModelBO, force_insert=False):
-        """Update a model to ModelDB and GridFS. The function will check the existence of the provided model. It will
-        invoke the update. Note that this function will have not effect for static profiling result and dynamic
-        profiling result. Please see `register_static_profiling_result` and `
-
-        Args:
-            model (ModelBO): model business object to be updated. The model must exist in the ModelDB based on its
-                `id`. Otherwise, you should set `force_insert` to be `True`.
-            force_insert (bool: `True`, optional): Force insert flag for ModelDB. The model will force to insert
-                regardless its existence.
-
-        Return:
-            True for successfully update, False otherwise.
-
-        Raises:
-            ValueError: If `model.id` does not exist in ModelDB, and `force_insert` is not set.
-        """
-        # check for the existence of Model
-        if cls.__model_DAO.exists_by_id(model.id):
-            model_po_new = model.to_model_do()
-            model_po = cls.__model_DAO.get_model_by_id(model.id)
-
-            # if weight changes, save all without patch
-            if model_po_new.weight is not None and model_po_new.weight != model_po.weight:
-                return bool(cls.__model_DAO.save_model(model_po_new))
-
-            # build arguments
-            valid_keys = [
-                'architecture', 'framework', 'engine', 'version', 'dataset', 'metric',
-                'weight', 'task', 'inputs', 'outputs', 'status', 'model_status'
-            ]
-            kwargs = dict()
-
-            for valid_key in valid_keys:
-                new_value = getattr(model_po_new, valid_key)
-                if new_value is not None and new_value != getattr(model_po, valid_key):
-                    kwargs[valid_key] = new_value
-
-            # if kwargs is empty, not update
-            if len(kwargs) == 0:
-                return False
-
-            return bool(cls.__model_DAO.update_model(model.id, **kwargs))
-            # return bool(cls.__model_DAO.update_model(model_po_new))
-        else:
-            # if `force_insert` is set
-            if force_insert:
-                model_po = model.to_model_do()
-                return bool(cls.__model_DAO.save_model(model_po))
-            else:
-                raise ValueError('Model ID {} does not exist. You may change the ID or set `force_insert=True` '
-                                 'when call.'.format(model.id))
-
-    @classmethod
-    def delete_model_by_id(cls, id_: str) -> int:
-        """Delete a model from ModelDB given ID.
-
-        Args:
-            id_ (str): ID of the object
-
-        Return:
-            int: Number of affected record.
-        """
-        id_ = ObjectId(id_)
-        model_po = cls.__model_DAO.get_model_by_id(id_)
-        model_po.weight.delete()
-        return cls.__model_DAO.delete_model_by_id(id_)
-
-    @classmethod
-    def register_static_profiling_result(cls, id_, static_result: StaticProfileResultBO):
-        """Register or update static profiling result to a model.
-
-        Args:
-             id_ (str): ID of the object
-             static_result (StaticProfileResultBO): static profiling result
-
-         Return:
-             int: number of affected rows
-
-         Raises:
-            DoesNotExistException: `model.id` does not exist in ModelDB
-        """
-        id_ = ObjectId(id_)
-        if cls.__model_DAO.exists_by_id(id_):
-            return ModelService.__model_DAO.register_static_profiling_result(
-                id_,
-                static_result.to_static_profile_result_po()
-            )
-        else:
-            raise DoesNotExistException('Model ID {} does not exist.'.format(id_))
-
-    @classmethod
-    def append_dynamic_profiling_result(cls, id_: str, dynamic_result: DynamicProfileResultBO):
-        """Add one dynamic profiling result to a model.
-
-        Args:
-             id_ (str): ID of the object
-             dynamic_result (DynamicProfileResultBO): Dynamic profiling result
-
-         Return:
-             int: number of affected rows
-
-         Raises:
-            DoesNotExistException: `model.id` does not exist in ModelDB
-        """
-        id_ = ObjectId(id_)
-        if cls.__model_DAO.exists_by_id(id_):
-            return cls.__model_DAO.register_dynamic_profiling_result(
-                id_,
-                dynamic_result.to_dynamic_profile_result_po()
-            )
-        else:
-            raise DoesNotExistException('Model ID {} does not exist.'.format(id_))
-
-    @classmethod
-    def update_dynamic_profiling_result(cls, id_: str, dynamic_result: DynamicProfileResultBO, force_insert=False):
-        """Update one dynamic profiling result to a model.
-
-        Args:
-            id_ (str): ID of the object
-            dynamic_result (DynamicProfileResultBO): Dynamic profiling result
-            force_insert: force to insert the dynamic result if it is not found
-
-        Return:
-            int: number of affected rows
-
-        Raise:
-            DoesNotExistException: Model ID does not exist in ModelDB; or
-                dynamic profiling result to be updated does not exist and `force_insert` is not set
-        """
-        id_ = ObjectId(id_)
-        dpr_po = dynamic_result.to_dynamic_profile_result_po()
-        pks = {'ip': dpr_po.ip, 'device_id': dpr_po.device_id}
-        # if model ID exists
-        if cls.__model_DAO.exists_by_id(id_):
-            # if the dynamic profiling result to be updated exists
-            if cls.__model_DAO.exists_dynamic_profiling_result_by_pks(id_, **pks):
-                return cls.__model_DAO.update_dynamic_profiling_result(id_, dpr_po)
-            # force insert is set
-            elif force_insert:
-                return cls.__model_DAO.register_dynamic_profiling_result(id_, dpr_po)
-            else:
-                raise DoesNotExistException(
-                    f'Dynamic profiling result to be updated with ip={dpr_po.ip}, '
-                    f'device_id={dpr_po.device_id} does not exist. Either set `force_insert` or change the ip '
-                    f'and device_id.'
-                )
-        # if model ID does not exist
-        else:
-            raise DoesNotExistException('Model ID {} does not exist.'.format(id_))
-
-    @classmethod
-    def delete_dynamic_profiling_result(
-            cls,
-            id_: str,
-            dynamic_result_ip: Union[str, IPv4Address, IPv6Address],
-            dynamic_result_device_id: str
-    ):
-        """Delete one dynamic profiling result to a model.
-
-        Args:
-            id_ (str): ID of the object.
-            dynamic_result_ip (Union[IPv4Address, IPv6Address]): Host IP address of dynamic profiling result.
-            dynamic_result_device_id (str): Device ID of dynamic profiling result.
-
-        Raise:
-            DoesNotExistException: Model ID does not exist in ModelDB; or
-                dynamic profiling result to be updated does not exist and `force_insert` is not set
-        """
-        id_ = ObjectId(id_)
-        pks = {'ip': str(dynamic_result_ip), 'device_id': dynamic_result_device_id}
-        # if model ID exists
-        if cls.__model_DAO.exists_by_id(id_):
-            # if the dynamic profiling result to be delete exists
-            if cls.__model_DAO.exists_dynamic_profiling_result_by_pks(id_, **pks):
-                return cls.__model_DAO.delete_dynamic_profiling_result(id_, **pks)
-            else:
-                raise DoesNotExistException(
-                    f'Dynamic profiling result to be updated with ip={dynamic_result_ip}, '
-                    f'device_id={dynamic_result_device_id} does not exist. Either set `force_insert` or change the ip '
-                    f'and device_id.'
-                )
-        # if model ID does not exist
-        else:
-            raise DoesNotExistException('Model ID {} does not exist.'.format(id_))
+    # TODO: update weight ID in the MLModelIn
+    weight_id = _fs.put(bytes(model_in.weight), filename=model_in.weight.filename)
+    model = MLModel(**model_in.dict(exclude={'weight'}), weight=weight_id)
+    model.id = _collection.insert_one(model.dict(exclude_none=True, by_alias=True, use_enum_values=True)).inserted_id
+    return model
 
 
-__all__ = ['mongo', 'ModelService']
+def get_by_id(id: str) -> MLModel:
+    """Get a MLModel object by its ID.
+    """
+    model_data = _collection.find_one(filter={'_id': ObjectId(id)})
+    if model_data is not None:
+        return MLModel.parse_obj(model_data)
+    else:
+        raise ServiceException(f'Model with id={id} does not exist.')
+
+
+def get_by_parent_id(id_: str) -> List[MLModel]:
+    """ Get MLModel objects by its parent model ID.
+    Args:
+        id_:  The ID of parent model
+    Returns: List of model objects
+    """
+    models = _collection.find(filter={'parent_model_id': ObjectId(id_)})
+    if len(models):
+        return list(map(MLModel.parse_obj, models))
+    else:
+        raise ServiceException(f'Model with parent model ID={id_} does not exist.')
+
+
+def exists_by_id(id: str) -> MLModel:
+    model = _collection.find_one(filter={'_id': ObjectId(id)})
+    return model is not None
+
+
+def get_models(**kwargs) -> List[MLModel]:
+    """
+
+    Args:
+        **kwargs:  architecture, framework, engine, task and version
+
+    Returns: list of models
+
+    """
+    valid_keys = {'architecture', 'framework', 'engine', 'task', 'version'}
+
+    valid_kwargs = {
+        key: (value.value if isinstance(value, Enum) else value)
+        for key, value in remove_dict_null(kwargs).items()
+        if key in valid_keys
+    }
+    models = _collection.find(valid_kwargs)
+    return list(map(MLModel.parse_obj, models))
+
+
+def update_model(id_: str, schema: ModelUpdateSchema) -> MLModel:
+    """ Update existed model info
+
+    Args:
+        id_:  the ID of targeted model
+        schema:
+
+    Returns: the updated model object
+
+    """
+    prev_model = get_by_id(id_)
+    if schema.metric:
+        schema.metric = {Metric(k).name: v for k, v in schema.metric.items()}
+    updated_data = {
+        key: value for key, value in jsonable_encoder(schema, exclude_unset=True).items()
+        if getattr(schema, key) != getattr(prev_model, key) and key != 'weight'
+    }
+    if schema.weight:
+        if _fs.exists(prev_model.weight.__root__):
+            _fs.delete(prev_model.weight.__root__)
+        weight_id = _fs.put(bytes(schema.weight), filename=schema.weight.filename)
+        schema.weight = weight_id
+    _collection.update_one({'_id': ObjectId(id_)}, {"$set": updated_data})
+    return get_by_id(id_)
+
+
+def delete_model(id_: str):
+    model = _collection.find_one(filter={'_id': ObjectId(id_)})
+    if _fs.exists(ObjectId(model['weight'])):
+        _fs.delete(ObjectId(model['weight']))
+    return _collection.delete_one({'_id': ObjectId(id_)})
+
+
+def register_static_profiling_result(id_: str, static_profiling_result: StaticProfileResult):
+    """ Register or update static profiling result to a model.
+
+    Args:
+        id_: ID of the model
+        static_profiling_result: static profiling result
+
+    Returns:
+
+    """
+    return _collection.update_one({'_id': ObjectId(id_)},
+                                  {"$set": {"profile_result.static_profile_result": static_profiling_result.dict()}},
+                                  upsert=True)
+
+
+def register_dynamic_profiling_result(id_: str, dynamic_result: DynamicProfileResult):
+    """ Add one dynamic profiling result to a model.
+
+    Args:
+        id_: ID of the model
+        dynamic_result: Dynamic profiling result
+
+    Returns:
+
+    """
+    return _collection.update_one({'_id': ObjectId(id_)},
+                                  {"$push": {
+                                      "profile_result.dynamic_profile_results": jsonable_encoder(dynamic_result)}})
+
+
+def exists_dynamic_profiling_result_by_pks(id_: str, ip: str, device_id: str) -> bool:
+    """Check if the dynamic profiling result exists.
+
+    Args:
+        id_: ID of the model.
+        ip: IP address of dynamic profiling result to be deleted.
+        device_id: Device ID of dynamic profiling result to be deleted.
+
+    Returns: True` for existence, `False` otherwise.
+
+    """
+    model = _collection.find_one(filter={
+        '_id': ObjectId(id_),
+        'profile_result.dynamic_profile_results.ip': ip,
+        'profile_result.dynamic_profile_results.device_id': device_id
+    })
+    return model is not None
+
+
+def update_dynamic_profiling_result(id_: str, dynamic_result: DynamicProfileResult,
+                                    force_insert: Optional[bool] = False):
+    """ Update one dynamic profiling result to a model.
+
+    Args:
+        id_: ID of the object
+        dynamic_result: Dynamic profiling result
+        force_insert: force to insert the dynamic result if it is not found
+
+    Returns:
+
+    """
+    if exists_dynamic_profiling_result_by_pks(id_, ip=dynamic_result.ip, device_id=dynamic_result.device_id):
+        return _collection.update_one({
+            '_id': ObjectId(id_),
+            'profile_result.dynamic_profile_results.ip': dynamic_result.ip,
+            'profile_result.dynamic_profile_results.device_id': dynamic_result.device_id
+        }, {"$set": {"profile_result.dynamic_profile_results.$": jsonable_encoder(dynamic_result)}})
+    elif force_insert:
+        return register_dynamic_profiling_result(id_, dynamic_result)
+    else:
+        raise ServiceException(
+            f'Dynamic profiling result to be updated with ip={dynamic_result.ip}, '
+            f'device_id={dynamic_result.device_id} does not exist. Either set `force_insert` or change the ip '
+            f'and device_id.'
+        )
+
+
+def delete_dynamic_profiling_result(id_: str, dynamic_result_ip: Union[str, IPv4Address, IPv6Address],
+                                    dynamic_result_device_id: str):
+    """Delete one dynamic profiling result to a model.
+
+    Args:
+        id_: ID of the object.
+        dynamic_result_ip: Host IP address of dynamic profiling result.
+        dynamic_result_device_id: Device ID of dynamic profiling result.
+
+    Returns:
+
+    """
+    if exists_dynamic_profiling_result_by_pks(id_, ip=dynamic_result_ip, device_id=dynamic_result_device_id):
+        return _collection.update(
+            {'_id': ObjectId(id_)},
+            {'$pull': {
+                'profile_result.dynamic_profile_results': {
+                    'ip': dynamic_result_ip,
+                    'device_id': dynamic_result_device_id
+                }
+            }
+            },
+            multi=True,
+            upsert=False
+        )
+    else:
+        raise ServiceException(
+            f'Dynamic profiling result to be updated with ip={dynamic_result_ip}, '
+            f'device_id={dynamic_result_device_id} does not exist. Either set `force_insert` or change the ip '
+            f'and device_id.'
+        )

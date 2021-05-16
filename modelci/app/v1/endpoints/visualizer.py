@@ -9,7 +9,7 @@ Date: 2021/1/15
 
 from fastapi import APIRouter
 
-from modelci.persistence.service_ import get_by_id
+from modelci.persistence.service import get_by_id
 from modelci.types.models import Engine
 from torchviz import make_dot
 import torch
