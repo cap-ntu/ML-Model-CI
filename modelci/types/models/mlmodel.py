@@ -7,21 +7,21 @@ Date: 2/17/2021
 """
 import getpass
 import os
-import gridfs
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Optional, Dict, List, Any
+from typing import Union, Optional, Dict, List
 
+import gridfs
 from bson import ObjectId
 from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, root_validator
 
+from modelci.config import db_settings
+from modelci.experimental.mongo_client import MongoClient
 from .common import Metric, IOShape, Framework, Engine, Task, ModelStatus, Status, PydanticObjectId, \
     named_enum_json_encoder
 from .pattern import as_form
 from .profile import ProfileResult
 from ...hub.utils import parse_path_plain, generate_path_plain
-from modelci.config import db_settings
-from modelci.experimental.mongo_client import MongoClient
 
 _db = MongoClient()[db_settings.mongo_db]
 _fs = gridfs.GridFS(_db)
@@ -201,3 +201,4 @@ class ModelUpdateSchema(BaseModel):
         example='[{"name": "output", "shape": [-1, 1000], "dtype": "TYPE_FP32"}]'
     )
     model_status: Optional[List[ModelStatus]] = Field(default_factory=list)
+    weight: Optional[Weight]
