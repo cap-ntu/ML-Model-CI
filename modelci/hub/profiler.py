@@ -16,13 +16,12 @@ from modelci.hub.client import CVTRTClient
 from modelci.hub.client import CVTorchClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.bo import (
-    Framework,
-    DynamicProfileResultBO,
+from modelci.types.models import MLModel, Engine
+from modelci.types.models.profile import (
+    DynamicProfileResult,
     ProfileMemory,
     ProfileLatency,
-    ProfileThroughput,
-    ModelBO
+    ProfileThroughput
 )
 from modelci.utils.misc import get_ip
 
@@ -35,12 +34,12 @@ class Profiler(object):
     """Profiler class, call this to test model performance.
 
     Args:
-        model_info (ModelBO): Information about the model, can get from `retrieve_model` method.
+        model_info (MLModel): Information about the model, can get from `retrieve_model` method.
         server_name (str): Serving platform's docker container's name.
         inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
     """
 
-    def __init__(self, model_info: ModelBO, server_name: str, inspector: BaseModelInspector = None):
+    def __init__(self, model_info: MLModel, server_name: str, inspector: BaseModelInspector = None):
         """Init a profiler object."""
         if inspector is None:
             self.inspector = self.__auto_select_client()  # TODO: To Improve
@@ -51,10 +50,10 @@ class Profiler(object):
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
         self.server_name = server_name
-        self.model_bo = model_info
+        self.ml_model = model_info
         self.docker_client = docker.from_env()
 
-    def diagnose(self, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResultBO:
+    def diagnose(self, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResult:
         """Start diagnosing and profiling model.
 
         Args:
@@ -82,7 +81,7 @@ class Profiler(object):
 
         result = self.inspector.run_model(server_name=self.server_name, device=device)
 
-        dpr_bo = DynamicProfileResultBO(
+        dpr_bo = DynamicProfileResult(
             ip=get_ip(),
             device_id=result['device_id'],
             device_name=result['device_name'],
@@ -112,11 +111,11 @@ class Profiler(object):
         """Select the free machine and deploy automatically to test the model using available platforms."""
         from modelci.hub.deployer.dispatcher import serve
 
-        saved_path = self.model_bo.saved_path
-        model_id = self.model_bo.id
-        model_name = self.model_bo.name
-        model_framework = self.model_bo.framework
-        serving_engine = self.model_bo.engine
+        saved_path = self.ml_model.saved_path
+        model_id = self.ml_model.id
+        model_name = self.ml_model.name
+        model_framework = self.ml_model.framework
+        serving_engine = self.ml_model.engine
 
         # for testing
         print('\n available GPU devices: ', [device.name for device in available_devices])
@@ -151,24 +150,24 @@ class Profiler(object):
     def __auto_select_client(self):
         # according to the serving engine, select the right testing client.
         # TODO: replace the input None data in each client with self-generated data.
-        serving_engine = self.model_bo.engine
-        if serving_engine == Framework.NONE:
+        serving_engine = self.ml_model.engine
+        if serving_engine == Engine.NONE:
             raise Exception(
                 'please choose a serving engine for the model')
             # TODO How can we deploy to all available platforms if we don't know the engine?
 
-        kwargs = {'repeat_data': None, 'model_info': self.model_bo, 'batch_num': DEFAULT_BATCH_NUM}
-        if serving_engine == Framework.TFS:
+        kwargs = {'repeat_data': None, 'model_info': self.ml_model, 'batch_num': DEFAULT_BATCH_NUM}
+        if serving_engine == Engine.TFS:
             return CVTFSClient(**kwargs)
-        elif serving_engine == Framework.TORCHSCRIPT:
+        elif serving_engine == Engine.TORCHSCRIPT:
             return CVTorchClient(**kwargs)
-        elif serving_engine == Framework.ONNX:
+        elif serving_engine == Engine.ONNX:
             return CVONNXClient(**kwargs)
-        elif serving_engine == Framework.TRT:
+        elif serving_engine == Engine.TRT:
             return CVTRTClient(**kwargs)
-        elif serving_engine == Framework.TVM:
+        elif serving_engine == Engine.TVM:
             raise NotImplementedError
-        elif serving_engine == Framework.CUSTOMIZED:
+        elif serving_engine == Engine.CUSTOMIZED:
             raise Exception('please pass a custom client to the Profiler.__init__.')
         else:
             return None
