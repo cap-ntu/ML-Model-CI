@@ -50,6 +50,44 @@ def test_get_model_by_id():
     assert model_id in response.text
 
 
+def test_generate_model_graph():
+    params = {'architecture': 'ResNet50', 'framework': 'PyTorch', 'engine': 'PYTORCH'}
+    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=params) as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    response = requests.get(f'{app_settings.api_v1_prefix}/visualizer/{model_id}')
+    assert response.status_code == HTTPStatus.OK
+    assert 'digraph' in response.text
+
+
+def test_update_model_strcuture():
+    params = {'architecture': 'ResNet50', 'framework': 'PyTorch', 'engine': 'PYTORCH'}
+    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=params) as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    payload = {"layer": {
+        "fc": {"op_": "M", "type_": "torch.nn.Linear", "in_features": 2048, "out_features": 10, "bias": True}},
+               "connection": {}}
+    response = requests.patch(f'{app_settings.server_url}/api/exp/cv-tuner/finetune/{model_id}', json=payload)
+    assert response.status_code == HTTPStatus.OK
+    assert 'id' in response.text
+
+
+def test_create_training_job():
+    params = {'architecture': 'ResNet50', 'framework': 'PyTorch', 'engine': 'NONE'}
+    with requests.get(f'{app_settings.api_v1_prefix}/model/', params=params) as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    payload = {"model": model_id, "data_module": {"dataset_name": "CIFAR10", "batch_size": 4},
+               "min_epochs": 10, "max_epochs": 15, "optimizer_type": "Adam",
+               "optimizer_property": {"betas": [0.9, 0.99], "eps": 1e-8, "weight_decay": 0, "amsgrad": False},
+               "lr_scheduler_type": "StepLR", "lr_scheduler_property": {"lr": 0.01, "step_size": 30},
+               "loss_function": "torch.nn.CrossEntropyLoss"}
+    response = requests.post(f'{app_settings.server_url}/api/exp/train/', json=payload)
+    assert response.status_code == HTTPStatus.CREATED
+    assert 'id' in response.text
+
+
 def test_update_model():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
