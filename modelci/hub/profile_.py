@@ -87,7 +87,7 @@ class Profiler(object):
             throughput=ProfileThroughput(inference_throughput=result['total_throughput']),
             create_time=result['completed_time'],
         )
-
+        print(dpr)
         return dpr
 
     def __auto_select_client(self):

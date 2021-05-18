@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 from concurrent import futures
 from functools import partial
 from pathlib import Path
@@ -12,25 +11,22 @@ import torch.jit
 from grpc._cython import cygrpc
 from toolz import compose
 
-from modelci.types.models.common import DataType
-from modelci.types.proto import service_pb2_grpc
-from modelci.types.proto.service_pb2 import InferResponse
-from modelci.types.proto.service_pb2_grpc import add_PredictServicer_to_server
-from modelci.types.type_conversion import model_data_type_to_np
+from proto import add_PredictServicer_to_server
+from proto import PredictServicer
+from proto import InferResponse
+from utils import DataType
+from utils import model_data_type_to_np
 
 
 class ServingEngine(object):
     def __init__(self):
-        #model_base_dir = Path('/models') / sys.argv[1]
-        # get valid version sub dir
-        #model_dir = list(filter(lambda x: os.path.isfile(x) and str(x.stem).isdigit(), model_base_dir.glob('**/*')))
+        model_dir = Path('/server/1.zip')
+        print(os.listdir('/server/'))
         # set device
-        #self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.device = 'cpu'
-        model_dir = "/home/dixing/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip"
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(self.device)
         # load the latest version of a TorchScript model
-        #self.model = torch.jit.load(str(max(model_dir)), map_location=self.device)
-        self.model = torch.jit.load(model_dir, map_location=self.device)
+        self.model = torch.jit.load(str(model_dir), map_location=self.device)
         self.model.eval()
 
     def batch_predict(self, inputs: torch.Tensor):
@@ -43,7 +39,7 @@ class ServingEngine(object):
             return outputs.cpu().detach().tolist()
 
 
-class PredictServicer(service_pb2_grpc.PredictServicer):
+class PredictService(PredictServicer):
 
     def __init__(self):
         self.engine = ServingEngine()
@@ -85,7 +81,7 @@ def grpc_serve():
             (cygrpc.ChannelArgKey.max_receive_message_length, -1)
         ]
     )
-    servicer = PredictServicer()
+    servicer = PredictService()
     add_PredictServicer_to_server(servicer, server)
     server.add_insecure_port('[::]:8101')
     server.start()

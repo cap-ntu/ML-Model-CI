@@ -140,3 +140,8 @@ async def publish_model(
         'data': {'id': [str(model.id) for model in models], },
         'status': True
     }
+
+
+@router.get('/{id}')
+def profile(id: str, batch_size: int, batch_num: int):
+    model = get_by_id(id)

@@ -3,8 +3,48 @@ from enum import Enum
 import numpy as np
 
 
-class DataType(Enum):
-    """A simplified version of Triton DataType"""
+class NamedEnum(Enum):
+    """
+    A enumerator that can be initialized by name.
+
+    Examples:
+        Create a Color Enum:
+        >>> class Color(NamedEnum):
+        ...     RED = 0
+        ...     GREEN = 1
+        ...     BLUE = 2
+
+        You can create a Color enum object by its name:
+        >>> color = Color('RED')
+        ... print(color)
+        <Color.RED: 0>
+    """
+
+    @classmethod
+    def get_case_insensitive(cls):
+        return True
+
+    @classmethod
+    def _missing_(cls, value):
+        if cls.get_case_insensitive():
+            condition = lambda m: str(m.name).lower() == str(value).lower()
+        else:
+            condition = lambda m: m.name == value
+        for member in cls:
+            if condition(member):
+                # save to value -> member mapper
+                cls._value2member_map_[value] = member
+                return member
+
+    @classmethod
+    def __modify_schema__(cls, field_schema: dict):
+        """
+        Use enum name rather than enum value for schema used by OpenAPI.
+        """
+        field_schema.update(enum=[item.name for item in cls])
+
+
+class DataType(NamedEnum):
     TYPE_INVALID = 0
     TYPE_BOOL = 1
     TYPE_UINT8 = 2
@@ -22,6 +62,8 @@ class DataType(Enum):
 
 
 def model_data_type_to_np(model_dtype):
+    from modelci.types.models.common import DataType
+
     mapper = {
         DataType.TYPE_INVALID: None,
         DataType.TYPE_BOOL: np.bool,
