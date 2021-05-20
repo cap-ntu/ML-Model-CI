@@ -14,7 +14,6 @@ from torchvision import transforms
 
 from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.types.bo import ModelBO
 from modelci.types.models.common import named_enum_json_encoder
 from modelci.types.models import MLModel
 from modelci.types.proto.service_pb2 import InferRequest

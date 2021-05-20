@@ -20,8 +20,8 @@ from utils import model_data_type_to_np
 
 class ServingEngine(object):
     def __init__(self):
-        model_dir = Path('/server/1.zip')
-        print(os.listdir('/server/'))
+        model_dir = Path('/server/model') / os.listdir('/server/model')[0]
+        print(model_dir)
         # set device
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print(self.device)
@@ -83,9 +83,9 @@ def grpc_serve():
     )
     servicer = PredictService()
     add_PredictServicer_to_server(servicer, server)
-    server.add_insecure_port('[::]:8101')
+    server.add_insecure_port('[::]:8001')
     server.start()
-    print('Listening on port 8101')
+    print('Listening on port 8001')
     server.wait_for_termination()
 
 

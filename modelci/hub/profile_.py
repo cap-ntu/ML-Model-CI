@@ -3,15 +3,16 @@ import random
 import time
 
 import docker
-
+from docker.models.containers import Container
+from docker.types import Mount
 from modelci.hub.client import CVTFSClient, CVTorchClient, CVONNXClient, CVTRTClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.exceptions import ServiceException
 from modelci.types.models import MLModel, Engine
 from modelci.types.models.profile_results import DynamicProfileResult, ProfileMemory, ProfileThroughput, ProfileLatency
 from modelci.utils import Logger
-from modelci.utils.misc import get_ip
-
+from modelci.utils.misc import get_ip, get_device, remove_dict_null
+from modelci.hub.deployer import config
 DEFAULT_BATCH_NUM = 100
 
 random.seed(ord(os.urandom(1)))
@@ -23,23 +24,47 @@ class Profiler(object):
 
     Args:
         model_info (MLModel): Information about the model, can get from `retrieve_model` method.
-        server_name (str): Serving platform's docker container's name.
+        server_name (str): to assign a name for the container you are creating for model profile
         inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
     """
 
     def __init__(self, model_info: MLModel, server_name: str, inspector: BaseModelInspector = None):
         """Init a profiler object."""
+        self.server_name = server_name
+        self.model = model_info
+        self.docker_client = docker.from_env()
         if inspector is None:
-            self.inspector = self.__auto_select_client()  # TODO: To Improve
+            pass
+            #self.inspector = self.__auto_select_client()  # TODO: To Improve
         else:
             if isinstance(inspector, BaseModelInspector):
                 self.inspector = inspector
             else:
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
-        self.server_name = server_name
-        self.model = model_info
-        self.docker_client = docker.from_env()
+    def pre_deploy(self, device='cuda') -> Container:
+        architecture: str = self.model.architecture
+        engine: Engine = self.model.engine
+
+        cuda, device_num = get_device(device)
+
+        # set mount
+        mounts = [Mount(target=f'/server/model/{self.model.saved_path.name}', source=str(self.model.saved_path), type='bind', read_only=True)]
+
+        common_kwargs = remove_dict_null({'detach': True, 'auto_remove': True, 'mounts': mounts, 'name': self.server_name})
+        environment = dict()
+        if cuda:
+            common_kwargs['runtime'] = 'nvidia'
+            environment['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+            environment['CUDA_VISIBLE_DEVICES'] = device_num
+        if engine == Engine.TORCHSCRIPT:
+            docker_tag = 'latest-gpu' if cuda else 'latest'
+            ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
+            environment['MODEL_NAME'] = architecture
+            container = self.docker_client.containers.run(
+                f'mlmodelci/pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+            )
+        return container
 
     def diagnose(self, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResult:
         """Start diagnosing and profiling model.

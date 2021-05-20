@@ -1,7 +1,7 @@
-weight: "~/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth"
+weight: "~/.modelci/ResNet50/pytorch-torchscript/image_classification/1.zip"
 architecture: ResNet50
 framework: PYTORCH
-engine: PYTORCH
+engine: TORCHSCRIPT
 version: 1
 dataset: ImageNet
 task: IMAGE_CLASSIFICATION
