@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from modelci.types.models import MLModel
+from modelci.types.models.mlmodel import MLModel
 from modelci.types.models.common import Status
 
 console = Console()

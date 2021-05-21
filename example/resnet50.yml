@@ -1,6 +1,6 @@
-weight: "~/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth"
+weight: "~/.modelci/ResNet50/PyTorch-PYTORCH/Image_Classification/1.pth"
 dataset: ImageNet
-task: IMAGE_CLASSIFICATION
+task: Image_Classification
 metric:
   acc: 0.76
 inputs:
@@ -11,4 +11,4 @@ outputs:
   - name: "output"
     shape: [ -1, 1000 ]
     dtype: TYPE_FP32
-convert: true
+convert: false

@@ -19,7 +19,7 @@ from starlette.responses import JSONResponse
 
 from modelci.hub.registrar import register_model
 from modelci.persistence.service_ import get_by_id, get_models, update_model, delete_model, exists_by_id
-from modelci.types.models import MLModel, BaseMLModel, ModelUpdateSchema, Framework, Engine, Task
+from modelci.types.models.mlmodel import MLModel, BaseMLModel, ModelUpdateSchema, Framework, Engine, Task
 
 router = APIRouter()
 

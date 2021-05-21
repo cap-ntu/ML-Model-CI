@@ -9,7 +9,7 @@ from modelci.config import app_settings
 from modelci.cli.modelhub import app
 
 runner = CliRunner()
-file_dir = f"{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification"
+file_dir = f"{str(Path.home())}/.modelci/ResNet50/PyTorch-PYTORCH/Image_Classification"
 Path(file_dir).mkdir(parents=True, exist_ok=True)
 file_path = file_dir + "/1.pth"
 
@@ -18,7 +18,7 @@ def test_get():
     result = runner.invoke(app, [
         'get',
         'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-        f'{str(Path.home())}/.modelci/ResNet50/pytorch-pytorch/image_classification/1.pth'
+        f'{str(Path.home())}/.modelci/ResNet50/PyTorch-PYTORCH/Image_Classification/1.pth'
     ])
     assert result.exit_code == 0
     assert "model downloaded successfully" in result.stdout
