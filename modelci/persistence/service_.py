@@ -16,7 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, ModelUpdateSchema
+from modelci.types.models.mlmodel import MLModel, ModelUpdateSchema
 
 _db = MongoClient()[db_settings.mongo_db]
 _collection = _db['model_d_o']

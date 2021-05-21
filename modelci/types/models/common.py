@@ -8,7 +8,7 @@ Date: 1/26/2021
 
 import warnings
 from enum import Enum, unique
-from typing import List
+from typing import List, Union
 
 from bson import ObjectId
 from pydantic import BaseModel
@@ -262,3 +262,4 @@ class IOShape(BaseModel):
             DataType: named_enum_json_encoder,
             ModelInputFormat: named_enum_json_encoder,
         }
+
