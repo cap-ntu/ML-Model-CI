@@ -4,7 +4,7 @@ from enum import unique, Enum
 from pathlib import Path
 from typing import Union
 
-from modelci.types.models.common import Framework, Engine, ModelVersion, Task
+from modelci.types.models.common import Task, Framework, Engine, ModelVersion
 from modelci.types.trtis_objects import DataType, ModelInputFormat
 
 

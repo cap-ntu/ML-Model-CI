@@ -264,6 +264,34 @@ class IOShape(BaseModel):
         }
 
 
+class ModelVersion(object):
+    """Model version class.
+
+    This class is an integer representing model version.
+
+
+    Args:
+        ver_string (Union[str, int]): version string. It should be an integer string.
+    """
+
+    def __init__(self, ver_string: Union[str, int]):
+        """Initializer of version string.
+
+        Raise:
+            ValueError: Version string is not integer.
+        """
+        # try convert to int
+        try:
+            ver = int(ver_string)
+        except ValueError:
+            raise ValueError('invalid value for version string, expected a number, got {}'.format(ver_string))
+
+        self.ver = ver
+
+    def __str__(self):
+        return str(self.ver)
+
+
 class InfoTuple(BaseModel):
     """A triplet tuple containing overall, average, 50th percentile, 95th percentile, and 99th percentile values of a
     data over a period of time.

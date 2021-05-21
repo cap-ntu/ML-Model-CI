@@ -30,7 +30,7 @@ from modelci.hub.converter import converter
 from modelci.hub.utils import parse_path_plain
 from modelci.persistence.service import ModelService
 from modelci.persistence.service_ import save
-from modelci.types.models import MLModelFromYaml, MLModel
+from modelci.types.models.mlmodel import MLModelFromYaml, MLModel
 from urllib.request import urlopen, Request
 from tqdm.auto import tqdm
 from modelci.types.models.common import Engine, ModelStatus
