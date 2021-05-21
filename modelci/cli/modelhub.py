@@ -25,9 +25,8 @@ from modelci.hub.converter import generate_model_family
 
 from modelci.config import app_settings
 from modelci.hub.utils import parse_path_plain
-from modelci.types.models import Framework, Engine, IOShape, Task, Metric, ModelUpdateSchema
-from modelci.types.models import MLModelFromYaml, MLModel
-from modelci.types.models.common import ModelStatus
+from modelci.types.models.common import Framework, Engine, Task, Metric, IOShape, ModelStatus
+from modelci.types.models.mlmodel import MLModelFromYaml, MLModel, ModelUpdateSchema
 from modelci.ui import model_view, model_detailed_view
 from modelci.utils import Logger
 from modelci.utils.misc import remove_dict_null

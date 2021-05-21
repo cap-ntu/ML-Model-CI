@@ -4,7 +4,7 @@ from enum import unique, Enum
 from pathlib import Path
 from typing import Union
 
-from modelci.types.bo import Framework, Engine, ModelVersion, Task
+from modelci.types.models.common import Task, Framework, Engine, ModelVersion
 from modelci.types.trtis_objects import DataType, ModelInputFormat
 
 
@@ -12,13 +12,13 @@ def parse_path(path: Path):
     """Obtain filename, task, framework and engine from saved path.
     """
 
-    if re.match(r'^.*?[!/]*/[a-z]+-[a-z]+/[a-z_]+/\d+$', str(path.with_suffix(''))):
+    if re.match(r'^.*?[!/]*/[A-Za-z]+-[A-Za-z]+/[A-Za-z_]+/\d+$', str(path.with_suffix(''))):
         filename = path.name
         architecture = path.parent.parent.parent.stem
-        task = Task[path.parent.name.upper()]
+        task = Task[path.parent.name]
         info = path.parent.parent.name.split('-')
-        framework = Framework[info[0].upper()]
-        engine = Engine[info[1].upper()]
+        framework = Framework[info[0]]
+        engine = Engine[info[1]]
         version = ModelVersion(Path(filename).stem)
         return {
             'architecture': architecture,
@@ -37,13 +37,13 @@ def parse_path_plain(path: Union[str, Path]):
     """Obtain filename, task, framework and engine from saved path. Use plain object as return.
     """
     path = Path(path)
-    if re.match(r'^.*?[!/]*/[a-z]+-[a-z]+/[a-z_]+/\d+$', str(path.with_suffix(''))):
+    if re.match(r'^.*?[!/]*/[A-Za-z]+-[A-Za-z]+/[A-Za-z_]+/\d+$', str(path.with_suffix(''))):
         filename = path.name
         architecture = path.parent.parent.parent.stem
-        task = path.parent.name.upper()
+        task = path.parent.name
         info = path.parent.parent.name.split('-')
-        framework = info[0].upper()
-        engine = info[1].upper()
+        framework = info[0]
+        engine = info[1]
         version = Path(filename).stem
         return {
             'architecture': architecture,
@@ -73,13 +73,13 @@ def generate_path(model_name: str, task: Task, framework: Framework, engine: Eng
         version = ModelVersion(str(version))
 
     return Path.home() / f'.modelci/{model_name}/' \
-                         f'{framework.name.lower()}-{engine.name.lower()}' \
-                         f'/{task.name.lower()}/{str(version)}'
+                         f'{framework.name}-{engine.name}' \
+                         f'/{task.name}/{str(version)}'
 
 
 def generate_path_plain(architecture, task, framework, engine, version):
-    return Path.home() / f'.modelci/{architecture}/{framework.name.lower()}-{engine.name.lower()}/' \
-                         f'{task.name.lower()}/{version}'
+    return Path.home() / f'.modelci/{architecture}/{framework.name}-{engine.name}/' \
+                         f'{task.name}/{version}'
 
 
 def GiB(val):

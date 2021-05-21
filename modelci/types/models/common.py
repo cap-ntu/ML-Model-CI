@@ -8,7 +8,7 @@ Date: 1/26/2021
 
 import warnings
 from enum import Enum, unique
-from typing import List
+from typing import List, Union
 
 from bson import ObjectId
 from pydantic import BaseModel
@@ -262,3 +262,31 @@ class IOShape(BaseModel):
             DataType: named_enum_json_encoder,
             ModelInputFormat: named_enum_json_encoder,
         }
+
+
+class ModelVersion(object):
+    """Model version class.
+
+    This class is an integer representing model version.
+
+
+    Args:
+        ver_string (Union[str, int]): version string. It should be an integer string.
+    """
+
+    def __init__(self, ver_string: Union[str, int]):
+        """Initializer of version string.
+
+        Raise:
+            ValueError: Version string is not integer.
+        """
+        # try convert to int
+        try:
+            ver = int(ver_string)
+        except ValueError:
+            raise ValueError('invalid value for version string, expected a number, got {}'.format(ver_string))
+
+        self.ver = ver
+
+    def __str__(self):
+        return str(self.ver)
