@@ -17,9 +17,9 @@ def parse_path(path: Path):
         architecture = path.parent.parent.parent.stem
         task = Task[path.parent.name]
         info = path.parent.parent.name.split('-')
-        framework = Framework[info[0].upper()]
-        engine = Engine[info[1].upper()]
-        version = ModelVersion(Path(filename).stem)
+        framework = Framework[info[0]]
+        engine = Engine[info[1]]
+        version = int(Path(filename).stem)
         return {
             'architecture': architecture,
             'task': task,
