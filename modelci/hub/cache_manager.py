@@ -30,10 +30,10 @@ def get_remote_model_weight(model: MLModel):
         with open(str(save_path), 'wb') as f:
             f.write(bytes(model.weight))
         if model.engine == Engine.TFS:
-            subprocess.call(['unzip', save_path, '-d', '/'])
+            subprocess.call(['unzip', save_path, '-d', '/'])  # nosec
             os.remove(save_path)
         elif model.engine == Engine.TRT:
-            subprocess.call(['unzip', save_path, '-d', '/'])
+            subprocess.call(['unzip', save_path, '-d', '/']) # nosec
             os.remove(save_path)
 
             converter.TRTConverter.generate_trt_config(

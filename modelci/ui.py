@@ -159,8 +159,8 @@ def model_detailed_view(model: MLModel):
     if not model.profile_result:
         converted_grid.add_row('N.A.')
     else:
-        spr = model.profile_result['static_result']
-        dprs = model.profile_result['dynamic_results']
+        spr = model.profile_result.static_profile_result
+        dprs = model.profile_result.dynamic_profile_results
 
         # Static profiling result
         converted_grid.add_row(Text('Static Result', style='bold turquoise2', justify='left'))
