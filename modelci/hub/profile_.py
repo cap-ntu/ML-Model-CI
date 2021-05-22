@@ -8,7 +8,7 @@ from docker.types import Mount
 from modelci.hub.client import CVTFSClient, CVTorchClient, CVONNXClient, CVTRTClient
 from modelci.metrics.benchmark.metric import BaseModelInspector
 from modelci.persistence.exceptions import ServiceException
-from modelci.types.models import MLModel, Engine
+from modelci.types.models.mlmodel import MLModel, Engine
 from modelci.types.models.profile_results import DynamicProfileResult, ProfileMemory, ProfileThroughput, ProfileLatency
 from modelci.utils import Logger
 from modelci.utils.misc import get_ip, get_device, remove_dict_null

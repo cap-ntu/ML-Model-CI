@@ -17,8 +17,7 @@ import cpuinfo
 import numpy as np
 
 from modelci.metrics import CAdvisor
-from modelci.types.bo import ModelBO
-from modelci.types.models import MLModel
+from modelci.types.models.mlmodel import MLModel
 from modelci.utils.misc import get_device
 
 
