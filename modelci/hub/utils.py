@@ -4,7 +4,7 @@ from enum import unique, Enum
 from pathlib import Path
 from typing import Union
 
-from modelci.types.models.common import Task, Framework, Engine, ModelVersion
+from modelci.types.models.common import Task, Framework, Engine
 from modelci.types.trtis_objects import DataType, ModelInputFormat
 
 
@@ -17,8 +17,8 @@ def parse_path(path: Path):
         architecture = path.parent.parent.parent.stem
         task = Task[path.parent.name]
         info = path.parent.parent.name.split('-')
-        framework = Framework[info[0]]
-        engine = Engine[info[1]]
+        framework = Framework[info[0].upper()]
+        engine = Engine[info[1].upper()]
         version = ModelVersion(Path(filename).stem)
         return {
             'architecture': architecture,
@@ -59,7 +59,7 @@ def parse_path_plain(path: Union[str, Path]):
 
 
 def generate_path(model_name: str, task: Task, framework: Framework, engine: Engine,
-                  version: Union[ModelVersion, str, int]):
+                  version: int):
     """Generate saved path from model
     """
     model_name = str(model_name)
@@ -69,8 +69,6 @@ def generate_path(model_name: str, task: Task, framework: Framework, engine: Eng
         raise ValueError(f'Expecting framework type to be `Framework`, but got {type(framework)}')
     if not isinstance(engine, Engine):
         raise ValueError(f'Expecting engine type to be `Engine`, but got {type(engine)}')
-    if not isinstance(version, ModelVersion):
-        version = ModelVersion(str(version))
 
     return Path.home() / f'.modelci/{model_name}/' \
                          f'{framework.name}-{engine.name}' \
