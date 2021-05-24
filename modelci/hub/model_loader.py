@@ -46,11 +46,6 @@ def load(model: MLModel):
     Args:
         model: MLModel
     """
-    if not Path(model.saved_path).exists():
-        (filepath, filename) = os.path.split(model.saved_path)
-        os.makedirs(filepath)
-        with open(model.saved_path, 'wb') as f:
-            f.write(model.weight.__bytes__())
     if model.framework == Framework.PyTorch and model.engine in (Engine.PYTORCH, Engine.NONE):  # PyTorch
         return pytorch_loader(model.saved_path)
     elif model.framework == Framework.TensorFlow and model.engine in (Engine.TFS, Engine.NONE):  # TensorFlow
