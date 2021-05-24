@@ -10,7 +10,7 @@ from modelci.persistence.service import ModelService
 from modelci.hub.deployer import config
 from modelci.hub.manager import retrieve_model, retrieve_model_by_task
 from modelci.hub.utils import parse_path
-from modelci.types.bo import Framework, Engine, ModelStatus
+from modelci.types.models.common import Framework, Engine, ModelStatus
 from modelci.utils.misc import remove_dict_null, get_device
 
 

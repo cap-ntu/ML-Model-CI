@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from concurrent import futures
 from functools import partial
 from pathlib import Path
@@ -11,22 +12,22 @@ import torch.jit
 from grpc._cython import cygrpc
 from toolz import compose
 
+from utils import model_data_type_to_np
 from proto import add_PredictServicer_to_server
 from proto import PredictServicer
 from proto import InferResponse
-from utils import DataType
-from utils import model_data_type_to_np
 
 
 class ServingEngine(object):
     def __init__(self):
-        model_dir = Path('/server/model') / os.listdir('/server/model')[0]
-        print(model_dir)
+        model_base_dir = Path('/models') / sys.argv[1]
+        # get valid version sub dir
+        model_dir = list(filter(lambda x: os.path.isfile(x) and str(x.stem).isdigit(), model_base_dir.glob('**/*')))
         # set device
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print(self.device)
+
         # load the latest version of a TorchScript model
-        self.model = torch.jit.load(str(model_dir), map_location=self.device)
+        self.model = torch.jit.load(str(max(model_dir)), map_location=self.device)
         self.model.eval()
 
     def batch_predict(self, inputs: torch.Tensor):
@@ -50,7 +51,7 @@ class PredictService(PredictServicer):
     def grpc_decode(cls, buffer: Iterable, meta):
         meta = json.loads(meta)
         shape = meta['shape']
-        dtype = model_data_type_to_np(DataType(meta['dtype']))
+        dtype = model_data_type_to_np(meta['dtype'])
         torch_flag = meta['torch_flag']
         decode_pipeline = compose(
             partial(np.reshape, newshape=shape),
