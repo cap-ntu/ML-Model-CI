@@ -22,18 +22,15 @@ class Profiler(object):
 
     Args:
         model_info (MLModel): Information about the model, can get from `retrieve_model` method.
-        server_name (str): to assign a name for the container you are creating for model profile
         inspector (BaseModelInspector): The client instance implemented from :class:`BaseModelInspector`.
     """
 
-    def __init__(self, model_info: MLModel, server_name: str, inspector: BaseModelInspector = None):
+    def __init__(self, model_info: MLModel, inspector: BaseModelInspector = None):
         """Init a profiler object."""
-        self.server_name = server_name
         self.model = model_info
         self.docker_client = docker.from_env()
         if inspector is None:
-            pass
-            #self.inspector = self.__auto_select_client()  # TODO: To Improve
+            self.inspector = self.__auto_select_client()  # TODO: To Improve
         else:
             if isinstance(inspector, BaseModelInspector):
                 self.inspector = inspector
@@ -41,12 +38,20 @@ class Profiler(object):
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
     def pre_deploy(self, device='cuda'):
-         serve(self.model.saved_path, device=device)
+        try:
+            container = serve(self.model.saved_path, device=device)
+            print(f"Container:{container.name} is now serving.")
+            return container.name
 
-    def diagnose(self, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResult:
+        except Exception as e:
+            print(f"Something went wrong during pre-deploy:{e}, Please check if deploy server is already running")
+            return None
+
+    def diagnose(self, server_name: str, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResult:
         """Start diagnosing and profiling model.
 
         Args:
+            server_name (str): to assign a name for the container you are creating for model profile
             batch_size (int): Batch size.
             device (str): Device name.
             timeout (float): Waiting for docker container timeout in second. Default timeout period is 30s.
@@ -71,7 +76,7 @@ class Profiler(object):
         if batch_size is not None:
             self.inspector.set_batch_size(batch_size)
 
-        result = self.inspector.run_model(server_name=self.server_name, device=device)
+        result = self.inspector.run_model(server_name=server_name, device=device)
 
         dpr = DynamicProfileResult(
             ip=get_ip(),

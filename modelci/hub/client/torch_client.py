@@ -14,7 +14,6 @@ from torchvision import transforms
 
 from modelci.hub.deployer.config import TORCHSCRIPT_GRPC_PORT
 from modelci.metrics.benchmark.metric import BaseModelInspector
-from modelci.types.models.common import named_enum_json_encoder
 from modelci.types.models.mlmodel import MLModel
 from modelci.types.proto.service_pb2 import InferRequest
 from modelci.types.proto.service_pb2_grpc import PredictStub
@@ -49,7 +48,7 @@ class CVTorchClient(BaseModelInspector):
     def make_request(self, input_batch):
         meta = json.dumps(
             {'shape': self.model_info.inputs[0].shape[1:],
-             'dtype': named_enum_json_encoder(self.model_info.inputs[0].dtype),
+             'dtype': self.model_info.inputs[0].dtype.value,
              'torch_flag': True}
         )
         request = InferRequest()
