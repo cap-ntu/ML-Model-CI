@@ -65,7 +65,7 @@ def serve(
         ports = {'8000': config.TORCHSCRIPT_HTTP_PORT, '8001': config.TORCHSCRIPT_GRPC_PORT}
         environment['MODEL_NAME'] = architecture
         container = docker_client.containers.run(
-            f'mlmodelci/pytorch-serving:{docker_tag}', environment=environment, ports=ports, **common_kwargs
+            f'mlmodelci/pytorch-serving:{docker_tag}', name='mlmodelci_torch_server', environment=environment, ports=ports, **common_kwargs
         )
     elif engine == Engine.ONNX:
         docker_tag = 'latest-gpu' if cuda else 'latest'

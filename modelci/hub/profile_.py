@@ -38,14 +38,14 @@ class Profiler(object):
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
     def pre_deploy(self, device='cuda'):
-        try:
-            container = serve(self.model.saved_path, device=device)
-            print(f"Container:{container.name} is now serving.")
-            return container.name
-
-        except Exception as e:
-            print(f"Something went wrong during pre-deploy:{e}, Please check if deploy server is already running")
-            return None
+        container_list = self.docker_client.containers.list(all=True)
+        for container in container_list:
+            if container.name in ('mlmodelci_torch_server', 'mlmodelci_onnx_server'):
+                print(f"Container:{container.name} is already serving.")
+                return container.name
+        container = serve(self.model.saved_path, device=device)
+        print(f"Container:{container.name} is now serving.")
+        return container.name
 
     def diagnose(self, server_name: str, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResult:
         """Start diagnosing and profiling model.
