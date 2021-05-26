@@ -10,12 +10,11 @@ import grpc
 import numpy as np
 import torch.jit
 from grpc._cython import cygrpc
+from proto import service_pb2_grpc
+from proto.service_pb2 import InferResponse
+from proto.service_pb2_grpc import add_PredictServicer_to_server
 from toolz import compose
-
-from utils import model_data_type_to_np
-from proto import add_PredictServicer_to_server
-from proto import PredictServicer
-from proto import InferResponse
+from utils import model_data_type_to_np, DataType
 
 
 class ServingEngine(object):
@@ -40,7 +39,7 @@ class ServingEngine(object):
             return outputs.cpu().detach().tolist()
 
 
-class PredictService(PredictServicer):
+class PredictServicer(service_pb2_grpc.PredictServicer):
 
     def __init__(self):
         self.engine = ServingEngine()
@@ -51,14 +50,18 @@ class PredictService(PredictServicer):
     def grpc_decode(cls, buffer: Iterable, meta):
         meta = json.loads(meta)
         shape = meta['shape']
-        dtype = model_data_type_to_np(meta['dtype'])
+        dtype = model_data_type_to_np(DataType(meta['dtype']))
         torch_flag = meta['torch_flag']
+
         decode_pipeline = compose(
             partial(np.reshape, newshape=shape),
             partial(np.fromstring, dtype=dtype),
         )
-        buffer = list(map(decode_pipeline, buffer))  # issue here
+
+        buffer = list(map(decode_pipeline, buffer))
+
         buffer = np.stack(buffer)
+
         if torch_flag:
             buffer = torch.from_numpy(buffer)
         return buffer
@@ -82,7 +85,7 @@ def grpc_serve():
             (cygrpc.ChannelArgKey.max_receive_message_length, -1)
         ]
     )
-    servicer = PredictService()
+    servicer = PredictServicer()
     add_PredictServicer_to_server(servicer, server)
     server.add_insecure_port('[::]:8001')
     server.start()

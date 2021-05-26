@@ -8,7 +8,7 @@ Date: 1/26/2021
 
 import warnings
 from enum import Enum, unique
-from typing import List, Union
+from typing import List
 
 from bson import ObjectId
 from pydantic import BaseModel

@@ -141,8 +141,3 @@ async def publish_model(
         'status': True,
         'model_path': saved_path
     }
-
-
-@router.get('/{id}')
-def profile(id: str, batch_size: int, batch_num: int):
-    model = get_by_id(id)

@@ -2,7 +2,7 @@ import ipaddress
 from datetime import datetime
 from typing import Union, Iterable, Any
 
-from pydantic import BaseModel, FilePath, DirectoryPath, PositiveInt, Field, root_validator
+from pydantic import BaseModel
 
 from modelci.types.models.common import InfoTuple
 
