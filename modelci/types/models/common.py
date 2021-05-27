@@ -262,3 +262,4 @@ class IOShape(BaseModel):
             DataType: named_enum_json_encoder,
             ModelInputFormat: named_enum_json_encoder,
         }
+

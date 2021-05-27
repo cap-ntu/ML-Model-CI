@@ -30,7 +30,8 @@ import lightgbm as lgb
 import sklearn as skl
 from modelci.hub.model_loader import load
 from modelci.hub.utils import generate_path_plain
-from modelci.types.models import MLModel, Engine
+from modelci.types.models.common import Engine
+from modelci.types.models.mlmodel import MLModel
 
 framework_supported = {
     "onnx": ONNXConverter,
@@ -57,13 +58,12 @@ def generate_model_family(
         model: MLModel,
         max_batch_size: int = -1
 ):
-    model_weight_path = model.saved_path
     if not Path(model.saved_path).exists():
         (filepath, filename) = os.path.split(model.saved_path)
         os.makedirs(filepath)
         with open(model.saved_path, 'wb') as f:
             f.write(model.weight.__bytes__())
-    net = load(model_weight_path)
+    net = load(model)
     build_saved_dir_from_engine = partial(
         generate_path_plain,
         **model.dict(include={'architecture', 'framework', 'task', 'version'}),

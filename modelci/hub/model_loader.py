@@ -16,7 +16,8 @@ from pathlib import Path
 import tensorflow as tf
 import torch
 import joblib
-from modelci.hub.utils import parse_path_plain
+from modelci.types.models.common import Framework, Engine
+from modelci.types.models.mlmodel import MLModel
 
 
 def joblib_loader(model_weight_path: Path):
@@ -38,22 +39,16 @@ def savedmodel_loader(model_weight_path: Path):
     return tf.keras.models.load_model(model_weight_path)
 
 
-def load(model_path: os.PathLike):
+def load(model: MLModel):
+    # TODO only support torch.save, saved_model, and joblib serialization for the time being
     """A unify API to load model weight files in various format.
 
     Args:
-        model_path: Path to the entire model file. The model is saved in ModelCI standard directory.
+        model: MLModel
     """
-
-    model_path = Path(model_path)
-    try:
-        model_info = parse_path_plain(model_path)
-    except ValueError as e:
-        # TODO: handle other path format, e.g. torch hub
-        raise e
-    if model_info['framework'] == 'PYTORCH' and model_info['engine'] in ('NONE', 'PYTORCH'):  # PyTorch
-        return pytorch_loader(model_path)
-    elif model_info['framework'] == 'TENSORFLOW' and model_info['engine'] in ('NONE', 'TENSORFLOW'):  # TensorFlow
-        return savedmodel_loader(model_path)
-    elif model_info['framework'] in ('SKLEARN', 'XGBOOST', 'LIGHTGBM') and model_info['engine'] == 'NONE':  # sklearn
-        return joblib_loader(model_path)
+    if model.framework == Framework.PyTorch and model.engine in (Engine.PYTORCH, Engine.NONE):  # PyTorch
+        return pytorch_loader(model.saved_path)
+    elif model.framework == Framework.TensorFlow and model.engine in (Engine.TFS, Engine.NONE):  # TensorFlow
+        return savedmodel_loader(model.saved_path)
+    elif model.framework in (Framework.Sklearn, Framework.XGBoost, Framework.LightGBM) and model.engine == 'NONE':  # sklearn
+        return joblib_loader(model.saved_path)

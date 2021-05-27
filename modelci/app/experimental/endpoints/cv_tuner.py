@@ -15,7 +15,7 @@ from modelci.hub.manager import get_remote_model_weight
 from modelci.hub.utils import generate_path_plain
 from modelci.persistence.service import ModelService
 from modelci.types.bo import ModelVersion, Engine, IOShape, ModelStatus
-from modelci.types.models import MLModel
+from modelci.types.models.mlmodel import MLModel
 from modelci.types.type_conversion import model_data_type_to_torch, type_to_data_type
 from modelci.utils.exceptions import ModelStructureError
 
