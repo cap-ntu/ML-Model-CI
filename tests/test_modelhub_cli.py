@@ -49,7 +49,7 @@ def test_update():
     with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
         model_list = r.json()
     model_id = model_list[0]["id"]
-    result = runner.invoke(app, ['update', model_id, '--framework', 'TensorFlow'])
+    result = runner.invoke(app, ['update', model_id, '--version', '2'])
     assert result.exit_code == 0
 
 
@@ -70,3 +70,27 @@ def test_convert():
         'convert', '-f', 'example/resnet50.yml'
     ])
     assert result.exit_code == 0
+
+
+def test_profile():
+    runner.invoke(app, [
+        'publish', '-f', 'example/resnet50_torchscript.yml'
+    ])
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    torchscript_id = None
+    for model in model_list:
+        if model['engine'] == "TORCHSCRIPT":
+            torchscript_id = model['id']
+            break
+    result = runner.invoke(app, [
+        'profile', torchscript_id, '-d', 'cpu'
+    ])
+    with requests.get(f'{app_settings.api_v1_prefix}/model/') as r:
+        model_list = r.json()
+    model_id = model_list[0]["id"]
+    runner.invoke(app, ['delete', model_id])
+    assert result.exit_code == 0
+
+
+
