@@ -295,3 +295,14 @@ def convert(
             model_cvt = MLModel(**model_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
             ModelDB.save(model_cvt)
             typer.echo(f"converted {engine} are successfully registered in Modelhub")
+
+
+@app.command('profile')
+def profile(
+        model_id: str = typer.Argument(..., help='Model ID'),
+        device: str = typer.Option("cuda", '-d', '--device', help='device to pre-deploy the model.')
+):
+    payload = {'id': model_id, 'device': device}
+    with requests.get(f'{app_settings.api_v1_prefix}/profiler/', params=payload) as r:
+        if r.status_code == 201:
+            typer.echo(r.json())

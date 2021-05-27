@@ -97,6 +97,7 @@ class Profiler(object):
         return dpr
 
     def __auto_select_client(self):
+        import cv2
         # according to the serving engine, select the right testing client.
         # TODO: replace the input None data in each client with self-generated data.
         serving_engine = self.model.engine
@@ -104,8 +105,8 @@ class Profiler(object):
             raise Exception(
                 'please choose a serving engine for the model')
             # TODO How can we deploy to all available platforms if we don't know the engine?
-
-        kwargs = {'repeat_data': None, 'model_info': self.model, 'batch_num': DEFAULT_BATCH_NUM}
+        img = cv2.imread('./modelci/hub/client/data/cat.jpg')
+        kwargs = {'repeat_data': img, 'model_info': self.model, 'batch_num': DEFAULT_BATCH_NUM}
         if serving_engine == Engine.TFS:
             return CVTFSClient(**kwargs)
         elif serving_engine == Engine.TORCHSCRIPT:
