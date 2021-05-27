@@ -79,7 +79,6 @@ class Profiler(object):
         result = self.inspector.run_model(server_name=server_name, device=device)
 
         dpr = DynamicProfileResult(
-            ip=get_ip(),
             device_id=result['device_id'],
             device_name=result['device_name'],
             batch=result['batch_size'],
@@ -92,6 +91,7 @@ class Profiler(object):
                 inference_latency=result['latency'],
             ),
             throughput=ProfileThroughput(inference_throughput=result['total_throughput']),
+            ip=get_ip(),
             create_time=result['completed_time'],
         )
         return dpr

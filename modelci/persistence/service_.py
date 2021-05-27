@@ -106,9 +106,9 @@ def delete_model(id_: str):
     return _collection.delete_one({'_id': ObjectId(id_)})
 
 
-def profile_model(id: str, device: str):
+def profile_model(id: str, device: str, batch_size: int):
     model = get_by_id(id)
     profiler = Profiler(model)
-    res = profiler.diagnose(server_name=profiler.pre_deploy(device=device), device=device)
+    res = profiler.diagnose(server_name=profiler.pre_deploy(device=device), batch_size=batch_size, device=device)
     return res
 

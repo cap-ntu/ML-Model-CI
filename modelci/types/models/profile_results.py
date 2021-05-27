@@ -35,10 +35,10 @@ class ProfileLatency(BaseModel):
         inference_latency (InfoTuple): inference latency.
         postprocess_latency (InfoTuple): post-processing latency.
     """
-    init_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
-    preprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    #init_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    #preprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
     inference_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
-    postprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    #postprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
 
 
 class ProfileThroughput(BaseModel):
@@ -55,10 +55,10 @@ class ProfileThroughput(BaseModel):
         inference_throughput (Union[InfoTuple, Iterable]): inference throughput.
         postprocess_throughput (Union[InfoTuple, Iterable]): post-processing throughput.
     """
-    batch_formation_throughput: float = 0
-    preprocess_throughput: float = 0
+    #batch_formation_throughput: float = 0
+    #preprocess_throughput: float = 0
     inference_throughput: float = 0
-    postprocess_throughput: float = 0
+    #postprocess_throughput: float = 0
 
 
 class DynamicProfileResult(BaseModel):
