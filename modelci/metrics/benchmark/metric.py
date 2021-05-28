@@ -140,6 +140,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         all_batch_avg_memory_used = 0
         all_batch_avg_util = 0
         memory_avg_usage_per = 0
+        # TODO: the metric for cpu is not implemented
         if cuda:
             cadvisor = CAdvisor()
             SLEEP_TIME = 15

@@ -1,6 +1,7 @@
 import os
 import random
 import time
+from pathlib import Path
 
 import docker
 from modelci.hub.client import CVTFSClient, CVTorchClient, CVONNXClient, CVTRTClient
@@ -38,14 +39,16 @@ class Profiler(object):
                 raise TypeError("The inspector should be an instance of class BaseModelInspector!")
 
     def pre_deploy(self, device='cuda'):
-        container_list = self.docker_client.containers.list(all=True)
-        for container in container_list:
-            if container.name in ('mlmodelci_torch_server', 'mlmodelci_onnx_server'):
-                print(f"Container:{container.name} is already serving.")
-                return container.name
-        container = serve(self.model.saved_path, device=device)
-        print(f"Container:{container.name} is now serving.")
-        return container.name
+        container_list = self.docker_client.containers.list(
+            filters={'ancestor': f"mlmodelci/{str(self.model.framework).lower().split('.')[1]}-serving:latest"}
+        )
+        if not container_list:
+            container = serve(self.model.saved_path, device=device, name=f'{self.model.engine}-profiler')
+            print(f"Container:{container.name} is now serving.")
+            return container.name
+        else:
+            print(f"Container:{container_list[0].name} is already serving.")
+            return container_list[0].name
 
     def diagnose(self, server_name: str, batch_size: int = None, device='cuda', timeout=30) -> DynamicProfileResult:
         """Start diagnosing and profiling model.
@@ -98,6 +101,7 @@ class Profiler(object):
 
     def __auto_select_client(self):
         import cv2
+        import modelci.hub.client as client
         # according to the serving engine, select the right testing client.
         # TODO: replace the input None data in each client with self-generated data.
         serving_engine = self.model.engine
@@ -105,7 +109,8 @@ class Profiler(object):
             raise Exception(
                 'please choose a serving engine for the model')
             # TODO How can we deploy to all available platforms if we don't know the engine?
-        img = cv2.imread('./modelci/hub/client/data/cat.jpg')
+        img_dir = Path(client.__file__).parent / 'data/cat.jpg'
+        img = cv2.imread(str(img_dir))
         kwargs = {'repeat_data': img, 'model_info': self.model, 'batch_num': DEFAULT_BATCH_NUM}
         if serving_engine == Engine.TFS:
             return CVTFSClient(**kwargs)

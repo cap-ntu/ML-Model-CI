@@ -27,7 +27,7 @@ class ProfileLatency(BaseModel):
     This class records the end-to-end latency in four stages: data engine initialization, pre-processing, inference, and
     post-processing.
 
-    TODO: support Iterable args, refer to dynamic_profile_result_bo.py
+    TODO: only inference_latency is monitored in Cadvisor
 
     Args:
         init_latency (InfoTuple): initialization latency.
@@ -35,10 +35,10 @@ class ProfileLatency(BaseModel):
         inference_latency (InfoTuple): inference latency.
         postprocess_latency (InfoTuple): post-processing latency.
     """
-    #init_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
-    #preprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    init_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    preprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
     inference_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
-    #postprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
+    postprocess_latency: InfoTuple = InfoTuple(avg=0, p50=0, p95=0, p99=0)
 
 
 class ProfileThroughput(BaseModel):
@@ -47,7 +47,7 @@ class ProfileThroughput(BaseModel):
     This class records the end-to-end throughput in four categories: data to batched data, pre-processing, inference,
     and post-processing.
 
-    TODO: re-organize
+    TODO: only inference_throughoutput is monitored in Cadvisor
 
     Args:
         batch_formation_throughput (Union[InfoTuple, Iterable]): data to batched data throughput.
@@ -55,10 +55,10 @@ class ProfileThroughput(BaseModel):
         inference_throughput (Union[InfoTuple, Iterable]): inference throughput.
         postprocess_throughput (Union[InfoTuple, Iterable]): post-processing throughput.
     """
-    #batch_formation_throughput: float = 0
-    #preprocess_throughput: float = 0
+    batch_formation_throughput: float = 0
+    preprocess_throughput: float = 0
     inference_throughput: float = 0
-    #postprocess_throughput: float = 0
+    postprocess_throughput: float = 0
 
 
 class DynamicProfileResult(BaseModel):

@@ -7,7 +7,6 @@ Date: 26/04/2020
 
 import json
 import time
-import heapq
 import grpc
 import torch
 from torchvision import transforms
@@ -37,7 +36,7 @@ class CVTorchClient(BaseModelInspector):
             [
                 transforms.ToPILImage(),
                 transforms.Resize(255),
-                transforms.CenterCrop(heapq.nlargest(2, self.model_info.inputs[0].shape)),
+                transforms.CenterCrop(self.model_info.inputs[0].shape[2:]),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
                 torch.Tensor.numpy

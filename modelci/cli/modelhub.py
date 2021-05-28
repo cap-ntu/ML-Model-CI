@@ -303,11 +303,11 @@ def profile(
         device: str = typer.Option("cuda", '-d', '--device', help='device to pre-deploy the model.'),
         batch_size: int = typer.Option(None, '-b', '--batchsize', help='batchsize of the test input')
 ):
-    payload = {'id': model_id, 'device': device, 'batch_size': batch_size}
-    with requests.get(f'{app_settings.api_v1_prefix}/profiler/', params=payload) as r:
+    args = {'id': model_id, 'device': device, 'batch_size': batch_size}
+    with requests.get(f'{app_settings.api_v1_prefix}/profiler/{model_id}', params=args) as r:
         if r.status_code == 201:
             typer.echo("Profile successfully! Results are showed below:")
-            js = json.dumps(r.json(), sort_keys=True, indent=4, separators=(',', ':'))
-            typer.echo(js)
+            json_response = json.dumps(r.json(), sort_keys=True, indent=4, separators=(',', ':'))
+            typer.echo(json_response)
         else:
             raise ConnectionError("Can not connect to profile api!")
