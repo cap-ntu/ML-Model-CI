@@ -59,7 +59,7 @@ Once the testing data and the client are ready, you can instance a ModelCI Profi
 
 ```python
 from modelci.hub.client.tfs_client import CVTFSClient
-from modelci.hub.deployer.serving import retrieve_model
+from modelci.hub.manager import retrieve_model
 from modelci.hub.profiler import Profiler
 from modelci.types.bo import Engine, Framework
 

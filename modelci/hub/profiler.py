@@ -114,7 +114,7 @@ class Profiler(object):
 
         saved_path = self.model_bo.saved_path
         model_id = self.model_bo.id
-        model_name = self.model_bo.name
+        model_name = self.model_bo.architecture
         model_framework = self.model_bo.framework
         serving_engine = self.model_bo.engine
 

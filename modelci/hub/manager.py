@@ -89,7 +89,7 @@ def delete_remote_weight(model: ModelBO):
 
 
 def retrieve_model(
-        architecture_name: str = 'ResNet50',
+        architecture: str = 'ResNet50',
         task: Task = None,
         framework: Framework = None,
         engine: Engine = None,
@@ -99,7 +99,7 @@ def retrieve_model(
     """Query a model by name, task, framework, engine or version.
 
     Arguments:
-        architecture_name (str): Model architecture name.
+        architecture (str): Model architecture name.
         task (Task): which machine learn task is model used for,Default to None
         framework (Framework): Framework name, optional query key. Default to None.
         engine (Engine): Model optimization engine name.
@@ -110,7 +110,7 @@ def retrieve_model(
         List[ModelBO]: A list of model business object.
     """
     # retrieve
-    models = ModelService.get_models(architecture_name, task=task, framework=framework, engine=engine, version=version)
+    models = ModelService.get_models(architecture, task=task, framework=framework, engine=engine, version=version)
     # check if found
     if len(models) != 0 and download:
         _get_remote_model_weights(models)
