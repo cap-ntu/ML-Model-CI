@@ -74,23 +74,29 @@ class TRTConverter(object):
 
         # Save TRT engine
         trt_logger = trt.Logger(trt.Logger.WARNING)
-        with trt.Builder(trt_logger) as builder:
-            with builder.create_network(
-                    1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)) as network:
-                with trt.OnnxParser(network, trt_logger) as parser:
-                    builder.max_workspace_size = GiB(1)  # 1GB
-                    builder.max_batch_size = 1
-                    if int8_calibrator is not None:
-                        builder.int8_mode = True
-                        builder.int8_calibrator = int8_calibrator
+        explicit_batch = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
 
-                    print('Loading ONNX file from path {}...'.format(onnx_path))
-                    with open(onnx_path, 'rb') as model:
-                        parser.parse(model.read())
-                    engine = builder.build_cuda_engine(network)
+        with trt.Builder(trt_logger) as builder, builder.create_network(explicit_batch) as network, trt.OnnxParser(network, trt_logger) as parser:
+            builder.max_workspace_size = GiB(1)  # 1GB
+            builder.max_batch_size = 1
+            if int8_calibrator is not None:
+                builder.int8_mode = True
+                builder.int8_calibrator = int8_calibrator
 
-                    with open(save_path / 'model.plan', 'wb') as f:
-                        f.write(engine.serialize())
+            print('Loading ONNX file from path {}...'.format(onnx_path))
+            with open(onnx_path, 'rb') as model:
+                parser.parse(model.read())
+
+            profile = builder.create_optimization_profile()
+            input_shape = (1,) + network.get_input(0).shape[1:]
+            # TODO specify max and min shape size
+            profile.set_shape(network.get_input(0).name, input_shape, input_shape, input_shape)
+            config = builder.create_builder_config()
+            config.add_optimization_profile(profile)
+            engine = builder.build_engine(network, config)
+
+            with open(save_path / 'model.plan', 'wb') as f:
+                f.write(engine.serialize())
 
         # create model configuration file
         if create_model_config:
