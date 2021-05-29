@@ -11,4 +11,4 @@ outputs:
   - name: "output"
     shape: [ -1, 1000 ]
     dtype: TYPE_FP32
-convert: false
+convert: true

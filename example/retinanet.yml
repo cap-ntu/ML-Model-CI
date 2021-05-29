@@ -1,0 +1,21 @@
+weight: "~/.modelci/RetinaNet/PyTorch-PYTORCH/Object_Detection/1.pth"
+architecture: RetinaNet
+framework: PyTorch
+engine: PYTORCH
+version: 1
+dataset: COCO
+task: Object_Detection
+metric:
+  mAP: 0.365
+inputs:
+  - name: "input"
+    shape: [ -1, 3, 224, 224 ]
+    dtype: TYPE_FP32
+outputs:
+  - name: "BBOX"
+    shape: [ -1, 100, 5 ]
+    dtype: TYPE_FP32
+  - name: "SCORE"
+    shape: [ -1, 100 ]
+    dtype: TYPE_FP32
+convert: true
