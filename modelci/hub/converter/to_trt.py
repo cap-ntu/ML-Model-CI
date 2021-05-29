@@ -83,7 +83,7 @@ class TRTConverter(object):
                 builder.int8_mode = True
                 builder.int8_calibrator = int8_calibrator
 
-            print('Loading ONNX file from path {}...'.format(onnx_path))
+            logger.info('Loading ONNX file from path {}...'.format(onnx_path))
             with open(onnx_path, 'rb') as model:
                 parser.parse(model.read())
 
@@ -127,8 +127,7 @@ class TRTConverter(object):
 
         if save_path.with_suffix('.zip').exists():
             if not override:  # file exist yet override flag is not set
-                # TODO: add logging
-                print('Use cached model')
+                logger.info('Use cached model')
                 return True
 
         tf_path = Path(tf_path)
