@@ -10,7 +10,7 @@ from modelci.persistence.service import ModelService
 from modelci.hub.deployer import config
 from modelci.hub.manager import retrieve_model, retrieve_model_by_task
 from modelci.hub.utils import parse_path
-from modelci.types.bo import Framework, Engine, ModelStatus
+from modelci.types.models.common import Framework, Engine, ModelStatus
 from modelci.utils.misc import remove_dict_null, get_device
 
 
@@ -96,7 +96,7 @@ def serve_by_name(args):
     framework = Framework[args.framework.upper()]
     engine = Engine[args.engine.upper()]
 
-    model_bo = retrieve_model(architecture_name=model, framework=framework, engine=engine)
+    model_bo = retrieve_model(architecture=model, framework=framework, engine=engine)
     serve(model_bo[0].saved_path, device=args.device, name=args.name, batch_size=args.bs)
 
     # TODO: check if the service is dispatched sucessfully
