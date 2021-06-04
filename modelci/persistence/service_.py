@@ -15,6 +15,7 @@ from fastapi.encoders import jsonable_encoder
 
 from modelci.config import db_settings
 from modelci.experimental.mongo_client import MongoClient
+from modelci.hub.profile_ import Profiler
 from modelci.persistence.exceptions import ServiceException
 from modelci.types.models.mlmodel import MLModel, ModelUpdateSchema
 
@@ -103,3 +104,11 @@ def delete_model(id_: str):
     if _fs.exists(ObjectId(model['weight'])):
         _fs.delete(ObjectId(model['weight']))
     return _collection.delete_one({'_id': ObjectId(id_)})
+
+
+def profile_model(id: str, device: str, batch_size: int):
+    model = get_by_id(id)
+    profiler = Profiler(model)
+    res = profiler.diagnose(server_name=profiler.pre_deploy(device=device), batch_size=batch_size, device=device)
+    return res
+

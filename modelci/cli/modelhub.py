@@ -15,7 +15,7 @@ from http import HTTPStatus
 from pathlib import Path
 from shutil import copy2, make_archive
 from typing import Dict, List, Optional
-
+import json
 import requests
 import typer
 import yaml
@@ -295,3 +295,19 @@ def convert(
             model_cvt = MLModel(**model_data, weight=model_dir, engine=engine, model_status=[ModelStatus.CONVERTED])
             ModelDB.save(model_cvt)
             typer.echo(f"converted {engine} are successfully registered in Modelhub")
+
+
+@app.command('profile')
+def profile(
+        model_id: str = typer.Argument(..., help='Model ID'),
+        device: str = typer.Option("cuda", '-d', '--device', help='device to pre-deploy the model.'),
+        batch_size: int = typer.Option(None, '-b', '--batchsize', help='batchsize of the test input')
+):
+    args = {'id': model_id, 'device': device, 'batch_size': batch_size}
+    with requests.get(f'{app_settings.api_v1_prefix}/profiler/{model_id}', params=args) as r:
+        if r.status_code == 201:
+            typer.echo("Profile successfully! Results are showed below:")
+            json_response = json.dumps(r.json(), sort_keys=True, indent=4, separators=(',', ':'))
+            typer.echo(json_response)
+        else:
+            raise ConnectionError("Can not connect to profile api!")

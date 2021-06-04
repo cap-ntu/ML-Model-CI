@@ -263,3 +263,23 @@ class IOShape(BaseModel):
             ModelInputFormat: named_enum_json_encoder,
         }
 
+
+class InfoTuple(BaseModel):
+    """A triplet tuple containing overall, average, 50th percentile, 95th percentile, and 99th percentile values of a
+    data over a period of time.
+    Args:
+        avg (float): the average value
+        p5050th percentile, 95th percentile,
+        and 99th percentile values,  of a data.
+    """
+    avg: float
+    p50: float
+    p95: float
+    p99: float
+
+    def tolist(self):
+        """Convert to a list of values."""
+        return [self.avg, self.p50, self.p95, self.p99]
+
+    def __str__(self):
+        return str(self.tolist())

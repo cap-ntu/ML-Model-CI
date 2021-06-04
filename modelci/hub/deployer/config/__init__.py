@@ -8,7 +8,6 @@
     | TRT         | 8200      | 8201      | 8202 (Prometheus)| -               |
     | TFS         | 8501      | 8500      | 8510             | 8511            |
 """
-
 ONNX_HTTP_PORT = 8001
 ONNX_GRPC_PORT = 8002
 ONNX_HTTP_PORT_GPU = 8010
@@ -27,3 +26,4 @@ TFS_HTTP_PORT = 8501
 TFS_GRPC_PORT = 8500
 TFS_HTTP_PORT_GPU = 8510
 TFS_GRPC_PORT_GPU = 8511
+

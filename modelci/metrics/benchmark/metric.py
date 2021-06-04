@@ -17,7 +17,8 @@ import cpuinfo
 import numpy as np
 
 from modelci.metrics import CAdvisor
-from modelci.types.bo import ModelBO
+from modelci.types.models.common import InfoTuple
+from modelci.types.models.mlmodel import MLModel
 from modelci.utils.misc import get_device
 
 
@@ -38,7 +39,7 @@ class BaseModelInspector(metaclass=ABCMeta):
     def __init__(
             self,
             repeat_data,
-            model_info: ModelBO,
+            model_info: MLModel,
             batch_num: int = 1,
             batch_size: int = 1,
             asynchronous: bool = False,
@@ -135,20 +136,25 @@ class BaseModelInspector(metaclass=ABCMeta):
         # FIXME: if the number of batch is really small, the GPU utilization will get a smaller value.
         # Usually, in order to increase accuracy, we need to increase the testing number of batches, try to make sure
         # the testing program can run over 1 minutes.
-        cadvisor = CAdvisor()
-        SLEEP_TIME = 15
-        time.sleep(SLEEP_TIME)
-        all_information = cadvisor.request_by_name(server_name)
-        model_info = cadvisor.get_model_info(all_information)
-        stats = model_info[list(model_info.keys())[0]]['stats']
-        val_stats = [x for x in stats[-int(SLEEP_TIME + all_data_latency):] if
-                     x['accelerators'][0]['duty_cycle'] != 0]
-        all_batch_avg_memory_total = sum([i['accelerators'][0]['memory_total'] for i in val_stats]) / len(val_stats)
-        all_batch_avg_memory_used = sum([i['accelerators'][0]['memory_used'] for i in val_stats]) / len(val_stats)
-        all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
-        memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
-
+        all_batch_avg_memory_total = 0
+        all_batch_avg_memory_used = 0
+        all_batch_avg_util = 0
+        memory_avg_usage_per = 0
+        # TODO: the metric for cpu is not implemented
         if cuda:
+            cadvisor = CAdvisor()
+            SLEEP_TIME = 15
+            time.sleep(SLEEP_TIME)
+            all_information = cadvisor.request_by_name(server_name)
+            model_info = cadvisor.get_model_info(all_information)
+            stats = model_info[list(model_info.keys())[0]]['stats']
+            val_stats = [x for x in stats[-int(SLEEP_TIME + all_data_latency):] if
+                         x['accelerators'][0]['duty_cycle'] != 0]
+            all_batch_avg_memory_total = sum([i['accelerators'][0]['memory_total'] for i in val_stats]) / len(val_stats)
+            all_batch_avg_memory_used = sum([i['accelerators'][0]['memory_used'] for i in val_stats]) / len(val_stats)
+            all_batch_avg_util = sum([i['accelerators'][0]['duty_cycle'] for i in val_stats]) / len(val_stats)
+            memory_avg_usage_per = all_batch_avg_memory_used / all_batch_avg_memory_total
+
             gpu_device = GPUtil.getGPUs()[device_num]
             device_name = gpu_device.name
             device_id = f'cuda:{gpu_device.id}'
@@ -174,11 +180,7 @@ class BaseModelInspector(metaclass=ABCMeta):
         # print(" latency: {:.4f}".format(a_batch_latency), 'sec', " throughput: {:.4f}".format(a_batch_throughput), ' req/sec')
 
     def start_infer_with_time(self, batch_input):
-        """Perform inference non-asynchronously, and return the total time.
 
-        Args:
-            batch_input: The batch data in the request.
-        """
         request = self.make_request(batch_input)
         start_time = time.time()
         self.infer(request)
@@ -265,7 +267,7 @@ class BaseModelInspector(metaclass=ABCMeta):
             'batch_size': self.batch_size,
             'total_latency': latency,
             'total_throughput': throughput,
-            'latency': [latency / len(self.batches), percentile_50, percentile_95, percentile_99],
+            'latency': InfoTuple(avg=latency / len(self.batches), p50=percentile_50, p95=percentile_95, p99=percentile_99),
             'total_gpu_memory': all_batch_avg_memory_total,
             'gpu_memory_percentage': memory_avg_usage_per,
             'gpu_memory_used': all_batch_avg_memory_used,

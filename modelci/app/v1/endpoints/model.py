@@ -138,5 +138,6 @@ async def publish_model(
     models = register_model(model=model, convert=convert, profile=profile)
     return {
         'data': {'id': [str(model.id) for model in models], },
-        'status': True
+        'status': True,
+        'model_path': saved_path
     }

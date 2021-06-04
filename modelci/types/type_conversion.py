@@ -71,7 +71,7 @@ def type_to_data_type(tensor_type):
 
 
 def model_data_type_to_np(model_dtype):
-    from modelci.types.bo import DataType
+    from modelci.types.models.common import DataType
 
     mapper = {
         DataType.TYPE_INVALID: None,
