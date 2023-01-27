@@ -9,7 +9,7 @@ hummingbird-ml>=0.0.6
 lightgbm==2.3.0
 mongoengine>=0.19.1
 numpy<1.19.0,>=1.16.0
-onnx==1.6.0
+onnx==1.13.0
 opencv-python>=3.1.0
 onnxconverter-common>=1.6.0
 onnxmltools>=1.6.0
